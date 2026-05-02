@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const path = require('path');
 
 const app = express();
@@ -22,63 +22,43 @@ app.use(express.json());
 // ✅ Явный путь для статики (работает и на localhost, и на Render)
 app.use(express.static(path.join(__dirname)));
 
-// 📧 NODemailer — с улучшенной диагностикой
-let transporter = null;
-if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-  console.log('📧 Настройка SMTP...');
-  console.log('   Host:', process.env.SMTP_HOST);
-  console.log('   Port:', process.env.SMTP_PORT);
-  console.log('   User:', process.env.SMTP_USER);
-  console.log('   Secure:', process.env.SMTP_SECURE);
-  
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: process.env.SMTP_SECURE === 'true', // true для 465, false для 587
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    },
-    family: 4,              // Принудительно IPv4
-    connectionTimeout: 15000,  // Увеличено до 15 сек
-    socketTimeout: 15000,
-    logger: true,  // Включить логирование
-    debug: true    // Включить отладку
-  });
-
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error('❌ SMTP ошибка:', error.message);
-      console.error('   Код ошибки:', error.code);
-      console.error('   Полный текст:', error);
-    } else {
-      console.log('✅ SMTP готов к отправке писем');
-    }
-  });
+// 📧 RESEND — инициализация клиента
+let resend = null;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('✅ Resend инициализирован');
 } else {
-  console.warn('⚠️ SMTP не настроен');
+  console.warn('⚠️ RESEND_API_KEY не задан. Отправка писем НЕ будет работать.');
+  console.warn('   Добавьте в Render Environment: RESEND_API_KEY');
 }
 
 async function sendVerificationEmail(email, code) {
-  if (!transporter) {
-    throw new Error('SMTP не настроен');
+  if (!resend) {
+    throw new Error('Resend не настроен');
   }
   
-  const mailOptions = {
-    from: `"Готов к РФ" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: `Готов к РФ <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
     to: email,
     subject: '🔐 Ваш код подтверждения — Готов к РФ',
-    text: `Ваш код подтверждения: ${code}\n\nКод действителен 10 минут.`,
     html: `
-      <div style="font-family:Arial;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px">
-        <h2 style="color:#2563eb">🇷 Готов к РФ</h2>
-        <p>Ваш код подтверждения:</p>
-        <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:24px;font-weight:bold;letter-spacing:3px;margin:20px 0">${code}</div>
-        <p style="color:#6b7280;font-size:14px">Код действителен <strong>10 минут</strong>.</p>
+      <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
+        <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
+        <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
+        <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:24px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
+        <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
+        <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
       </div>
     `
-  };
-  return await transporter.sendMail(mailOptions);
+  });
+  
+  if (error) {
+    console.error('❌ Resend ошибка:', error);
+    throw new Error(error.message || 'Ошибка отправки письма');
+  }
+  
+  console.log(`✉️ Письмо отправлено через Resend: ${data?.id}`);
+  return data;
 }
 
 // ✅ SQLite — используем абсолютный путь для надёжности на Render
@@ -147,10 +127,10 @@ app.post('/api/auth/send-code', async (req, res) => {
     return res.status(400).json({ error: 'Введите корректный email' });
   }
 
-  if (!transporter) {
+  if (!resend) {
     return res.status(503).json({ 
       error: 'Сервис отправки писем не настроен',
-      message: 'Администратор: добавьте SMTP_* переменные в Render'
+      message: 'Администратор: добавьте RESEND_API_KEY в Render'
     });
   }
 
@@ -334,7 +314,7 @@ app.use('/api/*', (req, res) => {
 // ✅ Запуск сервера
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
-  console.log(`📧 SMTP: ${transporter ? '✅ настроен' : '⚠️ НЕ настроен'}`);
+  console.log(`📧 Resend: ${resend ? '✅ настроен' : '⚠️ НЕ настроен'}`);
   console.log(`🗄️  SQLite: ${dbPath}`);
 });
 
