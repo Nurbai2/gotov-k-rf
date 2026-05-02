@@ -22,32 +22,41 @@ app.use(express.json());
 // ✅ Явный путь для статики (работает и на localhost, и на Render)
 app.use(express.static(path.join(__dirname)));
 
-// 📧 NODemailer — с проверкой переменных перед созданием транспорта
+// 📧 NODemailer — с улучшенной диагностикой
 let transporter = null;
 if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  console.log('📧 Настройка SMTP...');
+  console.log('   Host:', process.env.SMTP_HOST);
+  console.log('   Port:', process.env.SMTP_PORT);
+  console.log('   User:', process.env.SMTP_USER);
+  console.log('   Secure:', process.env.SMTP_SECURE);
+  
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'false',
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: process.env.SMTP_SECURE === 'true', // true для 465, false для 587
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
-    family: 4,              // ← Принудительно использовать IPv4 (решает проблемы с DNS на Render)
-    connectionTimeout: 10000,  // ← Таймаут подключения: 10 секунд
-    socketTimeout: 10000       // ← Таймаут сокета: 10 секунд
+    family: 4,              // Принудительно IPv4
+    connectionTimeout: 15000,  // Увеличено до 15 сек
+    socketTimeout: 15000,
+    logger: true,  // Включить логирование
+    debug: true    // Включить отладку
   });
 
   transporter.verify((error, success) => {
     if (error) {
       console.error('❌ SMTP ошибка:', error.message);
+      console.error('   Код ошибки:', error.code);
+      console.error('   Полный текст:', error);
     } else {
       console.log('✅ SMTP готов к отправке писем');
     }
   });
 } else {
-  console.warn('⚠️ SMTP не настроен. Отправка кодов НЕ будет работать.');
-  console.warn('   Добавьте в Render Environment: SMTP_HOST, SMTP_USER, SMTP_PASS');
+  console.warn('⚠️ SMTP не настроен');
 }
 
 async function sendVerificationEmail(email, code) {
