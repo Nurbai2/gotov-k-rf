@@ -32,7 +32,10 @@ if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
-    }
+    },
+    family: 4,              // ← Принудительно использовать IPv4 (решает проблемы с DNS на Render)
+    connectionTimeout: 10000,  // ← Таймаут подключения: 10 секунд
+    socketTimeout: 10000       // ← Таймаут сокета: 10 секунд
   });
 
   transporter.verify((error, success) => {
