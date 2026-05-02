@@ -6,36 +6,52 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
-app.use(cors());
+// ✅ CORS с явными настройками для Render
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
 app.use(express.json());
 
-app.use(express.static('.'));
-// 📧 NODemailer
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+// ✅ Явный путь для статики (работает и на localhost, и на Render)
+app.use(express.static(path.join(__dirname)));
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ SMTP не настроен. Отправка кодов НЕ будет работать.');
-    console.error('   Заполните .env: SMTP_HOST, SMTP_USER, SMTP_PASS');
-  } else {
-    console.log('✅ SMTP готов к отправке писем');
-  }
-});
+// 📧 NODemailer — с проверкой переменных перед созданием транспорта
+let transporter = null;
+if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ SMTP ошибка:', error.message);
+    } else {
+      console.log('✅ SMTP готов к отправке писем');
+    }
+  });
+} else {
+  console.warn('⚠️ SMTP не настроен. Отправка кодов НЕ будет работать.');
+  console.warn('   Добавьте в Render Environment: SMTP_HOST, SMTP_USER, SMTP_PASS');
+}
 
 async function sendVerificationEmail(email, code) {
+  if (!transporter) {
+    throw new Error('SMTP не настроен');
+  }
+  
   const mailOptions = {
     from: `"Готов к РФ" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
@@ -53,10 +69,11 @@ async function sendVerificationEmail(email, code) {
   return await transporter.sendMail(mailOptions);
 }
 
-// SQLite
-const db = new sqlite3.Database('./app.db', (err) => {
+// ✅ SQLite — используем абсолютный путь для надёжности на Render
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'app.db');
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error('❌ Ошибка подключения к БД:', err);
-  else console.log('✅ SQLite подключена');
+  else console.log(`✅ SQLite подключена: ${dbPath}`);
 });
 
 // Инициализация таблиц
@@ -96,14 +113,21 @@ const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: 'Требуется авторизация' });
   const token = authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Токен не найден' });
+  
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Недействительный токен' });
+    if (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Токен истёк' });
+      }
+      return res.status(403).json({ error: 'Недействительный токен' });
+    }
     req.user = user;
     next();
   });
 };
 
-// 🔹 Отправка кода — ТОЛЬКО через email
+// 🔹 Отправка кода
 app.post('/api/auth/send-code', async (req, res) => {
   const { email } = req.body;
   
@@ -111,20 +135,23 @@ app.post('/api/auth/send-code', async (req, res) => {
     return res.status(400).json({ error: 'Введите корректный email' });
   }
 
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!transporter) {
     return res.status(503).json({ 
-      error: 'Сервис отправки писем временно недоступен',
-      message: 'Обратитесь к администратору'
+      error: 'Сервис отправки писем не настроен',
+      message: 'Администратор: добавьте SMTP_* переменные в Render'
     });
   }
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 600000;
+  const expiresAt = Date.now() + 600000; // 10 минут
 
   try {
     await new Promise((resolve, reject) => {
       db.run('INSERT OR REPLACE INTO verification_codes VALUES (?, ?, ?)',
-        [email, code, expiresAt], (err) => err ? reject(err) : resolve());
+        [email, code, expiresAt], function(err) {
+          if (err) reject(err);
+          else resolve(this);
+        });
     });
 
     await sendVerificationEmail(email, code);
@@ -135,8 +162,8 @@ app.post('/api/auth/send-code', async (req, res) => {
     console.error('❌ Ошибка отправки кода:', err.message);
     db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
     res.status(500).json({ 
-      error: 'Не удалось отправить код подтверждения',
-      message: 'Попробуйте позже или проверьте адрес почты'
+      error: 'Не удалось отправить код',
+      message: process.env.NODE_ENV === 'production' ? 'Попробуйте позже' : err.message
     });
   }
 });
@@ -147,7 +174,10 @@ app.post('/api/auth/verify-code', (req, res) => {
   if (!email || !code) return res.status(400).json({ error: 'Email и код обязательны' });
   
   db.get('SELECT * FROM verification_codes WHERE email = ? AND code = ?', [email, code], (err, row) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Ошибка сервера' });
+    }
     if (!row) return res.status(400).json({ error: 'Неверный код' });
     if (row.expires_at < Date.now()) {
       db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
@@ -165,7 +195,10 @@ app.post('/api/auth/register', async (req, res) => {
   if (password.length < 8) return res.status(400).json({ error: 'Минимум 8 символов' });
 
   db.get('SELECT * FROM verification_codes WHERE email = ? AND code = ?', [email, code], async (err, row) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Ошибка сервера' });
+    }
     if (!row || row.expires_at < Date.now()) {
       if (row && row.expires_at < Date.now()) {
         db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
@@ -177,9 +210,10 @@ app.post('/api/auth/register', async (req, res) => {
       const hashed = await bcrypt.hash(password, 10);
       db.run('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashed], function(err) {
         if (err) {
-          if (err.message.includes('UNIQUE')) {
+          if (err.message.includes('UNIQUE') || err.message.includes('duplicate')) {
             return res.status(409).json({ error: 'Email уже зарегистрирован' });
           }
+          console.error('DB insert error:', err);
           return res.status(500).json({ error: 'Ошибка регистрации' });
         }
         db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
@@ -199,7 +233,10 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
 
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Ошибка сервера' });
+    }
     if (!user) return res.status(401).json({ error: 'Неверный email или пароль' });
     
     const valid = await bcrypt.compare(password, user.password);
@@ -214,8 +251,15 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/user/progress/:section', authenticate, (req, res) => {
   db.get('SELECT progress FROM user_progress WHERE user_id = ? AND section = ?', 
     [req.user.id, req.params.section], (err, row) => {
-      if (err) return res.status(500).json({ error: 'Ошибка чтения' });
-      res.json({ progress: row ? JSON.parse(row.progress) : [] });
+      if (err) {
+        console.error('DB error:', err);
+        return res.status(500).json({ error: 'Ошибка чтения' });
+      }
+      try {
+        res.json({ progress: row ? JSON.parse(row.progress) : [] });
+      } catch (e) {
+        res.json({ progress: [] });
+      }
     });
 });
 
@@ -225,7 +269,10 @@ app.put('/api/user/progress/:section', authenticate, (req, res) => {
   
   db.run('INSERT OR REPLACE INTO user_progress VALUES (?, ?, ?)',
     [req.user.id, req.params.section, JSON.stringify(progress)], (err) => {
-      if (err) return res.status(500).json({ error: 'Ошибка сохранения' });
+      if (err) {
+        console.error('DB error:', err);
+        return res.status(500).json({ error: 'Ошибка сохранения' });
+      }
       res.json({ success: true });
     });
 });
@@ -234,8 +281,11 @@ app.put('/api/user/progress/:section', authenticate, (req, res) => {
 app.get('/api/user/certificates', authenticate, (req, res) => {
   db.all('SELECT id, type, score, date, number, created_at FROM certificates WHERE user_id = ? ORDER BY created_at DESC', 
     [req.user.id], (err, certs) => {
-      if (err) return res.status(500).json({ error: 'Ошибка чтения' });
-      res.json(certs);
+      if (err) {
+        console.error('DB error:', err);
+        return res.status(500).json({ error: 'Ошибка чтения' });
+      }
+      res.json(certs || []);
     });
 });
 
@@ -247,14 +297,40 @@ app.post('/api/user/certificates', authenticate, (req, res) => {
   
   db.run('INSERT INTO certificates (user_id, type, score, date, number) VALUES (?, ?, ?, ?, ?)',
     [req.user.id, type, score, date, number], function(err) {
-      if (err) return res.status(500).json({ error: 'Ошибка сохранения' });
+      if (err) {
+        console.error('DB error:', err);
+        return res.status(500).json({ error: 'Ошибка сохранения' });
+      }
       res.status(201).json({ id: this.lastID });
     });
 });
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+// 🔹 Health check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    time: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
 
-app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-  console.log(`📧 SMTP: ${process.env.SMTP_USER ? 'настроен' : '⚠️ НЕ настроен — отправка кодов НЕ работает'}`);
+// ✅ Обработка 404 для API
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// ✅ Запуск сервера
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
+  console.log(`📧 SMTP: ${transporter ? '✅ настроен' : '⚠️ НЕ настроен'}`);
+  console.log(`🗄️  SQLite: ${dbPath}`);
+});
+
+// ✅ Graceful shutdown для Render
+process.on('SIGTERM', () => {
+  console.log('🔄 Получен SIGTERM, закрываем БД...');
+  db.close(() => {
+    console.log('✅ БД закрыта');
+    process.exit(0);
+  });
 });
