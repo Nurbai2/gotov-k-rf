@@ -6,10 +6,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const path = require('path');
+const { Resend } = require('resend'); // ✅ Импорт Resend
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
+
+// ✅ Инициализация Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
@@ -69,7 +73,7 @@ const authenticate = (req, res, next) => {
   });
 };
 
-// 🔹 Отправка кода — ТЕПЕРЬ ВСЕГДА ВОЗВРАЩАЕТ КОД
+// 🔹 Отправка кода (РЕАЛЬНОЕ ПИСЬМО через Resend)
 app.post('/api/auth/send-code', async (req, res) => {
   const { email } = req.body;
   
@@ -82,98 +86,75 @@ app.post('/api/auth/send-code', async (req, res) => {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 600000; // 10 минут
 
-  console.log(`🔐 Генерация кода: ${code}`);
-  console.log(`⏰ Истекает через: 10 минут (${new Date(expiresAt).toISOString()})`);
-
   try {
+    // 1. Сохраняем код в БД
     await new Promise((resolve, reject) => {
       db.run(
         'INSERT OR REPLACE INTO verification_codes (email, code, expires_at) VALUES (?, ?, ?)',
         [email, code, expiresAt],
         function(err) {
-          if (err) {
-            console.error('❌ Ошибка записи в БД:', err);
-            reject(err);
-          } else {
-            console.log(`✅ Код сохранён в БД для ${email}`);
-            resolve(this);
-          }
+          if (err) reject(err);
+          else resolve(this);
         }
       );
     });
 
-    // 📢 ВАЖНО: Всегда возвращаем код в ответе (для демонстрации)
-    console.log(`\n🔐 КОД ПОДТВЕРЖДЕНИЯ для ${email}: ${code}\n`);
-    
-    res.json({ 
-      message: 'Код отправлен',
-      code: code,  // ← Всегда возвращаем код!
-      debug: {
-        email: email,
-        expiresAt: expiresAt,
-        expiresIn: '10 minutes'
+    // 2. Отправляем письмо через Resend API
+    if (resend) {
+      const { data, error } = await resend.emails.send({
+        from: 'Готов к РФ <onboarding@resend.dev>', // Тестовый отправитель
+        to: email,
+        subject: '🔐 Ваш код подтверждения — Готов к РФ',
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
+            <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
+            <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
+            <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:28px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
+            <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
+            <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
+          </div>
+        `
+      });
+      
+      if (error) {
+        console.error('❌ Ошибка Resend:', error);
+        throw new Error('Не удалось отправить письмо');
       }
-    });
+      console.log(`✅ Письмо отправлено через Resend (ID: ${data?.id})`);
+    }
+
+    // 🔒 Для безопасности НЕ возвращаем код в ответе (только в продакшене)
+    // Но для демо/тестов вы увидите его в логах Railway
+    console.log(`🔐 [DEV LOG] Код для ${email}: ${code}`);
+    
+    res.json({ message: 'Код отправлен на вашу почту' });
     
   } catch (err) {
     console.error('❌ Ошибка отправки кода:', err.message);
+    // Удаляем код из БД, чтобы не засорять
+    db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
     res.status(500).json({ 
       error: 'Не удалось отправить код',
-      message: err.message
+      message: process.env.NODE_ENV === 'production' ? 'Попробуйте позже' : err.message
     });
   }
 });
 
-// 🔹 Проверка кода — С УЛУЧШЕННОЙ ОТЛАДКОЙ
+// 🔹 Проверка кода
 app.post('/api/auth/verify-code', (req, res) => {
   const { email, code } = req.body;
-  
-  console.log(`🔍 Проверка кода для ${email}: введён ${code}`);
-  
-  if (!email || !code) {
-    return res.status(400).json({ error: 'Email и код обязательны' });
-  }
+  if (!email || !code) return res.status(400).json({ error: 'Email и код обязательны' });
   
   db.get(
     'SELECT * FROM verification_codes WHERE email = ? AND code = ?',
     [email, code],
     (err, row) => {
-      if (err) {
-        console.error('❌ Ошибка БД:', err);
-        return res.status(500).json({ error: 'Ошибка сервера' });
-      }
-      
-      if (!row) {
-        console.log(`❌ Код не найден в БД для ${email}`);
-        // Попробуем найти код для этого email (возможно, введён неверный)
-        db.get(
-          'SELECT * FROM verification_codes WHERE email = ?',
-          [email],
-          (err, existingRow) => {
-            if (existingRow) {
-              console.log(`💡 В БД есть код: ${existingRow.code}`);
-              console.log(`⏰ Истекает: ${new Date(existingRow.expires_at).toISOString()}`);
-              console.log(`⏰ Сейчас: ${new Date(Date.now()).toISOString()}`);
-              console.log(`⏰ Осталось секунд: ${Math.floor((existingRow.expires_at - Date.now()) / 1000)}`);
-            } else {
-              console.log(`💡 Для ${email} вообще нет кода в БД`);
-            }
-          }
-        );
-        return res.status(400).json({ error: 'Неверный код' });
-      }
-      
-      console.log(`✅ Код найден! Истекает: ${new Date(row.expires_at).toISOString()}`);
-      console.log(`⏰ Текущее время: ${new Date(Date.now()).toISOString()}`);
-      console.log(`⏰ Истекает через: ${Math.floor((row.expires_at - Date.now()) / 1000)} сек`);
-      
+      if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+      if (!row) return res.status(400).json({ error: 'Неверный код' });
       if (row.expires_at < Date.now()) {
-        console.log('❌ Код истёк!');
         db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
         return res.status(400).json({ error: 'Код истёк' });
       }
-      
-      console.log('✅ Код действителен!');
       db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
       res.json({ valid: true });
     }
@@ -184,7 +165,7 @@ app.post('/api/auth/verify-code', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, code } = req.body;
   
-  console.log(`📝 Регистрация: ${email}, код: ${code}, пароль: ${'*'.repeat(password.length)}`);
+  console.log(` Регистрация: ${email}`);
   
   if (!email || !password || !code) {
     return res.status(400).json({ error: 'Заполните все поля' });
@@ -193,28 +174,18 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(400).json({ error: 'Минимум 8 символов' });
   }
 
+  // Проверяем код перед регистрацией
   db.get(
     'SELECT * FROM verification_codes WHERE email = ? AND code = ?',
     [email, code],
     async (err, row) => {
-      if (err) {
-        console.error('❌ Ошибка БД:', err);
-        return res.status(500).json({ error: 'Ошибка сервера' });
-      }
-      
-      if (!row) {
-        console.log(`❌ Код не найден или неверный для ${email}`);
-        return res.status(400).json({ error: 'Неверный или истёкший код' });
-      }
-      
+      if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+      if (!row) return res.status(400).json({ error: 'Неверный код' });
       if (row.expires_at < Date.now()) {
-        console.log('❌ Код истёк!');
         db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
         return res.status(400).json({ error: 'Код истёк' });
       }
 
-      console.log('✅ Код подтверждён, создаём пользователя...');
-      
       try {
         const hashed = await bcrypt.hash(password, 10);
         db.run(
@@ -231,7 +202,9 @@ app.post('/api/auth/register', async (req, res) => {
             
             console.log(`✅ Пользователь создан: ${email} (ID: ${this.lastID})`);
             
+            // Удаляем код после успешной регистрации
             db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
+            
             const token = jwt.sign({ id: this.lastID, email }, JWT_SECRET, { expiresIn: '7d' });
             res.status(201).json({ 
               token, 
@@ -248,16 +221,13 @@ app.post('/api/auth/register', async (req, res) => {
   );
 });
 
-// 🔹 Вход
+//  Вход
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
 
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err) {
-      console.error('❌ Ошибка БД:', err);
-      return res.status(500).json({ error: 'Ошибка сервера' });
-    }
+    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
     if (!user) return res.status(401).json({ error: 'Неверный email или пароль' });
     
     const valid = await bcrypt.compare(password, user.password);
@@ -324,8 +294,7 @@ app.use('/api/*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
-  console.log(`🗄️  SQLite: ${dbPath}`);
-  console.log(` Режим отладки: ВКЛЮЧЁН (код всегда в ответе)`);
+  console.log(`📧 Resend: ${process.env.RESEND_API_KEY ? '✅ Настроен' : '⚠️ Не задан RESEND_API_KEY'}`);
 });
 
 process.on('SIGTERM', () => {
