@@ -398,7 +398,7 @@ token: localStorage.getItem('rf_token') || null,
 setToken(t) { this.token = t; t ? localStorage.setItem('rf_token', t) : localStorage.removeItem('rf_token'); },
 async request(ep, opt = {}) {
 try {
-const res = await fetch(`${this.baseURL}${ep}`, {
+const res = await fetch(`${this.baseUrl}${ep}`, {
 headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
 ...opt
 });
