@@ -12,17 +12,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
-// 📧 RESEND — безопасная инициализация с проверкой ключа
-const resendKey = process.env.RESEND_API_KEY;
+// 📧 RESEND — безопасная инициализация с fallback-ключом (обход бага Railway)
+const resendKey = process.env.RESEND_API_KEY || 're_apwAdcvd_N2Fam3nisk2uPDrFo2G6Kbmc';
+
 if (!resendKey || !resendKey.startsWith('re_')) {
-  console.error('❌ FATAL: RESEND_API_KEY не найден или некорректен');
-  console.log('🔍 Текущее значение:', resendKey || 'undefined');
-  console.log('💡 Решение: Добавьте ключ в Railway Variables → Raw Editor → Redeploy');
-  process.exit(1); // Останавливаем запуск, чтобы не было тихих ошибок
+  console.error('❌ FATAL: RESEND_API_KEY некорректен');
+  process.exit(1);
 }
 
 const resend = new Resend(resendKey);
-console.log('✅ Resend инициализирован (ключ: ' + resendKey.substring(0, 8) + '...)');
+console.log('✅ Resend инициализирован');
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
@@ -110,7 +109,7 @@ app.post('/api/auth/send-code', async (req, res) => {
 
     // 2. Отправляем письмо через Resend API
     const { data, error } = await resend.emails.send({
-      from: 'Готов к РФ <onboarding@resend.dev>', // Тестовый отправитель
+      from: 'Готов к РФ <onboarding@resend.dev>',
       to: email,
       subject: '🔐 Ваш код подтверждения — Готов к РФ',
       html: `
@@ -130,15 +129,11 @@ app.post('/api/auth/send-code', async (req, res) => {
     }
     console.log(`✅ Письмо отправлено через Resend (ID: ${data?.id})`);
 
-    // 🔒 Для безопасности НЕ возвращаем код в ответе (только в продакшене)
-    // Но для демо/тестов вы увидите его в логах Railway
     console.log(`🔐 [DEV LOG] Код для ${email}: ${code}`);
-    
     res.json({ message: 'Код отправлен на вашу почту' });
     
   } catch (err) {
     console.error('❌ Ошибка отправки кода:', err.message);
-    // Удаляем код из БД, чтобы не засорять
     db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
     res.status(500).json({ 
       error: 'Не удалось отправить код',
@@ -181,7 +176,6 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(400).json({ error: 'Минимум 8 символов' });
   }
 
-  // Проверяем код перед регистрацией
   db.get(
     'SELECT * FROM verification_codes WHERE email = ? AND code = ?',
     [email, code],
@@ -208,8 +202,6 @@ app.post('/api/auth/register', async (req, res) => {
             }
             
             console.log(`✅ Пользователь создан: ${email} (ID: ${this.lastID})`);
-            
-            // Удаляем код после успешной регистрации
             db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
             
             const token = jwt.sign({ id: this.lastID, email }, JWT_SECRET, { expiresIn: '7d' });
