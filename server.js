@@ -11,9 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
-// 🔹 ФЛАГ ДЕМО-РЕЖИМА: если true — код возвращается в ответе для показа пользователю
-const DEMO_MODE = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV !== 'production';
-
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   credentials: true
@@ -72,9 +69,11 @@ const authenticate = (req, res, next) => {
   });
 };
 
-// 🔹 Отправка кода (ИСПРАВЛЕНО: код в консоль + в ответ для демо)
+// 🔹 Отправка кода — ТЕПЕРЬ ВСЕГДА ВОЗВРАЩАЕТ КОД
 app.post('/api/auth/send-code', async (req, res) => {
   const { email } = req.body;
+  
+  console.log(`📩 Запрос кода для: ${email}`);
   
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Введите корректный email' });
@@ -83,90 +82,170 @@ app.post('/api/auth/send-code', async (req, res) => {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 600000; // 10 минут
 
+  console.log(`🔐 Генерация кода: ${code}`);
+  console.log(`⏰ Истекает через: 10 минут (${new Date(expiresAt).toISOString()})`);
+
   try {
-    // 1. Сохраняем код в БД
     await new Promise((resolve, reject) => {
-      db.run('INSERT OR REPLACE INTO verification_codes VALUES (?, ?, ?)',
-        [email, code, expiresAt], function(err) {
-          if (err) reject(err);
-          else resolve(this);
-        });
+      db.run(
+        'INSERT OR REPLACE INTO verification_codes (email, code, expires_at) VALUES (?, ?, ?)',
+        [email, code, expiresAt],
+        function(err) {
+          if (err) {
+            console.error('❌ Ошибка записи в БД:', err);
+            reject(err);
+          } else {
+            console.log(`✅ Код сохранён в БД для ${email}`);
+            resolve(this);
+          }
+        }
+      );
     });
 
-    // 2. Выводим код в консоль сервера (для вас и комиссии)
-    console.log(`\n🔐 [VERIFY] Код для ${email}: ${code}\n`);
+    // 📢 ВАЖНО: Всегда возвращаем код в ответе (для демонстрации)
+    console.log(`\n🔐 КОД ПОДТВЕРЖДЕНИЯ для ${email}: ${code}\n`);
     
-    // 3. Формируем ответ
-    const response = { 
-      message: 'Код подтверждения отправлен'
-    };
-    
-    // 🔹 Если демо-режим — добавляем код в ответ, чтобы фронтенд мог его показать
-    if (DEMO_MODE) {
-      response.demoCode = code;
-      response.demoMode = true;
-      console.log(`⚠️ [DEMO] Код возвращён в ответе API (режим демонстрации)`);
-    }
-    
-    res.json(response);
+    res.json({ 
+      message: 'Код отправлен',
+      code: code,  // ← Всегда возвращаем код!
+      debug: {
+        email: email,
+        expiresAt: expiresAt,
+        expiresIn: '10 minutes'
+      }
+    });
     
   } catch (err) {
     console.error('❌ Ошибка отправки кода:', err.message);
-    db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
     res.status(500).json({ 
       error: 'Не удалось отправить код',
-      message: process.env.NODE_ENV === 'production' ? 'Попробуйте позже' : err.message
+      message: err.message
     });
   }
 });
 
-// 🔹 Проверка кода
+// 🔹 Проверка кода — С УЛУЧШЕННОЙ ОТЛАДКОЙ
 app.post('/api/auth/verify-code', (req, res) => {
   const { email, code } = req.body;
-  if (!email || !code) return res.status(400).json({ error: 'Email и код обязательны' });
   
-  db.get('SELECT * FROM verification_codes WHERE email = ? AND code = ?', [email, code], (err, row) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
-    if (!row) return res.status(400).json({ error: 'Неверный код' });
-    if (row.expires_at < Date.now()) {
+  console.log(`🔍 Проверка кода для ${email}: введён ${code}`);
+  
+  if (!email || !code) {
+    return res.status(400).json({ error: 'Email и код обязательны' });
+  }
+  
+  db.get(
+    'SELECT * FROM verification_codes WHERE email = ? AND code = ?',
+    [email, code],
+    (err, row) => {
+      if (err) {
+        console.error('❌ Ошибка БД:', err);
+        return res.status(500).json({ error: 'Ошибка сервера' });
+      }
+      
+      if (!row) {
+        console.log(`❌ Код не найден в БД для ${email}`);
+        // Попробуем найти код для этого email (возможно, введён неверный)
+        db.get(
+          'SELECT * FROM verification_codes WHERE email = ?',
+          [email],
+          (err, existingRow) => {
+            if (existingRow) {
+              console.log(`💡 В БД есть код: ${existingRow.code}`);
+              console.log(`⏰ Истекает: ${new Date(existingRow.expires_at).toISOString()}`);
+              console.log(`⏰ Сейчас: ${new Date(Date.now()).toISOString()}`);
+              console.log(`⏰ Осталось секунд: ${Math.floor((existingRow.expires_at - Date.now()) / 1000)}`);
+            } else {
+              console.log(`💡 Для ${email} вообще нет кода в БД`);
+            }
+          }
+        );
+        return res.status(400).json({ error: 'Неверный код' });
+      }
+      
+      console.log(`✅ Код найден! Истекает: ${new Date(row.expires_at).toISOString()}`);
+      console.log(`⏰ Текущее время: ${new Date(Date.now()).toISOString()}`);
+      console.log(`⏰ Истекает через: ${Math.floor((row.expires_at - Date.now()) / 1000)} сек`);
+      
+      if (row.expires_at < Date.now()) {
+        console.log('❌ Код истёк!');
+        db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
+        return res.status(400).json({ error: 'Код истёк' });
+      }
+      
+      console.log('✅ Код действителен!');
       db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
-      return res.status(400).json({ error: 'Код истёк' });
+      res.json({ valid: true });
     }
-    db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
-    res.json({ valid: true });
-  });
+  );
 });
 
 // 🔹 Регистрация
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, code } = req.body;
-  if (!email || !password || !code) return res.status(400).json({ error: 'Заполните все поля' });
-  if (password.length < 8) return res.status(400).json({ error: 'Минимум 8 символов' });
+  
+  console.log(`📝 Регистрация: ${email}, код: ${code}, пароль: ${'*'.repeat(password.length)}`);
+  
+  if (!email || !password || !code) {
+    return res.status(400).json({ error: 'Заполните все поля' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Минимум 8 символов' });
+  }
 
-  db.get('SELECT * FROM verification_codes WHERE email = ? AND code = ?', [email, code], async (err, row) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
-    if (!row || row.expires_at < Date.now()) {
-      return res.status(400).json({ error: 'Неверный или истёкший код' });
-    }
-
-    try {
-      const hashed = await bcrypt.hash(password, 10);
-      db.run('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashed], function(err) {
-        if (err) {
-          if (err.message.includes('UNIQUE')) {
-            return res.status(409).json({ error: 'Email уже зарегистрирован' });
-          }
-          return res.status(500).json({ error: 'Ошибка регистрации' });
-        }
+  db.get(
+    'SELECT * FROM verification_codes WHERE email = ? AND code = ?',
+    [email, code],
+    async (err, row) => {
+      if (err) {
+        console.error('❌ Ошибка БД:', err);
+        return res.status(500).json({ error: 'Ошибка сервера' });
+      }
+      
+      if (!row) {
+        console.log(`❌ Код не найден или неверный для ${email}`);
+        return res.status(400).json({ error: 'Неверный или истёкший код' });
+      }
+      
+      if (row.expires_at < Date.now()) {
+        console.log('❌ Код истёк!');
         db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
-        const token = jwt.sign({ id: this.lastID, email }, JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ token, user: { id: this.lastID, email } });
-      });
-    } catch (e) {
-      console.error('❌ Ошибка хеширования:', e);
-      res.status(500).json({ error: 'Внутренняя ошибка' });
+        return res.status(400).json({ error: 'Код истёк' });
+      }
+
+      console.log('✅ Код подтверждён, создаём пользователя...');
+      
+      try {
+        const hashed = await bcrypt.hash(password, 10);
+        db.run(
+          'INSERT INTO users (email, password) VALUES (?, ?)',
+          [email, hashed],
+          function(err) {
+            if (err) {
+              if (err.message.includes('UNIQUE')) {
+                return res.status(409).json({ error: 'Email уже зарегистрирован' });
+              }
+              console.error('❌ Ошибка создания пользователя:', err);
+              return res.status(500).json({ error: 'Ошибка регистрации' });
+            }
+            
+            console.log(`✅ Пользователь создан: ${email} (ID: ${this.lastID})`);
+            
+            db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
+            const token = jwt.sign({ id: this.lastID, email }, JWT_SECRET, { expiresIn: '7d' });
+            res.status(201).json({ 
+              token, 
+              user: { id: this.lastID, email },
+              message: 'Регистрация успешна'
+            });
+          }
+        );
+      } catch (e) {
+        console.error('❌ Ошибка хеширования:', e);
+        res.status(500).json({ error: 'Внутренняя ошибка' });
+      }
     }
-  });
+  );
 });
 
 // 🔹 Вход
@@ -175,7 +254,10 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
 
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: 'Ошибка сервера' });
+    if (err) {
+      console.error('❌ Ошибка БД:', err);
+      return res.status(500).json({ error: 'Ошибка сервера' });
+    }
     if (!user) return res.status(401).json({ error: 'Неверный email или пароль' });
     
     const valid = await bcrypt.compare(password, user.password);
@@ -232,33 +314,20 @@ app.post('/api/user/certificates', authenticate, (req, res) => {
     });
 });
 
-// 🔹 Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    time: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development',
-    demoMode: DEMO_MODE
-  });
+  res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// ✅ Обработка 404 для API
 app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found' });
+  res.status(404).json({ error: 'Not found' });
 });
 
-// ✅ Запуск сервера
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
   console.log(`🗄️  SQLite: ${dbPath}`);
-  console.log(`🔧 Demo mode: ${DEMO_MODE ? '✅ ВКЛЮЧЕН' : '❌ ВЫКЛЮЧЕН'}`);
+  console.log(` Режим отладки: ВКЛЮЧЁН (код всегда в ответе)`);
 });
 
-// ✅ Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🔄 Получен SIGTERM, закрываем БД...');
-  db.close(() => {
-    console.log('✅ БД закрыта');
-    process.exit(0);
-  });
+  db.close(() => process.exit(0));
 });
