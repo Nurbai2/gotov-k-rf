@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
 // 📧 RESEND — безопасная инициализация с fallback-ключом (обход бага Railway)
-const resendKey = process.env.RESEND_API_KEY || 're_apwAdcvd_N2Fam3nisk2uPDrFo2G6Kbmc';
+const resendKey = process.env.RESEND_API_KEY || 're_41pSht4R_EfKtar8nQ3u2mPkNFbwdb7Vf';
 
 if (!resendKey || !resendKey.startsWith('re_')) {
   console.error('❌ FATAL: RESEND_API_KEY некорректен');
