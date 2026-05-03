@@ -393,6 +393,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 // ============================================================
 const api = {
   baseUrl: 'https://gotov-k-rf-production.up.railway.app/api',
+  const API_URL = 'https://gotov-k-rf-production.up.railway.app/api';
 token: localStorage.getItem('rf_token') || null,
 setToken(t) { this.token = t; t ? localStorage.setItem('rf_token', t) : localStorage.removeItem('rf_token'); },
 async request(ep, opt = {}) {
