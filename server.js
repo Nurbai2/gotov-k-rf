@@ -12,8 +12,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
-// ✅ Инициализация Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 📧 RESEND — безопасная инициализация с проверкой ключа
+const resendKey = process.env.RESEND_API_KEY;
+if (!resendKey || !resendKey.startsWith('re_')) {
+  console.error('❌ FATAL: RESEND_API_KEY не найден или некорректен');
+  console.log('🔍 Текущее значение:', resendKey || 'undefined');
+  console.log('💡 Решение: Добавьте ключ в Railway Variables → Raw Editor → Redeploy');
+  process.exit(1); // Останавливаем запуск, чтобы не было тихих ошибок
+}
+
+const resend = new Resend(resendKey);
+console.log('✅ Resend инициализирован (ключ: ' + resendKey.substring(0, 8) + '...)');
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
@@ -100,28 +109,26 @@ app.post('/api/auth/send-code', async (req, res) => {
     });
 
     // 2. Отправляем письмо через Resend API
-    if (resend) {
-      const { data, error } = await resend.emails.send({
-        from: 'Готов к РФ <onboarding@resend.dev>', // Тестовый отправитель
-        to: email,
-        subject: '🔐 Ваш код подтверждения — Готов к РФ',
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
-            <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
-            <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
-            <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:28px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
-            <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
-            <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
-          </div>
-        `
-      });
-      
-      if (error) {
-        console.error('❌ Ошибка Resend:', error);
-        throw new Error('Не удалось отправить письмо');
-      }
-      console.log(`✅ Письмо отправлено через Resend (ID: ${data?.id})`);
+    const { data, error } = await resend.emails.send({
+      from: 'Готов к РФ <onboarding@resend.dev>', // Тестовый отправитель
+      to: email,
+      subject: '🔐 Ваш код подтверждения — Готов к РФ',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
+          <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
+          <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
+          <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:28px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
+          <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
+          <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
+        </div>
+      `
+    });
+    
+    if (error) {
+      console.error('❌ Ошибка Resend:', error);
+      throw new Error('Не удалось отправить письмо');
     }
+    console.log(`✅ Письмо отправлено через Resend (ID: ${data?.id})`);
 
     // 🔒 Для безопасности НЕ возвращаем код в ответе (только в продакшене)
     // Но для демо/тестов вы увидите его в логах Railway
@@ -165,7 +172,7 @@ app.post('/api/auth/verify-code', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, code } = req.body;
   
-  console.log(` Регистрация: ${email}`);
+  console.log(`📝 Регистрация: ${email}`);
   
   if (!email || !password || !code) {
     return res.status(400).json({ error: 'Заполните все поля' });
@@ -221,7 +228,7 @@ app.post('/api/auth/register', async (req, res) => {
   );
 });
 
-//  Вход
+// 🔹 Вход
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
@@ -294,7 +301,7 @@ app.use('/api/*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
-  console.log(`📧 Resend: ${process.env.RESEND_API_KEY ? '✅ Настроен' : '⚠️ Не задан RESEND_API_KEY'}`);
+  console.log(`📧 Resend: ${resendKey ? '✅ Настроен' : '⚠️ Не задан'}`);
 });
 
 process.on('SIGTERM', () => {
