@@ -389,7 +389,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 </div>
 <script>
 // ============================================================
-// 🌐 API КЛИЕНТ (Исправленный и отформатированный)
+// 🌐 API КЛИЕНТ (Финальная версия)
 // ============================================================
 const api = {
   baseUrl: 'https://gotov-k-rf-production.up.railway.app/api',
@@ -408,8 +408,6 @@ const api = {
   // Базовый запрос
   async request(ep, opt = {}) {
     try {
-      console.log(`📡 API Request: ${ep}`, opt.body ? JSON.parse(opt.body) : '');
-      
       const res = await fetch(`${this.baseUrl}${ep}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -419,7 +417,6 @@ const api = {
       });
 
       const d = await res.json();
-      console.log(`📥 API Response: ${ep}`, res.status, d);
 
       if (!res.ok) {
         throw new Error(d.error || `Ошибка ${res.status}`);
@@ -440,7 +437,8 @@ const api = {
     });
   },
 
-  // Проверка кода
+  // 🔹 Проверка кода (ОПЦИОНАЛЬНО: только для восстановления пароля!)
+  // ⚠️ НЕ вызывайте эту функцию перед register(), иначе код удалится из базы!
   async verifyCode(e, c) {
     if (!e || !c) throw new Error('Email и код обязательны');
     return this.request('/auth/verify-code', {
@@ -449,19 +447,18 @@ const api = {
     });
   },
 
-  // 🔹 Регистрация (ИСПРАВЛЕНО: проверка кода)
+  // 🔹 Регистрация (ПРОВЕРЯЕТ КОД ВНУТРИ СЕБЯ)
+  // ✅ Просто вызовите эту функцию с кодом — она сама всё проверит
   async register(e, p, c) {
     if (!e || !p) throw new Error('Email и пароль обязательны');
-    if (!c) {
-      console.error('❌ ОШИБКА: Код подтверждения пустой!');
-      throw new Error('Код подтверждения не введён');
-    }
+    if (!c) throw new Error('Код подтверждения обязателен');
+    
     return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ 
         email: e, 
         password: p, 
-        code: c  // ✅ Код передаётся
+        code: c  // ✅ Код проверяется на бэкенде внутри этого эндпоинта
       })
     });
   },
@@ -497,7 +494,6 @@ const api = {
     });
   }
 };
-
 // ============================================================
 // 🌐 ПЕРЕВОДЧИК (Полный из 1-го файла)
 // ============================================================
