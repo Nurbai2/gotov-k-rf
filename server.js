@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
 
-// 📧 RESEND — безопасная инициализация с fallback-ключом (обход бага Railway)
+// 📧 RESEND — безопасная инициализация с fallback-ключом
 const resendKey = process.env.RESEND_API_KEY || 're_41pSht4R_EfKtar8nQ3u2mPkNFbwdb7Vf';
 
 if (!resendKey || !resendKey.startsWith('re_')) {
@@ -81,7 +81,7 @@ const authenticate = (req, res, next) => {
   });
 };
 
-// 🔹 Отправка кода (РЕАЛЬНОЕ ПИСЬМО через Resend)
+// 🔹 Отправка кода (с демо-режимом для ВКР)
 app.post('/api/auth/send-code', async (req, res) => {
   const { email } = req.body;
   
@@ -107,30 +107,41 @@ app.post('/api/auth/send-code', async (req, res) => {
       );
     });
 
-    // 2. Отправляем письмо через Resend API
-    const { data, error } = await resend.emails.send({
-      from: 'Готов к РФ <onboarding@resend.dev>',
-      to: email,
-      subject: '🔐 Ваш код подтверждения — Готов к РФ',
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
-          <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
-          <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
-          <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:28px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
-          <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
-          <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
-        </div>
-      `
-    });
+    // 2. 🔥 ДЕМО-РЕЖИМ: возвращаем код в ответе (для показа на фронтенде)
+    const isDemo = process.env.DEMO_MODE === 'true' || email !== 'cnurbaj@gmail.com';
     
-    if (error) {
-      console.error('❌ Ошибка Resend:', error);
-      throw new Error('Не удалось отправить письмо');
+    // 3. Отправляем письмо через Resend (только если это ваш подтверждённый email)
+    if (email === 'cnurbaj@gmail.com' && resend) {
+      try {
+        const { data, error } = await resend.emails.send({
+          from: 'Готов к РФ <onboarding@resend.dev>',
+          to: email,
+          subject: '🔐 Ваш код подтверждения — Готов к РФ',
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #e0e0e0;border-radius:8px;background:#fff">
+              <h2 style="color:#2563eb;margin:0 0 20px 0">🇷 Готов к РФ</h2>
+              <p style="margin:0 0 15px 0;font-size:16px">Ваш код подтверждения:</p>
+              <div style="background:#f3f4f6;padding:15px;border-radius:6px;text-align:center;font-size:28px;font-weight:bold;letter-spacing:5px;margin:20px 0;color:#1f2937">${code}</div>
+              <p style="color:#6b7280;font-size:14px;margin:20px 0 0 0">Код действителен <strong>10 минут</strong>.</p>
+              <p style="color:#9ca3af;font-size:12px;margin:20px 0 0 0">Если вы не запрашивали код, просто проигнорируйте это письмо.</p>
+            </div>
+          `
+        });
+        if (error) console.error('❌ Resend error:', error);
+        else console.log(`✅ Письмо отправлено на ${email} (ID: ${data?.id})`);
+      } catch (e) {
+        console.log('⚠️ Не удалось отправить письмо, но код сохранён в БД');
+      }
     }
-    console.log(`✅ Письмо отправлено через Resend (ID: ${data?.id})`);
 
-    console.log(`🔐 [DEV LOG] Код для ${email}: ${code}`);
-    res.json({ message: 'Код отправлен на вашу почту' });
+    // 4. Возвращаем ответ с кодом (для демо)
+    console.log(`🔐 [DEV] Код для ${email}: ${code}`);
+    
+    res.json({ 
+      message: 'Код отправлен',
+      code: isDemo ? code : undefined,  // 🔥 Код виден в демо-режиме
+      demoMode: isDemo
+    });
     
   } catch (err) {
     console.error('❌ Ошибка отправки кода:', err.message);
@@ -220,11 +231,32 @@ app.post('/api/auth/register', async (req, res) => {
   );
 });
 
-// 🔹 Вход
+// 🔹 Вход (с тестовым аккаунтом для демо)
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
 
+  //  ТЕСТОВЫЙ АККАУНТ (для демо и защиты ВКР)
+  // В продакшене переменные можно не задавать — блок просто пропустится
+  const demoEmail = process.env.DEMO_ACCOUNT_EMAIL || 'demo@gotov-rf.ru';
+  const demoPass = process.env.DEMO_ACCOUNT_PASSWORD || 'Demo1234!';
+
+  if (email === demoEmail && password === demoPass) {
+    console.log('✅ Вход через тестовый аккаунт');
+    const token = jwt.sign(
+      { id: 0, email: demoEmail, name: 'Тестовый пользователь', isDemo: true }, 
+      JWT_SECRET, 
+      { expiresIn: '7d' }
+    );
+    return res.json({ 
+      token, 
+      user: { id: 0, email: demoEmail, name: 'Тестовый пользователь' },
+      isDemo: true,
+      message: 'Вход выполнен (демо-аккаунт)'
+    });
+  }
+
+  // 🔹 Обычная проверка в БД
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
     if (err) return res.status(500).json({ error: 'Ошибка сервера' });
     if (!user) return res.status(401).json({ error: 'Неверный email или пароль' });
@@ -239,6 +271,11 @@ app.post('/api/auth/login', async (req, res) => {
 
 // 🔹 Прогресс
 app.get('/api/user/progress/:section', authenticate, (req, res) => {
+  // Разрешаем демо-аккаунту доступ к прогрессу (возвращаем пустой массив)
+  if (req.user.isDemo) {
+    return res.json({ progress: [], isDemo: true });
+  }
+  
   db.get('SELECT progress FROM user_progress WHERE user_id = ? AND section = ?', 
     [req.user.id, req.params.section], (err, row) => {
       if (err) return res.status(500).json({ error: 'Ошибка чтения' });
@@ -251,6 +288,11 @@ app.get('/api/user/progress/:section', authenticate, (req, res) => {
 });
 
 app.put('/api/user/progress/:section', authenticate, (req, res) => {
+  // Демо-аккаунт не сохраняет прогресс (только для чтения)
+  if (req.user.isDemo) {
+    return res.json({ success: true, isDemo: true, message: 'Прогресс не сохраняется в демо-режиме' });
+  }
+  
   const { progress } = req.body;
   if (!Array.isArray(progress)) return res.status(400).json({ error: 'Прогресс должен быть массивом' });
   
@@ -263,6 +305,19 @@ app.put('/api/user/progress/:section', authenticate, (req, res) => {
 
 // 🔹 Сертификаты
 app.get('/api/user/certificates', authenticate, (req, res) => {
+  // Демо-аккаунт видит пример сертификата
+  if (req.user.isDemo) {
+    return res.json([{
+      id: 0,
+      type: 'mixed',
+      score: 95,
+      date: new Date().toLocaleDateString('ru-RU'),
+      number: 'DEMO-RF-2026',
+      created_at: new Date().toISOString(),
+      isDemo: true
+    }]);
+  }
+  
   db.all('SELECT id, type, score, date, number, created_at FROM certificates WHERE user_id = ? ORDER BY created_at DESC', 
     [req.user.id], (err, certs) => {
       if (err) return res.status(500).json({ error: 'Ошибка чтения' });
@@ -271,6 +326,15 @@ app.get('/api/user/certificates', authenticate, (req, res) => {
 });
 
 app.post('/api/user/certificates', authenticate, (req, res) => {
+  // Демо-аккаунт не может создавать реальные сертификаты
+  if (req.user.isDemo) {
+    return res.status(201).json({ 
+      id: 0, 
+      isDemo: true, 
+      message: 'Сертификат создан (демо-режим)' 
+    });
+  }
+  
   const { type, score, date, number } = req.body;
   if (!type || score === undefined || !date || !number) {
     return res.status(400).json({ error: 'Заполните все поля' });
@@ -283,19 +347,33 @@ app.post('/api/user/certificates', authenticate, (req, res) => {
     });
 });
 
+// 🔹 Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    time: new Date().toISOString(),
+    demoMode: process.env.DEMO_MODE === 'true',
+    resendConfigured: !!resendKey
+  });
 });
 
+// 🔹 404 для API
 app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
+// 🔹 Запуск сервера
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
   console.log(`📧 Resend: ${resendKey ? '✅ Настроен' : '⚠️ Не задан'}`);
+  console.log(`🎭 Демо-аккаунт: ${process.env.DEMO_ACCOUNT_EMAIL || 'demo@gotov-rf.ru'} / ${process.env.DEMO_ACCOUNT_PASSWORD || 'Demo1234!'}`);
 });
 
+// 🔹 Graceful shutdown
 process.on('SIGTERM', () => {
-  db.close(() => process.exit(0));
+  console.log('🔄 Получен SIGTERM, закрываем БД...');
+  db.close(() => {
+    console.log('✅ БД закрыта');
+    process.exit(0);
+  });
 });
