@@ -389,31 +389,113 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 </div>
 <script>
 // ============================================================
-// 🌐 API КЛИЕНТ (Интегрирован из 2-го файла, заменяет localStorage для данных пользователя)
+// 🌐 API КЛИЕНТ (Исправленный и отформатированный)
 // ============================================================
 const api = {
   baseUrl: 'https://gotov-k-rf-production.up.railway.app/api',
-token: localStorage.getItem('rf_token') || null,
-setToken(t) { this.token = t; t ? localStorage.setItem('rf_token', t) : localStorage.removeItem('rf_token'); },
-async request(ep, opt = {}) {
-try {
-const res = await fetch(`${this.baseUrl}${ep}`, {
-headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
-...opt
-});
-const d = await res.json();
-if (!res.ok) throw new Error(d.error || 'Ошибка сервера');
-return d;
-} catch (e) { throw e; }
-},
-async sendCode(e) { return this.request('/auth/send-code', { method: 'POST', body: JSON.stringify({ email: e }) }); },
-async verifyCode(e, c) { return this.request('/auth/verify-code', { method: 'POST', body: JSON.stringify({ email: e, code: c }) }); },
-async register(e, p, c) { return this.request('/auth/register', { method: 'POST', body: JSON.stringify({ email: e, password: p, code: c }) }); },
-async login(e, p) { return this.request('/auth/login', { method: 'POST', body: JSON.stringify({ email: e, password: p }) }); },
-async getProgress(s) { return this.request(`/user/progress/${s}`); },
-async saveProgress(s, d) { return this.request(`/user/progress/${s}`, { method: 'PUT', body: JSON.stringify({ progress: d }) }); },
-async getCertificates() { return this.request('/user/certificates'); },
-async addCertificate(c) { return this.request('/user/certificates', { method: 'POST', body: JSON.stringify(c) }); }
+  token: localStorage.getItem('rf_token') || null,
+
+  // Установка токена
+  setToken(t) {
+    this.token = t;
+    if (t) {
+      localStorage.setItem('rf_token', t);
+    } else {
+      localStorage.removeItem('rf_token');
+    }
+  },
+
+  // Базовый запрос
+  async request(ep, opt = {}) {
+    try {
+      console.log(`📡 API Request: ${ep}`, opt.body ? JSON.parse(opt.body) : '');
+      
+      const res = await fetch(`${this.baseUrl}${ep}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {})
+        },
+        ...opt
+      });
+
+      const d = await res.json();
+      console.log(`📥 API Response: ${ep}`, res.status, d);
+
+      if (!res.ok) {
+        throw new Error(d.error || `Ошибка ${res.status}`);
+      }
+      return d;
+    } catch (e) {
+      console.error(`❌ API Error: ${ep}`, e.message);
+      throw e;
+    }
+  },
+
+  // Отправка кода
+  async sendCode(e) {
+    if (!e || !e.includes('@')) throw new Error('Неверный email');
+    return this.request('/auth/send-code', {
+      method: 'POST',
+      body: JSON.stringify({ email: e })
+    });
+  },
+
+  // Проверка кода
+  async verifyCode(e, c) {
+    if (!e || !c) throw new Error('Email и код обязательны');
+    return this.request('/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ email: e, code: c })
+    });
+  },
+
+  // 🔹 Регистрация (ИСПРАВЛЕНО: проверка кода)
+  async register(e, p, c) {
+    if (!e || !p) throw new Error('Email и пароль обязательны');
+    if (!c) {
+      console.error('❌ ОШИБКА: Код подтверждения пустой!');
+      throw new Error('Код подтверждения не введён');
+    }
+    return this.request('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        email: e, 
+        password: p, 
+        code: c  // ✅ Код передаётся
+      })
+    });
+  },
+
+  // Вход
+  async login(e, p) {
+    if (!e || !p) throw new Error('Email и пароль обязательны');
+    return this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: e, password: p })
+    });
+  },
+
+  // Прогресс
+  async getProgress(s) {
+    return this.request(`/user/progress/${s}`);
+  },
+  async saveProgress(s, d) {
+    return this.request(`/user/progress/${s}`, {
+      method: 'PUT',
+      body: JSON.stringify({ progress: d })
+    });
+  },
+
+  // Сертификаты
+  async getCertificates() {
+    return this.request('/user/certificates');
+  },
+  async addCertificate(c) {
+    return this.request('/user/certificates', {
+      method: 'POST',
+      body: JSON.stringify(c)
+    });
+  }
 };
 
 // ============================================================
