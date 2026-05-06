@@ -1228,7 +1228,7 @@ this.pendingEmail = email;
 await api.sendCode(email);
 document.getElementById('stepEmail').style.display = 'none';
 document.getElementById('stepCode').style.display = 'block';
-this.app.showNotification('Код отправлен (проверьте консоль/API лог)');
+this.app.showNotification('Код отправлен на вашу почту');
 } catch(e) { this.showError('emailError', e.message); }
 }
 async verifyCode() {
