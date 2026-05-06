@@ -1212,7 +1212,7 @@ window.scrollTo(0, 0);
 }
 
 class Auth {
-constructor(app) { this.app = app; this.mode = 'register'; this.pendingEmail = ''; }
+constructor(app) { this.app = app; this.mode = 'register'; this.pendingEmail = ''; this.pendingCode = ''; }
 toggleMode() {
 this.mode = this.mode === 'register' ? 'login' : 'register';
 document.querySelectorAll('#authModal [id^=step]').forEach(el => el.style.display = 'none');
@@ -1221,6 +1221,8 @@ document.getElementById(this.mode === 'login' ? 'stepLogin' : 'stepEmail').style
 async sendCode() {
 const email = document.getElementById('authEmail').value.trim();
 if (!email || !email.includes('@')) return this.showError('emailError','Введите корректный email');
+this.pendingCode = '';
+  document.getElementById('authCode').value = '';
 try {
 this.pendingEmail = email;
 await api.sendCode(email);
@@ -1231,6 +1233,12 @@ this.app.showNotification('Код отправлен (проверьте кон�
 }
 async verifyCode() {
 const code = document.getElementById('authCode').value.trim();
+this.pendingCode = code;
+  
+  // Простая валидация на фронтенде
+  if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+    return this.showError('codeError', 'Введите 6-значный код');
+  }
 try {
 //await api.verifyCode(this.pendingEmail, code);
 document.getElementById('stepCode').style.display = 'none';
@@ -1242,8 +1250,10 @@ const pw = document.getElementById('authPassword').value;
 const pw2 = document.getElementById('authPasswordConfirm').value;
 if (pw.length < 8) return this.showError('passwordError','Минимум 8 символов');
 if (pw !== pw2) return this.showError('passwordConfirmError','Пароли не совпадают');
+const code = this.pendingCode;
+  if (!code) return this.showError('passwordError', 'Сначала подтвердите код');
 try {
-const res = await api.register(this.pendingEmail, pw, document.getElementById('authCode').value.trim());
+const res = await api.register(this.pendingEmail, pw, code);
 api.setToken(res.token);
 this.app.currentUser = res.user;
 this.app.closeAuthModal();
