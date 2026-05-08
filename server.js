@@ -10,10 +10,18 @@ const { Resend } = require('resend'); // ✅ Импорт Resend
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  console.error('❌ FATAL: JWT_SECRET is required in production');
+  process.exit(1);
+}
 
 // 📧 RESEND — безопасная инициализация с fallback-ключом
-const resendKey = process.env.RESEND_API_KEY || 're_41pSht4R_EfKtar8nQ3u2mPkNFbwdb7Vf';
+const resendKey = process.env.RESEND_API_KEY;
+if (!resendKey && process.env.NODE_ENV === 'production') {
+  console.error('❌ FATAL: RESEND_API_KEY is required in production');
+  process.exit(1);
+}
 
 if (!resendKey || !resendKey.startsWith('re_')) {
   console.error('❌ FATAL: RESEND_API_KEY некорректен');
