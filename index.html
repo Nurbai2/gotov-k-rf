@@ -198,6 +198,28 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 .history-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .history-tab { padding: 0.5rem 1.25rem; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 0.9rem; background: var(--surface); transition: var(--transition); }
 .history-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+/* Стили сертификата */
+.cert-container { border:2px solid #2563eb; padding:2.5rem; text-align:center; background:#fff; color:#1f2937; border-radius:8px; position:relative; }
+.cert-badge { position:absolute; top:1.5rem; right:1.5rem; background:#f59e0b; color:#fff; padding:0.3rem 0.6rem; border-radius:4px; font-weight:bold; font-size:0.85rem; transform:rotate(12deg); box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+.cert-disclaimer { background:#fef3c7; border-left:4px solid #f59e0b; padding:0.8rem; margin:1.5rem 0; font-size:0.9rem; color:#92400e; text-align:left; line-height:1.5; }
+.cert-title { font-size:1.6rem; color:#2563eb; margin-bottom:0.3rem; font-weight:700; }
+.cert-subtitle { color:#6b7280; margin-bottom:1.5rem; font-size:0.95rem; }
+.cert-name { font-size:2rem; font-weight:bold; border-bottom:2px solid #2563eb; display:inline-block; padding-bottom:0.4rem; margin:1rem 0; }
+.cert-details { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:1.5rem 0; }
+.cert-detail-box { background:#f3f4f6; padding:0.8rem; border-radius:6px; }
+.cert-detail-label { font-size:0.75rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; }
+.cert-detail-value { font-size:1.1rem; font-weight:bold; color:#111827; }
+
+/* 🔒 ИЗОЛЯЦИЯ ПРИ ПЕЧАТИ */
+@media print {
+  body * { visibility:hidden !important; }
+  #certPreview, #certPreview * { visibility:visible !important; }
+  #certPreview { position:absolute; left:0; top:0; width:100%; padding:1rem; }
+  .modal { background:white !important; position:static !important; }
+  .modal-content { box-shadow:none !important; border:none !important; max-height:none !important; overflow:visible !important; padding:0 !important; }
+  button, .header, .translator-bar, .nav-container { display:none !important; }
+  .cert-disclaimer { display:block !important; background:#fff !important; border:1px solid #ccc !important; color:#333 !important; }
+}
 </style>
 </head>
 <body>
@@ -355,6 +377,20 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <div id="certificatesGrid" class="dashboard-grid" style="margin-top:1rem;"></div>
 </div>
 </section>
+<!-- Модальное окно сертификата -->
+<div class="modal" id="certModal">
+  <div class="modal-content" style="max-width:800px;max-height:95vh;overflow-y:auto;">
+    <div id="certPreview"></div>
+    <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:center;">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Распечатать / Сохранить PDF</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('certModal').classList.remove('active')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal (уже есть, оставьте как есть) -->
+<div class="modal" id="authModal">
+...
 </main>
 <!-- Auth Modal -->
 <div class="modal" id="authModal">
@@ -1562,93 +1598,82 @@ detail.scrollIntoView({ behavior: 'smooth' });
 }
 }
 
-class Tests {
-constructor(app) { this.app = app; this.currentTest = null; this.answers = []; this.certs = []; }
-async render() { await this.loadCertificates(); this.showCertificates(); }
-async loadCertificates() {
-if (!this.app.currentUser) { this.certs = []; return; }
-try {
-this.certs = await api.getCertificates();
-} catch { this.certs = []; }
+async submit() {
+    const unanswered = this.answers.findIndex(a => a === null);
+    if (unanswered !== -1) {
+        this.app.showNotification(`Ответьте на вопрос ${unanswered + 1}`);
+        document.querySelectorAll(".question")[unanswered].scrollIntoView({ behavior: "smooth" });
+        return;
+    }
+    let correct = 0;
+    testsData[this.currentTest].forEach((q, i) => { if (this.answers[i] === q.c) correct++; });
+    const pct = Math.round((correct / testsData[this.currentTest].length) * 100);
+
+    document.querySelectorAll(".question").forEach((qEl, i) => {
+        const opts = qEl.querySelectorAll(".answer-option");
+        opts.forEach((o, ai) => {
+            const c = testsData[this.currentTest][i].c;
+            if (ai === c) o.classList.add("correct");
+            else if (ai === this.answers[i]) o.classList.add('wrong');
+        });
+    });
+
+    setTimeout(async () => {
+        if (pct >= 60) {
+            const cert = { type: this.currentTest, score: pct, date: new Date().toLocaleDateString('ru-RU'), number: 'RF-' + Date.now().toString(36).toUpperCase() };
+            await this.createCertificate(cert);
+            this.showCertModal(cert); // 🟢 Показываем безопасный сертификат
+        } else {
+            alert(`Результат: ${pct}%. Для получения сертификата необходимо набрать минимум 60%`);
+        }
+        document.getElementById('testContainer').style.display = 'none';
+        document.getElementById('testsList').style.display = 'grid';
+        this.currentTest = null;
+        this.render();
+    }, 1500);
 }
-start(type) {
-if (!this.app.currentUser) { this.app.showAuthModal(); return; }
-this.currentTest = type;
-const questions = testsData[type];
-this.answers = new Array(questions.length).fill(null);
-document.getElementById('testsList').style.display = 'none';
-document.getElementById('testContainer').style.display = 'block';
-document.getElementById('testContent').innerHTML = questions.map((q, i) => `
-<div class="question">
-<div class="question-text">${i+1}. ${q.q}</div>
-<div class="answers">${q.a.map((a, ai) => `
-<div class="answer-option" onclick="app.tests.select(${i},${ai})">
-<span>${ai+1}.</span><span>${a}</span>
-</div>`).join('')}
-</div>
-</div>`).join('');
+
+async createCertificate(cert) {
+    try {
+        await api.addCertificate(cert);
+        this.certs.unshift(cert);
+    } catch(e) { console.error('Failed to save cert:', e); }
 }
-select(qi, ai) {
-this.answers[qi] = ai;
-document.querySelectorAll('.question')[qi].querySelectorAll('.answer-option').forEach((o, i) => {
-o.classList.toggle('selected', i === ai);
-});
-}
-submit() {
-const unanswered = this.answers.findIndex(a => a === null);
-if (unanswered !== -1) {
-this.app.showNotification(`Ответьте на вопрос ${unanswered+1}`);
-document.querySelectorAll(".question")[unanswered].scrollIntoView({ behavior: "smooth" });
-return;
-}
-let correct = 0;
-testsData[this.currentTest].forEach((q, i) => { if (this.answers[i] === q.c) correct++; });
-const pct = Math.round((correct / testsData[this.currentTest].length) * 100);
-document.querySelectorAll(".question").forEach((qEl, i) => {
-const opts = qEl.querySelectorAll(".answer-option");
-opts.forEach((o, ai) => {
-const c = testsData[this.currentTest][i].c;
-if (ai === c) o.classList.add("correct");
-else if (ai === this.answers[i]) o.classList.add('wrong');
-});
-});
-setTimeout(async () => {
-if (pct >= 60) await this.createCertificate(this.currentTest, pct);
-alert(`Результат: ${correct}/${testsData[this.currentTest].length} (${pct}%)
-${pct>=60?'🎉 Сертификат получен!':'❌ Для получения сертификата необходимо набрать минимум 60 %'}`);
-document.getElementById('testContainer').style.display = 'none';
-document.getElementById('testsList').style.display = 'grid';
-this.currentTest = null;
-this.render();
-}, 1500);
-}
-cancel() {
-document.getElementById('testContainer').style.display = 'none';
-document.getElementById('testsList').style.display = 'grid';
-this.currentTest = null;
-}
-async createCertificate(type, score) {
-const cert = { id: Date.now(), type, score, date: new Date().toLocaleDateString('ru-RU'), number: 'RF-' + Date.now().toString(36).toUpperCase() };
-try {
-await api.addCertificate(cert);
-this.certs.unshift(cert);
-} catch(e) { console.error('Failed to save cert:', e); }
-}
-showCertificates() {
-const grid = document.getElementById('certificatesGrid');
-const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯' };
-const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест' };
-if (!this.certs.length) {
-grid.innerHTML = '<p style="color:var(--text-secondary);">Сертификатов пока нет. Пройдите тест на 60%+</p>';
-return;
-}
-grid.innerHTML = this.certs.map(c => `
-<div class="category-card">
-<div class="category-icon">${icons[c.type] || '🎓'}</div>
-<div class="category-title">${names[c.type] || c.type}</div>
-<div class="category-desc">Результат: ${c.score}%<br>${c.date}<br><small>${c.number}</small></div>
-</div>`).join('');
-}
+
+showCertModal(cert) {
+    const icons = { russian:'📚', history:'🏛️', laws:'️', cities:'🏙️', mixed:'🎯' };
+    const names = { russian:'Русский язык', history:'История России', laws:'Законодательство РФ', cities:'Города России', mixed:'Общий тест' };
+    const userName = this.app.currentUser?.email?.split('@')[0] || 'Иностранный гражданин';
+
+    document.getElementById('certPreview').innerHTML = `
+        <div class="cert-container">
+            <div class="cert-badge">УЧЕБНЫЙ</div>
+            <h2 class="cert-title">Сертификат об успешном прохождении теста</h2>
+            <p class="cert-subtitle">Образовательный ресурс «Готов к РФ»</p>
+            
+            <div class="cert-disclaimer">
+                ⚠️ <strong>Важно:</strong> Данный документ является <strong>тренировочным/учебным</strong>. 
+                Он предназначен для самопроверки и подготовки к официальному комплексному экзамену. 
+                <strong>Не является официальным государственным документом</strong> и не заменяет результаты тестирования в аккредитованных центрах ФГБОУ ВО или МВД РФ.
+            </div>
+
+            <p>Настоящим подтверждается, что</p>
+            <div class="cert-name">${userName}</div>
+            <p>успешно прошел(а) тестирование по теме:</p>
+            <h3 style="color:#2563eb; margin:1rem 0;">${icons[cert.type]} ${names[cert.type]}</h3>
+            
+            <div class="cert-details">
+                <div class="cert-detail-box"><div class="cert-detail-label">Результат</div><div class="cert-detail-value">${cert.score}%</div></div>
+                <div class="cert-detail-box"><div class="cert-detail-label">Дата</div><div class="cert-detail-value">${cert.date}</div></div>
+                <div class="cert-detail-box"><div class="cert-detail-label">Номер</div><div class="cert-detail-value">${cert.number}</div></div>
+            </div>
+
+            <div class="cert-disclaimer" style="margin-top:1.5rem; background:#e0f2fe; border-color:#0284c7; color:#075981;">
+                📝 Для получения официального сертификата обратитесь в аккредитованные тестовые центры или образовательные организации, имеющие лицензию на проведение комплексного экзамена по русскому языку, истории и основам законодательства РФ.
+            </div>
+        </div>
+    `;
+    document.getElementById('certModal').classList.add('active');
 }
 
 // Инициализация
