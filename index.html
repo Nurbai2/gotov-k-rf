@@ -477,27 +477,43 @@ const api = {
 
   // Базовый запрос
   async request(ep, opt = {}) {
-    try {
-      const res = await fetch(`${this.baseUrl}${ep}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {})
-        },
-        ...opt
-      });
-
-      const d = await res.json();
-
-      if (!res.ok) {
-        throw new Error(d.error || `Ошибка ${res.status}`);
-      }
-      return d;
-    } catch (e) {
-      console.error(`❌ API Error: ${ep}`, e.message);
-      throw e;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек таймаут
+    
+    const res = await fetch(`${this.baseUrl}${ep}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {})
+      },
+      signal: controller.signal,
+      ...opt
+    });
+    
+    clearTimeout(timeoutId);
+    
+    // Если сервер недоступен (502, 503, 0)
+    if (res.status === 0 || res.status >= 500) {
+      throw new Error('Сервер временно недоступен. Попробуйте позже.');
     }
-  },
-
+    
+    const d = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(d.error || `Ошибка ${res.status}`);
+    }
+    return d;
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      throw new Error('Превышено время ожидания. Проверьте интернет.');
+    }
+    if (e.message.includes('Failed to fetch')) {
+      throw new Error('Не удалось подключиться к серверу. Возможно, он отключен.');
+    }
+    console.error(`❌ API Error: ${ep}`, e.message);
+    throw e;
+  }
+}
   // Отправка кода
   async sendCode(e) {
     if (!e || !e.includes('@')) throw new Error('Неверный email');
