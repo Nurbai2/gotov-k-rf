@@ -1302,18 +1302,21 @@ this.app.showNotification('Код отправлен на вашу почту');
 } catch(e) { this.showError('emailError', e.message); }
 }
 async verifyCode() {
-const code = document.getElementById('authCode').value.trim();
-this.pendingCode = code;
+  const code = document.getElementById('authCode').value.trim();
+  this.pendingCode = code;
   
-  // Простая валидация на фронтенде
   if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
     return this.showError('codeError', 'Введите 6-значный код');
   }
-try {
-//await api.verifyCode(this.pendingEmail, code);
-document.getElementById('stepCode').style.display = 'none';
-document.getElementById('stepPassword').style.display = 'block';
-} catch(e) { this.showError('codeError', e.message); }
+  
+  try {
+    // Проверяем код на бэкенде перед показом формы пароля
+    await api.verifyCode(this.pendingEmail, code);
+    document.getElementById('stepCode').style.display = 'none';
+    document.getElementById('stepPassword').style.display = 'block';
+  } catch(e) { 
+    this.showError('codeError', e.message); 
+  }
 }
 async register() {
 const pw = document.getElementById('authPassword').value;
