@@ -239,7 +239,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <div class="category-card" onclick="app.router.navigate('russian')" id="cat-russian">
 <div class="category-icon">📚</div>
 <div class="category-title" id="catRussianTitle">Русский язык</div>
-<div class="category-desc" id="catRussianDesc">15 тем грамматики + слов</div>
+<div class="category-desc" id="catRussianDesc">15 тем грамматики + словарь </div>
 </div>
 <div class="category-card" onclick="app.router.navigate('history')" id="cat-history">
 <div class="category-icon">🏛️</div>
@@ -276,7 +276,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <button class="btn btn-secondary back-btn" onclick="app.router.navigate('')">← <span id="backText">Назад</span></button>
 <div class="tabs">
 <div class="tab active" onclick="app.russian.showTab('categories')" id="grammarTab">Грамматика</div>
-<div class="tab" onclick="app.russian.showTab('vocabulary')" id="vocabTab"> Слова</div>
+<div class="tab" onclick="app.russian.showTab('vocabulary')" id="vocabTab"> Словарь</div>
 <div class="tab" onclick="app.russian.showTab('phrases')" id="phrasesTab">Разговорник</div>
 </div>
 <div id="russianCategories" class="tab-content active">
@@ -286,7 +286,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <div id="progressContainer"></div>
 </div>
 <div id="russianVocabulary" class="tab-content">
-<h2 id="vocabTitle"> Самые важные слов</h2>
+<h2 id="vocabTitle"> Самые важные словари</h2>
 <p style="margin-bottom:1.5rem;color:var(--text-secondary);" id="vocabDesc">Самые употребительные слова с переводом и транслитерацией</p>
 <div class="search-container"><span class="search-icon">🔍</span><input type="text" class="search-input" id="vocabSearch" placeholder="Поиск слова..." oninput="app.russian.searchVocab(this.value)"></div>
 <div class="vocab-tabs" id="vocabCategoryTabs"></div>
@@ -672,12 +672,12 @@ practice: `<div class="lesson-section"><h3>Практика</h3><p>Как ска
 
 const vocabularyData = {
   basic: [
-    {w:'да', pron:'da', en:'yes', ky:'ооба', kk:'иә', uz:'ha', tg:'ҳа', hy:'այո', az:'bəli', tr:'evet', ar:'نعم', zh:'是', fa:'بله', uk:'так', de:'ja', fr:'oui', es:'sí'},
-    {w:'нет', pron:'net', en:'no', ky:'жок', kk:'жоқ', uz:'yo\'q', tg:'не', hy:'ոչ', az:'yox', tr:'hayır', ar:'لا', zh:'不', fa:'نه', uk:'ні', de:'nein', fr:'non', es:'no'},
-    {w:'пожалуйста', pron:'pozhaluysta', en:'please', ky:'өтүнөм', kk:'өтінемін', uz:'iltimos', tg:'лутфан', hy:'խնդրում եմ', az:'zəhmət olmasa', tr:'lütfen', ar:'من فضلك', zh:'请', fa:'لطفاً', uk:'будь ласка', de:'bitte', fr:'s\'il vous plaît', es:'por favor'},
-    {w:'спасибо', pron:'spasibo', en:'thank you', ky:'рахмат', kk:'рахмет', uz:'rahmat', tg:'ташаккур', hy:'շնորհակալություն', az:'təşəkkür edirəm', tr:'teşekkür ederim', ar:'شكرا', zh:'谢谢', fa:'ممنون', uk:'дякую', de:'danke', fr:'merci', es:'gracias'},
-    {w:'привет', pron:'privet', en:'hello (informal)', ky:'салам', kk:'сәлем', uz:'salom', tg:'салом', hy:'բարև', az:'salam', tr:'selam', ar:'مرحبا', zh:'你好', fa:'سلام', uk:'привіт', de:'hallo', fr:'salut', es:'hola'},
-    {w:'здравствуйте', pron:'zdravstvuyte', en:'hello (formal)', ky:'саламатсызбы', kk:'сәлеметсіз бе', uz:'assalomu alaykum', tg:'салом алейкум', hy:'բարև ձեզ', az:'salam', tr:'merhaba', ar:'أهلاً وسهلاً', zh:'您好', fa:'سلام', uk:'добрий день', de:'guten Tag', fr:'bonjour', es:'buenos días'},
+  {w:'да', pron:'da', en:'yes', ky:'ооба', kk:'иә', uz:'ha', tg:'ҳа', hy:'այո', az:'bəli', tr:'evet', ar:'نعم', zh:'是', fa:'بله', uk:'так', de:'ja', fr:'oui', es:'sí'},
+  {w:'нет', pron:'net', en:'no', ky:'жок', kk:'жоқ', uz:'yo\'q', tg:'не', hy:'ոչ', az:'yox', tr:'hayır', ar:'لا', zh:'不', fa:'نه', uk:'ні', de:'nein', fr:'non', es:'no'},
+  {w:'пожалуйста', pron:'pozhaluysta', en:'please', ky:'өтүнөм', kk:'өтінемін', uz:'iltimos', tg:'лутфан', hy:'խնդրում եմ', az:'zəhmət olmasa', tr:'lütfen', ar:'من فضلك', zh:'请', fa:'لطفاً', uk:'будь ласка', de:'bitte', fr:'s\'il vous plaît', es:'por favor'},
+  {w:'спасибо', pron:'spasibo', en:'thank you', ky:'рахмат', kk:'рахмет', uz:'rahmat', tg:'ташаккур', hy:'շնորհակալություն', az:'təşəkkür edirəm', tr:'teşekkür ederim', ar:'شكرا', zh:'谢谢', fa:'ممنون', uk:'дякую', de:'danke', fr:'merci', es:'gracias'},
+  {w:'привет', pron:'privet', en:'hello (informal)', ky:'салам', kk:'сәлем', uz:'salom', tg:'салом', hy:'բարև', az:'salam', tr:'selam', ar:'مرحبا', zh:'你好', fa:'سلام', uk:'привіт', de:'hallo', fr:'salut', es:'hola'},
+  {w:'здравствуйте', pron:'zdravstvuyte', en:'hello (formal)', ky:'саламатсызбы', kk:'сәлеметсіз бе', uz:'assalomu alaykum', tg:'салом алейкум', hy:'բարև ձեզ', az:'salam', tr:'merhaba', ar:'أهلاً وسهلاً', zh:'您好', fa:'سلام', uk:'добрий день', de:'guten Tag', fr:'bonjour', es:'buenos días'},
     {w:'до свидания', pron:'do svidaniya', en:'goodbye', ky:'кош бол', kk:'сау бол', uz:'xayr', tg:'худоҳофиз', hy:'ցտեսություն', az:'görüşürük', tr:'güle güle', ar:'مع السلامة', zh:'再见', fa:'خداحافظ', uk:'до побачення', de:'auf Wiedersehen', fr:'au revoir', es:'adiós'},
     {w:'извините', pron:'izvinite', en:'excuse me / sorry', ky:'кечиресиз', kk:'кешіріңіз', uz:'kechirasiz', tg:'узр хоҳам', hy:'ներողություն', az:'bağışlayın', tr:'özür dilerim', ar:'عفواً', zh:'对不起', fa:'ببخشید', uk:'вибачте', de:'entschuldigung', fr:'excusez-moi', es:'perdón'},
     {w:'помогите', pron:'pomogite', en:'help', ky:'жардам бериңиз', kk:'көмектесіңіз', uz:'yordam bering', tg:'кӯмак кунед', hy:'օգնեք', az:'kömək edin', tr:'yardım edin', ar:'مساعدة', zh:'帮助', fa:'کمک', uk:'допоможіть', de:'hilfe', fr:'aide', es:'ayuda'},
@@ -784,10 +784,10 @@ const vocabularyData = {
     {w:'терпеливый', pron:'terpelivyy', en:'patient', ky:'сабырдуу', kk:'сабырлы', uz:'sabrli', tg:'тоқат', hy:'համբերատար', az:'səbirli', tr:'sabırlı', ar:'صبور', zh:'耐心', fa:'صبور', uk:'терплячий', de:'geduldig', fr:'patient', es:'paciente'},
     {w:'нетерпеливый', pron:'neterpelivyy', en:'impatient', ky:'сабырсыз', kk:'сабырсыз', uz:'sabrsiz', tg:'бетамос', hy:'անհամբեր', az:'tələskən', tr:'sabırsız', ar:'عاجز', zh:'不耐烦', fa:'بی‌تاب', uk:'нетерплячий', de:'ungeduldig', fr:'impatient', es:'impaciente'},
     {w:'ответственный', pron:'otvetstvennyy', en:'responsible', ky:'жоопкерчиликтуу', kk:'жауапты', uz:'mas\'uliyatli', tg:'ҷавобгар', hy:'պատասխանատու', az:'məsuliyyətli', tr:'sorumsuz', ar:'مسؤول', zh:'负责', fa:'مسئول', uk:'відповідальний', de:'verantwortlich', fr:'responsable', es:'responsable'},
-    {w:'ленивый', pron:'lenivyy', en:'lazy', ky:'жалкоо', kk:'жалқау', uz:'dangasa', tg:'танбал', hy:'ծույլ', az:'tənbəl', tr:'tembel', ar:'كسول', zh:'懒', fa:'تنبل', uk:'лінивий', de:'faul', fr:'paresseux', es:'perezoso'},
-    {w:'активный', pron:'aktivnyy', en:'active', ky:'активдүү', kk:'белсенді', uz:'faol', tg:'фаъол', hy:'ակտիվ', az:'fəal', tr:'aktif', ar:'نشط', zh:'活跃', fa:'فعال', uk:'активний', de:'aktiv', fr:'actif', es:'activo'},
-    {w:'тихий', pron:'tikhyy', en:'quiet (place)', ky:'тынч', kk:'тыныш', uz:'tinch', tg:'ором', hy:'հանգիստ', az:'sakit', tr:'sakin', ar:'هادئ', zh:'安静', fa:'آرام', uk:'тихий', de:'ruhig', fr:'tranquille', es:'tranquilo'},
-    {w:'громкий', pron:'gromkiy', en:'loud (sound)', ky:'катуу', kk:'қатты', uz:'baland', tg:'баланд', hy:'բարձր', az:'uca', tr:'yüksek sesli', ar:'صاخب', zh:'大声', fa:'پرسر و صدا', uk:'гучний', de:'laut', fr:'bruyant', es:'ruidoso'}
+  {w:'ленивый', pron:'lenivyy', en:'lazy', ky:'жалкоо', kk:'жалқау', uz:'dangasa', tg:'танбал', hy:'ծույլ', az:'tənbəl', tr:'tembel', ar:'كسول', zh:'懒', fa:'تنبل', uk:'лінивий', de:'faul', fr:'paresseux', es:'perezoso'},
+  {w:'активный', pron:'aktivnyy', en:'active', ky:'активдүү', kk:'белсенді', uz:'faol', tg:'фаъол', hy:'ակտիվ', az:'fəal', tr:'aktif', ar:'نشط', zh:'活跃', fa:'فعال', uk:'активний', de:'aktiv', fr:'actif', es:'activo'},
+  {w:'тихий', pron:'tikhyy', en:'quiet (place)', ky:'тынч', kk:'тыныш', uz:'tinch', tg:'ором', hy:'հանգիստ', az:'sakit', tr:'sakin', ar:'هادئ', zh:'安静', fa:'آرام', uk:'тихий', de:'ruhig', fr:'tranquille', es:'tranquilo'},
+  {w:'громкий', pron:'gromkiy', en:'loud (sound)', ky:'катуу', kk:'қатты', uz:'baland', tg:'баланд', hy:'բարձր', az:'uca', tr:'yüksek sesli', ar:'صاخب', zh:'大声', fa:'پرسر و صدا', uk:'гучний', de:'laut', fr:'bruyant', es:'ruidoso'}
   ],
   verbs: [
     {w:'быть', pron:'byt\'', en:'to be', ky:'болуу', kk:'болу', uz:'bo\'lmoq', tg:'будан', hy:'լինել', az:'olmaq', tr:'olmak', ar:'يكون', zh:'是', fa:'بودن', uk:'бути', de:'sein', fr:'être', es:'ser/estar'},
