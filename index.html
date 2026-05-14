@@ -239,7 +239,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <div class="category-card" onclick="app.router.navigate('russian')" id="cat-russian">
 <div class="category-icon">📚</div>
 <div class="category-title" id="catRussianTitle">Русский язык</div>
-<div class="category-desc" id="catRussianDesc">15 тем грамматики + 800 слов</div>
+<div class="category-desc" id="catRussianDesc">15 тем грамматики + слов</div>
 </div>
 <div class="category-card" onclick="app.router.navigate('history')" id="cat-history">
 <div class="category-icon">🏛️</div>
@@ -276,7 +276,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <button class="btn btn-secondary back-btn" onclick="app.router.navigate('')">← <span id="backText">Назад</span></button>
 <div class="tabs">
 <div class="tab active" onclick="app.russian.showTab('categories')" id="grammarTab">Грамматика</div>
-<div class="tab" onclick="app.russian.showTab('vocabulary')" id="vocabTab">800 слов</div>
+<div class="tab" onclick="app.russian.showTab('vocabulary')" id="vocabTab"> Слова</div>
 <div class="tab" onclick="app.russian.showTab('phrases')" id="phrasesTab">Разговорник</div>
 </div>
 <div id="russianCategories" class="tab-content active">
@@ -286,7 +286,7 @@ input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px
 <div id="progressContainer"></div>
 </div>
 <div id="russianVocabulary" class="tab-content">
-<h2 id="vocabTitle">800 самых важных слов</h2>
+<h2 id="vocabTitle"> Самые важные слов</h2>
 <p style="margin-bottom:1.5rem;color:var(--text-secondary);" id="vocabDesc">Самые употребительные слова с переводом и транслитерацией</p>
 <div class="search-container"><span class="search-icon">🔍</span><input type="text" class="search-input" id="vocabSearch" placeholder="Поиск слова..." oninput="app.russian.searchVocab(this.value)"></div>
 <div class="vocab-tabs" id="vocabCategoryTabs"></div>
