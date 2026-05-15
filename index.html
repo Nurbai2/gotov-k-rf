@@ -642,1370 +642,550 @@ status.className = 'translator-status';
 // ============================================================
 const russianData = [
   // =====================================================================
-  // 🟢 МОДУЛЬ 1: ФОНЕТИКА И БАЗОВАЯ ЛЕКСИКА (A1)
+  //  ГРАММАТИКА - ПОЛНЫЙ КУРС
   // =====================================================================
   
   { 
-    id:'alphabet-fonetics', 
+    id:'alphabet', 
+    category:'grammar',
     icon:'🔤', 
-    title:'Алфавит и фонетическая система', 
-    desc:'33 буквы, 42 звука, редукция, ассимиляция, ударение, интонация',
+    title:'Алфавит и фонетика', 
+    desc:'33 буквы, 42 звука, редукция, ассимиляция, ударение',
     level:'A1',
     timeEstimate:'3-4 часа',
-    prerequisites:[],
-    objectives:[
-      'Распознавать и произносить все буквы русского алфавита',
-      'Понимать принципы редукции гласных в безударной позиции',
-      'Различать твёрдые и мягкие согласные на слух и в произношении',
-      'Ставить правильное ударение в частотных словах'
-    ],
-    successCriteria:[
-      'Могу прочитать любое слово по буквам',
-      'Могу продиктовать своё имя и адрес по-русски',
-      'Понимаю разницу между [мат] и [мать] на слух'
-    ],
     lesson: {
       theory: `
         <div class="lesson-section">
-          <h3>🇷🇺 Русский алфавит: полная фонетическая карта</h3>
+          <h3>🇷🇺 Русский алфавит: полная система</h3>
           
-          <h4>📋 Детальная таблица: буква → звук → артикуляция</h4>
-          <table class="alphabet-detailed">
-            <thead>
-              <tr><th>Буква</th><th>МФА</th><th>Артикуляция</th><th>Англ. аналог</th><th>Пример + транскрипция</th><th>Частые ошибки</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>А а</strong></td>
-                <td>[a], [ɐ], [ə]</td>
-                <td>Рот широко открыт, язык низко</td>
-                <td>father, but reduced</td>
-                <td>мама [ˈmamə], вода [vɐˈda]</td>
-                <td>❌ Не редуцировать безударное О/А</td>
-              </tr>
-              <tr>
-                <td><strong>Б б</strong></td>
-                <td>[b], [bʲ]</td>
-                <td>Губы сомкнуты, голос включён</td>
-                <td>bed</td>
-                <td>банк [bank], бить [bʲitʲ]</td>
-                <td>❌ Оглушать в конце слова: [b]→[p]</td>
-              </tr>
-              <tr>
-                <td><strong>В в</strong></td>
-                <td>[v], [vʲ]</td>
-                <td>Верхние зубы на нижней губе</td>
-                <td>vine</td>
-                <td>вода [vɐˈda], весна [vʲɪsˈna]</td>
-                <td>❌ Произносить как [w] (англ.)</td>
-              </tr>
-              <tr>
-                <td><strong>Г г</strong></td>
-                <td>[g], [gʲ], [ɣ]</td>
-                <td>Задняя часть языка к нёбу</td>
-                <td>go</td>
-                <td>город [ˈgorət], снег [snʲek]</td>
-                <td>❌ Южнорусское [ɣ] вместо [g]</td>
-              </tr>
-              <tr>
-                <td><strong>Д д</strong></td>
-                <td>[d], [dʲ]</td>
-                <td>Кончик языка к верхним зубам</td>
-                <td>dog</td>
-                <td>дом [dom], день [dʲenʲ]</td>
-                <td>❌ Не смягчать перед е/ё/и/ю/я</td>
-              </tr>
-              <tr>
-                <td><strong>Е е</strong></td>
-                <td>[je], [ʲe]</td>
-                <td>Й+Е или смягчение предыдущего</td>
-                <td>yes + bed</td>
-                <td>еда [jɪˈda], лес [lʲes]</td>
-                <td>❌ Пропускать [j] в начале слога</td>
-              </tr>
-              <tr>
-                <td><strong>Ё ё</strong></td>
-                <td>[jo], [ʲo]</td>
-                <td>Й+О, всегда под ударением</td>
-                <td>yore</td>
-                <td>ёж [joʂ], лёд [lʲot]</td>
-                <td>❌ Писать Е вместо Ё (меняет смысл!)</td>
-              </tr>
-              <tr>
-                <td><strong>Ж ж</strong></td>
-                <td>[ʐ]</td>
-                <td>Язык плоский, вибрация, всегда твёрдый</td>
-                <td>measure, but harder</td>
-                <td>жизнь [ʐɨznʲ], жар [ʐar]</td>
-                <td>❌ Произносить как [ʒ] (фр.) — слишком мягко</td>
-              </tr>
-              <tr>
-                <td><strong>З з</strong></td>
-                <td>[z], [zʲ]</td>
-                <td>Как [s], но с голосом</td>
-                <td>zoo</td>
-                <td>зима [zʲɪˈma], зуб [zup]</td>
-                <td>❌ Оглушать в конце: [z]→[s]</td>
-              </tr>
-              <tr>
-                <td><strong>И и</strong></td>
-                <td>[i], [ɨ] после шипящих</td>
-                <td>Язык высоко, губы растянуты</td>
-                <td>see</td>
-                <td>мир [mʲir], жизнь [ʐɨznʲ]</td>
-                <td>❌ Путать [i] и [ɨ] (Ы)</td>
-              </tr>
-              <tr>
-                <td><strong>Й й</strong></td>
-                <td>[j]</td>
-                <td>Полугласный, язык к нёбу</td>
-                <td>yes (initial)</td>
-                <td>мой [moj], йогурт [jɪɡʊˈrt]</td>
-                <td>❌ Произносить как полноценный гласный</td>
-              </tr>
-              <tr>
-                <td><strong>К к</strong></td>
-                <td>[k], [kʲ]</td>
-                <td>Задняя часть языка к мягкому нёбу</td>
-                <td>sky (unaspirated)</td>
-                <td>кот [kot], кит [kʲit]</td>
-                <td>❌ Придыхание как в английском [kʰ]</td>
-              </tr>
-              <tr>
-                <td><strong>Л л</strong></td>
-                <td>[l], [lʲ]</td>
-                <td>Кончик языка к верхним зубам</td>
-                <td>light</td>
-                <td>лампа [ˈlampə], лес [lʲes]</td>
-                <td>❌ "Тёмный" [ɫ] как в английском full</td>
-              </tr>
-              <tr>
-                <td><strong>М м</strong></td>
-                <td>[m], [mʲ]</td>
-                <td>Губы сомкнуты, воздух через нос</td>
-                <td>mother</td>
-                <td>мама [ˈmamə], мир [mʲir]</td>
-                <td>-</td>
-              </tr>
-              <tr>
-                <td><strong>Н н</strong></td>
-                <td>[n], [nʲ]</td>
-                <td>Кончик языка к верхним зубам, нос</td>
-                <td>no</td>
-                <td>нос [nos], нет [nʲet]</td>
-                <td>-</td>
-              </tr>
-              <tr>
-                <td><strong>О о</strong></td>
-                <td>[o], [ɐ], [ə]</td>
-                <td>Губы округлены; без ударения — редукция</td>
-                <td>more, but reduced</td>
-                <td>окно [ɐˈkno], молоко [mɐlɐˈko]</td>
-                <td>❌ Не редуцировать: [moloko] вместо [mɐlɐˈko]</td>
-              </tr>
-              <tr>
-                <td><strong>П п</strong></td>
-                <td>[p], [pʲ]</td>
-                <td>Губы сомкнуты, резкий выдох</td>
-                <td>spin (unaspirated)</td>
-                <td>папа [ˈpapə], пир [pʲir]</td>
-                <td>❌ Придыхание как в английском [pʰ]</td>
-              </tr>
-              <tr>
-                <td><strong>Р р</strong></td>
-                <td>[r]</td>
-                <td>Вибрация кончика языка (альвеолярный дрожащий)</td>
-                <td>rolled R (Spanish/Italian)</td>
-                <td>рука [rʊˈka], мир [mʲir]</td>
-                <td>❌ Произносить как английский [ɹ] или французский [ʁ]</td>
-              </tr>
-              <tr>
-                <td><strong>С с</strong></td>
-                <td>[s], [sʲ]</td>
-                <td>Язык к зубам, воздух по центру</td>
-                <td>see</td>
-                <td>сок [sok], сено [ˈsʲenə]</td>
-                <td>-</td>
-              </tr>
-              <tr>
-                <td><strong>Т т</strong></td>
-                <td>[t], [tʲ]</td>
-                <td>Кончик языка к верхним зубам</td>
-                <td>stop (unaspirated)</td>
-                <td>там [tam], тир [tʲir]</td>
-                <td>❌ Придыхание [tʰ] как в английском</td>
-              </tr>
-              <tr>
-                <td><strong>У у</strong></td>
-                <td>[u]</td>
-                <td>Губы сильно округлены, язык высоко сзади</td>
-                <td>boot</td>
-                <td>утро [ˈutrə], лук [luk]</td>
-                <td>❌ Произносить как [ʊ] (англ. book)</td>
-              </tr>
-              <tr>
-                <td><strong>Ф ф</strong></td>
-                <td>[f], [fʲ]</td>
-                <td>Верхние зубы на нижней губе, воздух</td>
-                <td>fun</td>
-                <td>фон [fon], фига [ˈfʲigə]</td>
-                <td>-</td>
-              </tr>
-              <tr>
-                <td><strong>Х х</strong></td>
-                <td>[x], [xʲ]</td>
-                <td>Задняя часть языка к мягкому нёбу, трение</td>
-                <td>loch (Scottish), Bach (German)</td>
-                <td>хлеб [xlʲep], хит [xʲit]</td>
-                <td>❌ Произносить как [h] (англ.) — слишком мягко</td>
-              </tr>
-              <tr>
-                <td><strong>Ц ц</strong></td>
-                <td>[t͡s]</td>
-                <td>Аффриката: [t]+[s] слитно, всегда твёрдый</td>
-                <td>cats, but single sound</td>
-                <td>цвет [t͡svʲet], цирк [t͡sɨrk]</td>
-                <td>❌ Разделять на [t] и [s]</td>
-              </tr>
-              <tr>
-                <td><strong>Ч ч</strong></td>
-                <td>[t͡ɕ]</td>
-                <td>Аффриката, всегда мягкий</td>
-                <td>church, but softer</td>
-                <td>чай [t͡ɕaj], ночь [not͡ɕ]</td>
-                <td>❌ Произносить твёрдо как [t͡ʃ]</td>
-              </tr>
-              <tr>
-                <td><strong>Ш ш</strong></td>
-                <td>[ʂ]</td>
-                <td>Язык плоский, всегда твёрдый шипящий</td>
-                <td>ship, but harder, no palatalization</td>
-                <td>школа [ˈʂkolə], шить [ʂɨtʲ]</td>
-                <td>❌ Смягчать как [ʃʲ]</td>
-              </tr>
-              <tr>
-                <td><strong>Щ щ</strong></td>
-                <td>[ɕː]</td>
-                <td>Долгий мягкий шипящий, язык к нёбу</td>
-                <td>fresh cheese (approximate)</td>
-                <td>щётка [ˈɕːotkə], щи [ɕːi]</td>
-                <td>❌ Произносить как [ʃ] или [ʂ]</td>
-              </tr>
-              <tr>
-                <td><strong>Ъ ъ</strong></td>
-                <td>[◌]</td>
-                <td>Разделительный твёрдый знак: предотвращает смягчение</td>
-                <td>-</td>
-                <td>подъезд [pɐdˈjest], объявление [ɐbʲɪˈvlʲenʲɪje]</td>
-                <td>❌ Пропускать в письме (меняет смысл!)</td>
-              </tr>
-              <tr>
-                <td><strong>Ы ы</strong></td>
-                <td>[ɨ]</td>
-                <td>Язык как при [u], губы как при [i], посередине</td>
-                <td>no direct equivalent (closest: roses without r)</td>
-                <td>мы [mɨ], сын [sɨn], рыба [ˈrɨbə]</td>
-                <td>❌ Произносить как [i] или [ɪ]</td>
-              </tr>
-              <tr>
-                <td><strong>Ь ь</strong></td>
-                <td>[◌ʲ]</td>
-                <td>Мягкий знак: смягчает предыдущий согласный</td>
-                <td>-</td>
-                <td>день [dʲenʲ], мать [matʲ], вьюга [ˈvʲjʊgə]</td>
-                <td>❌ Пропускать смягчение: [den] вместо [dʲenʲ]</td>
-              </tr>
-              <tr>
-                <td><strong>Э э</strong></td>
-                <td>[ɛ]</td>
-                <td>Как [e], но рот шире, язык ниже</td>
-                <td>bed</td>
-                <td>этот [ˈɛtət], мэр [mɛr]</td>
-                <td>❌ Произносить как [e] или [je]</td>
-              </tr>
-              <tr>
-                <td><strong>Ю ю</strong></td>
-                <td>[ju], [ʲu]</td>
-                <td>Й+У или смягчение предыдущего+У</td>
-                <td>you</td>
-                <td>юг [juk], люк [lʲuk]</td>
-                <td>❌ Пропускать [j] в начале слога</td>
-              </tr>
-              <tr>
-                <td><strong>Я я</strong></td>
-                <td>[ja], [ʲa]</td>
-                <td>Й+А или смягчение предыдущего+А</td>
-                <td>yacht</td>
-                <td>яма [ˈjamə], мяч [mʲat͡ɕ]</td>
-                <td>❌ Пропускать [j] или смягчение</td>
-              </tr>
-            </tbody>
+          <h4>📋 Таблица всех букв с произношением</h4>
+          <table class="alphabet-table">
+            <tr><th>Буква</th><th>Название</th><th>Звук (МФА)</th><th>Пример</th><th>Англ. аналог</th></tr>
+            <tr><td>А а</td><td>а</td><td>[a], [ɐ], [ə]</td><td>мама [ˈmamə]</td><td>father</td></tr>
+            <tr><td>Б б</td><td>бэ</td><td>[b], [bʲ]</td><td>банк [bank]</td><td>bed</td></tr>
+            <tr><td>В в</td><td>вэ</td><td>[v], [vʲ]</td><td>вода [vɐˈda]</td><td>vine</td></tr>
+            <tr><td>Г г</td><td>гэ</td><td>[g], [gʲ]</td><td>город [ˈgorət]</td><td>go</td></tr>
+            <tr><td>Д д</td><td>дэ</td><td>[d], [dʲ]</td><td>дом [dom]</td><td>dog</td></tr>
+            <tr><td>Е е</td><td>е</td><td>[je], [ʲe]</td><td>еда [jɪˈda]</td><td>yes</td></tr>
+            <tr><td>Ё ё</td><td>ё</td><td>[jo], [ʲo]</td><td>ёж [joʂ]</td><td>yore</td></tr>
+            <tr><td>Ж ж</td><td>жэ</td><td>[ʐ]</td><td>жизнь [ʐɨznʲ]</td><td>measure</td></tr>
+            <tr><td>З з</td><td>зэ</td><td>[z], [zʲ]</td><td>зима [zʲɪˈma]</td><td>zoo</td></tr>
+            <tr><td>И и</td><td>и</td><td>[i]</td><td>мир [mʲir]</td><td>see</td></tr>
+            <tr><td>Й й</td><td>и краткое</td><td>[j]</td><td>мой [moj]</td><td>yes</td></tr>
+            <tr><td>К к</td><td>ка</td><td>[k], [kʲ]</td><td>кот [kot]</td><td>sky</td></tr>
+            <tr><td>Л л</td><td>эль</td><td>[l], [lʲ]</td><td>лампа [ˈlampə]</td><td>light</td></tr>
+            <tr><td>М м</td><td>эм</td><td>[m], [mʲ]</td><td>мама [ˈmamə]</td><td>mother</td></tr>
+            <tr><td>Н н</td><td>эн</td><td>[n], [nʲ]</td><td>нос [nos]</td><td>no</td></tr>
+            <tr><td>О о</td><td>о</td><td>[o], [ɐ], [ə]</td><td>окно [ɐˈkno]</td><td>more</td></tr>
+            <tr><td>П п</td><td>пэ</td><td>[p], [pʲ]</td><td>папа [ˈpapə]</td><td>spin</td></tr>
+            <tr><td>Р р</td><td>эр</td><td>[r]</td><td>рука [rʊˈka]</td><td>rolled R</td></tr>
+            <tr><td>С с</td><td>эс</td><td>[s], [sʲ]</td><td>сок [sok]</td><td>see</td></tr>
+            <tr><td>Т т</td><td>тэ</td><td>[t], [tʲ]</td><td>там [tam]</td><td>stop</td></tr>
+            <tr><td>У у</td><td>у</td><td>[u]</td><td>утро [ˈutrə]</td><td>boot</td></tr>
+            <tr><td>Ф ф</td><td>эф</td><td>[f], [fʲ]</td><td>фон [fon]</td><td>fun</td></tr>
+            <tr><td>Х х</td><td>ха</td><td>[x], [xʲ]</td><td>хлеб [xlʲep]</td><td>loch</td></tr>
+            <tr><td>Ц ц</td><td>цэ</td><td>[t͡s]</td><td>цвет [t͡svʲet]</td><td>cats</td></tr>
+            <tr><td>Ч ч</td><td>че</td><td>[t͡ɕ]</td><td>чай [t͡ɕaj]</td><td>church</td></tr>
+            <tr><td>Ш ш</td><td>ша</td><td>[ʂ]</td><td>школа [ˈkolə]</td><td>ship</td></tr>
+            <tr><td>Щ щ</td><td>ща</td><td>[ɕː]</td><td>щётка [ˈɕotkə]</td><td>fresh cheese</td></tr>
+            <tr><td>Ъ ъ</td><td>твёрдый знак</td><td>[◌]</td><td>подъезд [pɐdˈjest]</td><td>-</td></tr>
+            <tr><td>Ы ы</td><td>ы</td><td>[ɨ]</td><td>мы [mɨ]</td><td>no equivalent</td></tr>
+            <tr><td>Ь ь</td><td>мягкий знак</td><td>[◌ʲ]</td><td>день [dʲenʲ]</td><td>-</td></tr>
+            <tr><td>Э э</td><td>э</td><td>[ɛ]</td><td>этот [ˈɛtət]</td><td>bed</td></tr>
+            <tr><td>Ю ю</td><td>ю</td><td>[ju], [ʲu]</td><td>юг [juk]</td><td>you</td></tr>
+            <tr><td>Я я</td><td>я</td><td>[ja], [ʲa]</td><td>яма [ˈjamə]</td><td>yacht</td></tr>
           </table>
 
-          <h4>🔊 Фонетические процессы в связной речи</h4>
-          <div class="phonetics-processes">
-            <div class="process-card">
-              <strong>✅ Редукция гласных первого порядка</strong>
-              <p>Безударные <code>О, А</code> после твёрдых согласных → [ɐ] (первая предударная) / [ə] (остальные)</p>
+          <h4>🔊 Фонетические явления</h4>
+          <div class="phonetics-grid">
+            <div class="phonetic-card">
+              <strong>✅ Редукция гласных</strong>
+              <p>Безударные гласные меняют звучание:</p>
               <ul>
-                <li><code>молоко</code> → [mɐˈlɐkə] (не [moloko]!)</li>
-                <li><code>хорошо</code> → [xɐrɐˈʂo]</li>
-                <li><code>голова</code> → [gɐlɐˈva]</li>
+                <li><code>О → [ɐ]/[ə]</code>: молоко [mɐlɐˈko]</li>
+                <li><code>А → [ə]</code>: голова [gəlɐˈva]</li>
+                <li><code>Е → [ɪ]</code>: человек [t͡ɕɪlɐˈvʲek]</li>
               </ul>
             </div>
-            <div class="process-card">
-              <strong>✅ Редукция гласных второго порядка</strong>
-              <p>Безударные <code>Е, И</code> после мягких согласных → [ɪ] или [ъ]</p>
+            <div class="phonetic-card">
+              <strong>✅ Оглушение согласных</strong>
+              <p>Звонкие становятся глухими:</p>
               <ul>
-                <li><code>человек</code> → [t͡ɕɪlɐˈvʲek]</li>
-                <li><code>пирог</code> → [pʲɪˈrok]</li>
-                <li><code>десять</code> → [ˈdʲesʲɪtʲ]</li>
+                <li>В конце слова: друг [druk]</li>
+                <li>Перед глухими: ложка [ˈloʂkə]</li>
+                <li>б→п, в→ф, г→к, д→т, з→с, ж→ш</li>
               </ul>
             </div>
-            <div class="process-card">
-              <strong>✅ Оглушение звонких согласных</strong>
-              <p>В конце слова и перед глухими: [b]→[p], [z]→[s], [g]→[k], [v]→[f], [d]→[t], [ʐ]→[ʂ]</p>
+            <div class="phonetic-card">
+              <strong>✅ Ассимиляция</strong>
+              <p>Согласные уподобляются соседним:</p>
               <ul>
-                <li><code>друг</code> → [druk] (не [drug]!)</li>
-                <li><code>ложка</code> → [ˈloʂkə] (ж→ш перед к)</li>
-                <li><code>сделать</code> → [ˈzdelətʲ] (с→з перед д)</li>
-              </ul>
-            </div>
-            <div class="process-card">
-              <strong>✅ Ассимиляция по мягкости</strong>
-              <p>Согласный перед мягким становится мягким: [n]+[ʲe]→[nʲe]</p>
-              <ul>
-                <li><code>нет</code> → [nʲet] (не [net]!)</li>
-                <li><code>синий</code> → [ˈsʲinʲɪj]</li>
-                <li><code>конь</code> → [konʲ]</li>
-              </ul>
-            </div>
-            <div class="process-card">
-              <strong>✅ Выпадение гласных в быстрой речи</strong>
-              <p>В безударных слогах между согласными</p>
-              <ul>
-                <li><code>сегодня</code> → [sʲɪˈvodnʲə] (е выпадает)</li>
-                <li><code>здравствуйте</code> → [ˈzdrastvujtʲə]</li>
-                <li><code>сердце</code> → [ˈsʲert͡sə] (д не произносится)</li>
+                <li>По звонкости: сделать [ˈzdelətʲ]</li>
+                <li>По мягкости: нет [nʲet]</li>
+                <li>сш→[ʂː]: сшить [ʂːtʲ]</li>
               </ul>
             </div>
           </div>
 
-          <h4>🎯 Ударение: правила, тенденции, исключения</h4>
-          <div class="stress-rules">
-            <h5>📌 Общие тенденции</h5>
-            <ul>
-              <li><strong>Глаголы на -ить:</strong> ударение на окончании: <code>говорЮ, говорИшь, говорЯТ</code></li>
-              <li><strong>Существительные на -лог:</strong> ударение на -о: <code>диалОг, каталОг</code></li>
-              <li><strong>Слова с Ё:</strong> Ё всегда под ударением: <code>ёж, лёд, ёлка, трёх</code></li>
-              <li><strong>Заимствования:</strong> часто сохраняют оригинальное ударение: <code>жалюзИ, тОрты, звОнит</code></li>
-            </ul>
-            <h5>📌 Подвижное ударение при склонении</h5>
-            <table>
-              <tr><th>Слово</th><th>Им. ед.</th><th>Род. ед.</th><th>Им. мн.</th><th>Род. мн.</th></tr>
-              <tr><td>город</td><td>гОрод</td><td>городА</td><td>гОрода</td><td>городОв</td></tr>
-              <tr><td>окно</td><td>окнО</td><td>окнА</td><td>Окна</td><td>Окон</td></tr>
-              <tr><td>рука</td><td>рукА</td><td>рукИ</td><td>рУки</td><td>рУк</td></tr>
-              <tr><td>друг</td><td>друг</td><td>дрУга</td><td>дрУзья</td><td>друзЕй</td></tr>
-            </table>
-            <h5>📌 Омографы: ударение меняет смысл</h5>
-            <ul>
-              <li><code>зАмок</code> (castle) ≠ <code>замОк</code> (lock)</li>
-              <li><code>мУка</code> (flour) ≠ <code>мукА</code> (torment)</li>
-              <li><code>Атлас</code> (atlas) ≠ <code>атлАс</code> (satin fabric)</li>
-              <li><code>пОчта</code> (post office) ≠ <code>почтА</code> (archaic: honor)</li>
-            </ul>
-          </div>
-
-          <div class="tip-box warning">
-            ⚠️ <strong>Топ-10 ошибок иностранцев в произношении:</strong>
-            <ol>
-              <li>❌ <strong>Ы как [i]:</strong> Правильно: язык оттянуть назад, как при [u], но губы растянуть как при [i]</li>
-              <li>❌ <strong>Р как английский [ɹ]:</strong> Нужен вибрационный [r] — кончик языка дрожит у альвеол</li>
-              <li>❌ <strong>Не редуцировать О:</strong> [moloko] звучит неестественно, нужно [mɐlɐˈko]</li>
-              <li>❌ <strong>Придыхание [pʰ], [tʰ], [kʰ]:</strong> Русские взрывные без придыхания: [p], [t], [k]</li>
-              <li>❌ <strong>Мягкость перед е/ё/и/ю/я:</strong> <code>тень [tʲenʲ]</code>, не [ten]</li>
-              <li>❌ <strong>Шипящие [ʂ], [ɕː]:</strong> Ш — твёрдый, Щ — мягкий и долгий</li>
-              <li>❌ <strong>Интонация вопросов:</strong> Повышение тона на вопросительном слове, а не в конце</li>
-              <li>❌ <strong>Долгота согласных:</strong> <code>сшить [ʂːɨtʲ]</code> — долгий [ʂː], не [ʂɨtʲ]</li>
-              <li>❌ <strong>Непроизносимые согласные:</strong> <code>солнце [ˈsont͡sə]</code> — л не произносится</li>
-              <li>❌ <strong>Ударение в заимствованиях:</strong> <code>звонИт</code>, не <code>звОнит</code>; <code>тОрты</code>, не <code>тортЫ</code></li>
-            </ol>
-          </div>
-
-          <div class="tip-box success">
-            ✅ <strong>Лайфхаки для отработки произношения:</strong>
-            <ul>
-              <li>🎤 <strong>Записывайте себя:</strong> Сравните с носителем — разница сразу видна</li>
-              <li>🪞 <strong>Зеркало:</strong> Контролируйте положение губ и языка</li>
-              <li>✋ <strong>Рука на горле:</strong> Ощущайте вибрацию для звонких [b], [z], [g]</li>
-              <li>🐟 <strong>Для [ɨ]:</strong> Произнесите [u], не меняя положения языка, улыбнитесь → получится [ɨ]</li>
-              <li>🎵 <strong>Скороговорки:</strong> Начинайте медленно, ускоряйтесь постепенно</li>
-            </ul>
-          </div>
+          <h4>🎯 Ударение: правила</h4>
+          <ul>
+            <li><strong>Свободное:</strong> на любом слоге: зАмок/замОк</li>
+            <li><strong>Подвижное:</strong> меняется: гОрод → городА</li>
+            <li><strong>Ё всегда ударная:</strong> ёж, лёд, ёлка</li>
+            <li><strong>Глаголы на -ить:</strong> говорЮ, говорИшь</li>
+          </ul>
         </div>
       `,
       
       examples: `
         <div class="lesson-section">
-          <h3>🔊 Примеры: от звуков к предложениям</h3>
+          <h3>🔊 Примеры произношения</h3>
           
-          <h4>📚 Минимальные пары: один звук — разный смысл</h4>
-          <div class="minimal-pairs-grid">
-            <div class="pair-card">
-              <strong>Твёрдый / Мягкий</strong>
-              <div class="pair">
-                <div class="word hard">мат [mat] <small>(curse)</small></div>
-                <div class="word soft">мать [matʲ] <small>(mother)</small></div>
-                <button class="audio-compare">🔊 Сравнить</button>
-              </div>
-              <div class="pair">
-                <div class="word hard">угол [ˈugəl] <small>(corner)</small></div>
-                <div class="word soft">уголь [ˈugəlʲ] <small>(coal)</small></div>
-                <button class="audio-compare">🔊 Сравнить</button>
-              </div>
+          <h4>📚 Минимальные пары</h4>
+          <div class="minimal-pairs">
+            <div class="pair">
+              <div class="word">мат [mat] <small>(curse)</small></div>
+              <div class="word">мать [matʲ] <small>(mother)</small></div>
+              <button class="audio-btn">🔊</button>
             </div>
-            <div class="pair-card">
-              <strong>Звонкий / Глухой</strong>
-              <div class="pair">
-                <div class="word voiced">плод [plot] <small>(fruit)</small></div>
-                <div class="word voiceless">плот [plot] <small>(raft)</small></div>
-                <small class="note">⚠️ Произносятся одинаково! Различаем по контексту</small>
-              </div>
-              <div class="pair">
-                <div class="word voiced">коса [kɐˈsa] <small>(braid)</small></div>
-                <div class="word voiceless">коса [kɐˈsa] <small>(scythe)</small></div>
-                <small class="note">⚠️ Омофоны: только контекст помогает</small>
-              </div>
+            <div class="pair">
+              <div class="word">угол [ˈugəl] <small>(corner)</small></div>
+              <div class="word">уголь [ˈugolʲ] <small>(coal)</small></div>
+              <button class="audio-btn">🔊</button>
             </div>
-            <div class="pair-card">
-              <strong>Ударение меняет смысл</strong>
-              <div class="pair">
-                <div class="word">зАмок [ˈzamək] <small>(castle)</small></div>
-                <div class="word">замОк [zɐˈmok] <small>(lock)</small></div>
-                <button class="audio-compare">🔊 Сравнить</button>
-              </div>
-              <div class="pair">
-                <div class="word">мУка [ˈmukə] <small>(flour)</small></div>
-                <div class="word">мукА [mʊˈka] <small>(torment)</small></div>
-                <button class="audio-compare">🔊 Сравнить</button>
-              </div>
+            <div class="pair">
+              <div class="word">зАмок [ˈzamək] <small>(castle)</small></div>
+              <div class="word">замОк [zɐˈmok] <small>(lock)</small></div>
+              <button class="audio-btn">🔊</button>
             </div>
           </div>
 
-          <h4>💬 Диалоги для отработки фонетики</h4>
-          <div class="phonetic-dialogues">
-            <div class="dialogue-card">
-              <div class="dialogue-header">🗣️ Тема: Знакомство (отработка [ɨ], [ʐ], редукции)</div>
-              <div class="speaker-a">
-                <div class="ru">Привет! М<strong>ы</strong> не знаком<strong>ы</strong>?</div>
-                <div class="transcription">[prʲɪˈvʲet! mɨ nʲɪ znɐˈkomɨ?]</div>
-                <div class="focus">🎯 Фокус: [ɨ] в "мы", "знакомы"</div>
-              </div>
-              <div class="speaker-b">
-                <div class="ru">Нет, не знаком<strong>ы</strong>. М<strong>ы</strong> в<strong>ы</strong> нов<strong>ы</strong>е?</div>
-                <div class="transcription">[nʲet, nʲɪ znɐˈkomɨ. mɨ vɨ ˈnovɨjɪ?]</div>
-                <div class="focus">🎯 Фокус: [ɨ] в окончаниях -ы</div>
-              </div>
-              <div class="speaker-a">
-                <div class="ru">Да, я <strong>ж</strong>иву з<strong>д</strong>есь нед<strong>авн</strong>о.</div>
-                <div class="transcription">[da, ja ʐɨˈvu zdʲesʲ nʲɪˈdavnə]</div>
-                <div class="focus">🎯 Фокус: [ʐ], оглушение [d]→[t] в "недавно"</div>
-              </div>
-            </div>
-            <div class="dialogue-card">
-              <div class="dialogue-header">🗣️ Тема: В магазине (отработка редукции О/А)</div>
-              <div class="speaker-customer">
-                <div class="ru">Ск<strong>о</strong>лько ст<strong>о</strong>ит м<strong>о</strong>лок<strong>о</strong>?</div>
-                <div class="transcription">[ˈskolʲkə ˈstoɪt mɐlɐˈko]</div>
-                <div class="focus">🎯 Все О без ударения → [ɐ] или [ə]</div>
-              </div>
-              <div class="speaker-seller">
-                <div class="ru">М<strong>о</strong>лок<strong>о</strong> — с<strong>о</strong>р<strong>о</strong>к пять рубл<strong>е</strong>й.</div>
-                <div class="transcription">[mɐlɐˈko — ˈsorək pʲatʲ rʊˈblʲej]</div>
-                <div class="focus">🎯 О→[ɐ]/[ə], Е→[ʲɪ] в "рублей"</div>
-              </div>
-            </div>
+          <h4>💬 Диалоги для отработки</h4>
+          <div class="dialogue-box">
+            <div class="speaker-a">👤 — Привет! Как дела?</div>
+            <div class="speaker-b">🗣️ — Хорошо, спасибо! [xɐrɐˈo]</div>
+            <div class="speaker-a">👤 — Пойдём гулять?</div>
+            <div class="speaker-b">🗣️ — Давай! [dɐˈvaj]</div>
+            <div class="phonetic-note">🔍 Обратите внимание на редукцию О→[ɐ]</div>
           </div>
 
-          <h4>🎵 Скороговорки с постепенным усложнением</h4>
-          <div class="tongue-twisters-progressive">
-            <div class="twister-level easy">
-              <strong>🟢 Уровень 1: Один звук</strong>
-              <div class="twister">
-                <div class="ru">Шла Саша по шоссе.</div>
-                <div class="transcription">[ʂla ˈsaʂə pɐ ʂɐˈsʲːe]</div>
-                <div class="focus">🎯 [ʂ], [s], [ʂʲ]</div>
-                <button class="play-slow">🐢 Медленно</button>
-                <button class="play-normal">🚶 Нормально</button>
-                <button class="play-fast">🏃 Быстро</button>
-              </div>
+          <h4>🎵 Скороговорки</h4>
+          <div class="tongue-twisters">
+            <div class="twister">
+              <div class="ru">Шла Саша по шоссе и сосала сушку.</div>
+              <div class="tr">[ʂla ˈsaʂə pɐ ʂɐsʲe i sɐsalə ˈsukʊ]</div>
+              <div class="hint">🎯 Тренирует: [ʂ], [s]</div>
             </div>
-            <div class="twister-level medium">
-              <strong>🟡 Уровень 2: Два контрастных звука</strong>
-              <div class="twister">
-                <div class="ru">Карл у Клары украл кораллы.</div>
-                <div class="transcription">[karl u ˈklarɨ ʊˈkral kɐˈralɨ]</div>
-                <div class="focus">🎯 [r] vs [l], [k] vs [g]</div>
-                <button class="play-slow">🐢 Медленно</button>
-                <button class="play-normal">🚶 Нормально</button>
-                <button class="play-fast">🏃 Быстро</button>
-              </div>
+            <div class="twister">
+              <div class="ru">Карл у Клары украл кораллы.</div>
+              <div class="tr">[karl u ˈklarɨ ʊˈkral kɐˈralɨ]</div>
+              <div class="hint">🎯 Тренирует: [r], [l]</div>
             </div>
-            <div class="twister-level hard">
-              <strong>🔴 Уровень 3: Комплексная</strong>
-              <div class="twister">
-                <div class="ru">На дворе трава, на траве дрова, не руби дрова на траве двора.</div>
-                <div class="transcription">[nɐ dvɐˈrʲe trɐˈva, nɐ trɐˈvʲe drɐˈva, nʲɪ rʊˈbʲi drɐˈva nɐ trɐˈvʲe dvɐˈra]</div>
-                <div class="focus">🎯 [r], [v], ударение, редукция</div>
-                <button class="play-slow">🐢 Медленно</button>
-                <button class="play-normal">🚶 Нормально</button>
-                <button class="play-fast">🏃 Быстро</button>
-              </div>
-            </div>
-          </div>
-
-          <h4>🌍 Сравнение с другими языками</h4>
-          <div class="cross-linguistic">
-            <table>
-              <tr><th>Русский звук</th><th>Похож на...</th><th>Отличия</th><th>Совет</th></tr>
-              <tr>
-                <td><strong>[ɨ] (Ы)</strong></td>
-                <td>польское <em>y</em>, турецкое <em>ı</em></td>
-                <td>Нет в английском/испанском/французском</td>
-                <td>Язык как при [u], губы как при [i]</td>
-              </tr>
-              <tr>
-                <td><strong>[r] (Р)</strong></td>
-                <td>испанское <em>rr</em>, итальянское <em>r</em></td>
-                <td>Не как английский [ɹ] или французский [ʁ]</td>
-                <td>Кончик языка дрожит у верхних зубов</td>
-              </tr>
-              <tr>
-                <td><strong>[x] (Х)</strong></td>
-                <td>немецкое <em>ch</em> в <em>Bach</em></td>
-                <td>Не как английский [h]</td>
-                <td>Задняя часть языка к нёбу, сильное трение</td>
-              </tr>
-              <tr>
-                <td><strong>[t͡ɕ] (Ч)</strong></td>
-                <td>английское <em>ch</em> в <em>church</em></td>
-                <td>Всегда мягкий, язык ближе к нёбу</td>
-                <td>Представьте, что говорите "ть" очень мягко</td>
-              </tr>
-              <tr>
-                <td><strong>Редукция О</strong></td>
-                <td>немецкая редукция, английская схва</td>
-                <td>Более систематичная в русском</td>
-                <td>Слушайте носителей, имитируйте, не читайте "как написано"</td>
-              </tr>
-            </table>
           </div>
         </div>
       `,
       
       practice: `
         <div class="lesson-section">
-          <h3>🎯 Практика: фонетика и произношение</h3>
+          <h3>🎯 Практика</h3>
           
-          <h4>✏️ Задание 1: Распознавание звуков (аудио)</h4>
-          <p>Прослушайте и выберите, какой звук вы услышали:</p>
-          <div class="audio-quiz">
-            <div class="audio-item">
-              <button class="play-audio">🔊 [ʐɨznʲ]</button>
-              <div class="options">
-                <label><input type="radio" name="q1" value="wrong"> [ʒɪznʲ] (мягко)</label>
-                <label><input type="radio" name="q1" value="correct"> [ʐɨznʲ] (твёрдо, правильно)</label>
-                <label><input type="radio" name="q1" value="wrong"> [ʐiznʲ] (не тот гласный)</label>
-              </div>
-              <div class="feedback correct">✅ Верно! Это слово <strong>жизнь</strong> с твёрдым [ʐ] и [ɨ]</div>
-              <div class="feedback incorrect">❌ Попробуйте ещё: [ʐ] — твёрдый шипящий, [ɨ] — глубокий гласный</div>
-            </div>
+          <h4>✏️ Задание 1: Определите звук</h4>
+          <p>Какой звук обозначает буква <strong>Ё</strong> в слове <code>лёд</code>?</p>
+          <div class="answers">
+            <div class="answer-option" data-correct="false">[le]</div>
+            <div class="answer-option" data-correct="true">[jo]</div>
+            <div class="answer-option" data-correct="false">[ʲo]</div>
           </div>
 
-          <h4>✏️ Задание 2: Транскрипция</h4>
-          <p>Запишите МФА-транскрипцию слова <strong>"хорошо"</strong>:</p>
-          <div class="transcription-task">
-            <input type="text" class="ipa-input" placeholder="[x...]" data-answer="[xɐrɐˈʂo]">
-            <button class="check-btn">Проверить</button>
-            <div class="hint">💡 Подсказка: обе О без ударения → редуцируются в [ɐ]</div>
-            <div class="model-answer" style="display:none">
-              <strong>Правильно:</strong> [xɐrɐˈʂo]<br>
-              <small>• [x] — глухой велярный фрикативный (как в нем. Bach)<br>
-              • [ɐ] — редуцированный гласный (безударное О)<br>
-              • [ʂ] — твёрдый шипящий</small>
-            </div>
+          <h4>✏️ Задание 2: Редукция</h4>
+          <p>Как произносится <strong>О</strong> в слове <code>молоко</code>?</p>
+          <div class="answers">
+            <div class="answer-option" data-correct="false">[o] во всех слогах</div>
+            <div class="answer-option" data-correct="true">[ɐ] или [ə] — редуцируется</div>
+            <div class="answer-option" data-correct="false">[a]</div>
           </div>
 
-          <h4>🎤 Задание 3: Запись и сравнение</h4>
-          <p>Произнесите фразу: <strong>"Меня зовут [ваше имя]. Я изучаю русский язык."</strong></p>
-          <div class="recording-studio">
-            <div class="recorder">
-              <button class="record-btn" id="startRec">🎤 Начать запись</button>
-              <button class="stop-btn" id="stopRec" disabled>⏹️ Остановить</button>
-              <audio id="playback" controls style="display:none; width:100%; margin-top:10px"></audio>
-            </div>
-            <div class="reference">
-              <strong>Эталон (носитель):</strong>
-              <button class="play-ref">🔊 [mʲɪˈnʲa zɐˈvut ... ja ɪzʊˈt͡ɕaju ˈruskʲɪj jɪˈzɨk]</button>
-            </div>
-            <div class="self-assessment">
-              <strong>Оцените себя (честно!):</strong>
-              <label><input type="checkbox" id="check1"> Чётко произнёс(ла) [ɨ] в "язык"</label>
-              <label><input type="checkbox" id="check2"> Редуцировал(а) безударные О в "изучаю"</label>
-              <label><input type="checkbox" id="check3"> Ударение в "изучАю" на третьем слоге</label>
-              <label><input type="checkbox" id="check4"> Мягкость [nʲ] в "Меня"</label>
-              <button class="submit-assessment">Отправить на проверку</button>
-            </div>
-          </div>
+          <h4>🎤 Задание 3: Запишите себя</h4>
+          <p>Произнесите: <strong>"Меня зовут [имя]. Я изучаю русский."</strong></p>
+          <button class="record-btn">🎤 Записать</button>
+          <button class="play-sample">🔊 Эталон</button>
 
-          <h4>✍️ Задание 4: Минимальные пары</h4>
-          <p>Выберите слово, которое соответствует транскрипции:</p>
-          <div class="minimal-pair-quiz">
-            <div class="quiz-item">
-              <p><strong>Транскрипция:</strong> [matʲ]</p>
-              <div class="options">
-                <label><input type="radio" name="mp1" value="wrong"> мат <small>(curse)</small></label>
-                <label><input type="radio" name="mp1" value="correct"> мать <small>(mother)</small></label>
-                <label><input type="radio" name="mp1" value="wrong"> мыть <small>(to wash)</small></label>
-              </div>
-            </div>
-            <div class="quiz-item">
-              <p><strong>Транскрипция:</strong> [ˈugəlʲ]</p>
-              <div class="options">
-                <label><input type="radio" name="mp2" value="wrong"> угол <small>(corner)</small></label>
-                <label><input type="radio" name="mp2" value="correct"> уголь <small>(coal)</small></label>
-                <label><input type="radio" name="mp2" value="wrong"> уголок <small>(corner-dim.)</small></label>
-              </div>
-            </div>
-          </div>
-
-          <h4>🧩 Задание 5: Расстановка ударения</h4>
-          <p>Поставьте ударение в словах (нажмите на слог):</p>
-          <div class="stress-practice">
-            <div class="word-stress" data-word="замок" data-correct="1">
-              <span class="syllable" onclick="app.checkStress(this)">за</span>
-              <span class="syllable" onclick="app.checkStress(this)">мок</span>
-              <small class="hint">Загадка: "Открывается ключом"</small>
-            </div>
-            <div class="word-stress" data-word="мука" data-correct="0">
-              <span class="syllable" onclick="app.checkStress(this)">му</span>
-              <span class="syllable" onclick="app.checkStress(this)">ка</span>
-              <small class="hint">Загадка: "Из этого пекут хлеб"</small>
-            </div>
-            <div class="word-stress" data-word="звонит" data-correct="1">
-              <span class="syllable" onclick="app.checkStress(this)">зво</span>
-              <span class="syllable" onclick="app.checkStress(this)">нит</span>
-              <small class="hint">Глагол: "Телефон..."</small>
-            </div>
-          </div>
-
-          <h4>🔄 Задание 6: Фонетический разбор</h4>
-          <p>Разберите слово <strong>"подъезд"</strong> по звукам:</p>
-          <div class="phonetic-analysis">
-            <div class="analysis-step">
-              <label>1. Сколько букв?</label>
-              <input type="number" min="1" max="20" data-answer="7">
-            </div>
-            <div class="analysis-step">
-              <label>2. Сколько звуков?</label>
-              <input type="number" min="1" max="20" data-answer="7">
-            </div>
-            <div class="analysis-step">
-              <label>3. Транскрипция:</label>
-              <input type="text" placeholder="[...]" data-answer="[pɐdˈjest]">
-            </div>
-            <div class="analysis-step">
-              <label>4. Почему Ъ не даёт звука?</label>
-              <textarea placeholder="Объясните...">Ъ — разделительный знак, показывает, что следующий гласный читается с [j] и не смягчает предыдущий согласный</textarea>
-            </div>
-          </div>
-
-          <h4>🎭 Задание 7: Ролевая игра "Диктовка"</h4>
-          <p>Представьте, что вы диктуете свой адрес по телефону. Запишите:</p>
-          <div class="roleplay-task">
-            <div class="prompt">
-              <strong>Ваш адрес (пример):</strong><br>
-              Россия, Москва, улица Тверская, дом 15, квартира 42
-            </div>
-            <textarea class="dictation-output" placeholder="Продиктуйте по-русски, как будете говорить по телефону..."></textarea>
-            <div class="tips">
-              <small>💡 Советы:<br>
-              • Буквы диктуйте по названию: "М — эм, О — о, С — эс"<br>
-              • Цифры чётко: "один-пять", не "пятнадцать" для номера дома<br>
-              • Повторите сложные слова: "Тверская — Т-В-Е-Р-С-К-А-Я"</small>
-            </div>
-            <button class="simulate-call">📞 Симулировать звонок (текст в речь)</button>
-          </div>
-
-          <h4>📊 Задание 8: Самопроверка прогресса</h4>
-          <p>Отметьте, что вы теперь можете:</p>
-          <div class="progress-checklist">
-            <label><input type="checkbox" data-skill="alphabet"> ✅ Читать любое слово по буквам, даже незнакомое</label>
-            <label><input type="checkbox" data-skill="reduction"> ✅ Автоматически редуцировать безударные О/А</label>
-            <label><input type="checkbox" data-skill="hard-soft"> ✅ Различать на слух [mat] и [matʲ]</label>
-            <label><input type="checkbox" data-skill="stress"> ✅ Ставить ударение в 20+ частотных словах</label>
-            <label><input type="checkbox" data-skill="dictation"> ✅ Диктовать своё имя и адрес по-русски</label>
-            <button class="save-progress">💾 Сохранить прогресс</button>
-          </div>
+          <h4>✍️ Задание 4: Транскрипция</h4>
+          <p>Запишите транскрипцию <strong>"хорошо"</strong>:</p>
+          <input type="text" placeholder="[x...]" data-answer="[xɐrɐˈʂo]">
         </div>
-      `,
-      
-      additionalResources: {
-        audio: [
-          { label: 'Полный алфавит с произношением (медленно)', url: '/audio/alphabet-slow.mp3', duration: '3:24' },
-          { label: 'Алфавит в естественном темпе', url: '/audio/alphabet-natural.mp3', duration: '1:45' },
-          { label: 'Минимальные пары: твёрдые/мягкие', url: '/audio/hard-soft-minpairs.mp3', duration: '8:12' },
-          { label: 'Редукция гласных в предложениях', url: '/audio/vowel-reduction-sentences.mp3', duration: '6:30' },
-          { label: 'Скороговорки: 3 уровня скорости', url: '/audio/tongue-twisters-3speeds.mp3', duration: '12:00' }
-        ],
-        video: [
-          { label: 'Как произносить Ы: анимация артикуляции', url: 'https://youtube.com/...', duration: '2:15', thumbnail: '/thumbs/y-sound.jpg' },
-          { label: 'Русское Р: упражнения для языка', url: 'https://youtube.com/...', duration: '4:30', thumbnail: '/thumbs/r-sound.jpg' },
-          { label: 'Редукция гласных: визуализация', url: 'https://youtube.com/...', duration: '5:45', thumbnail: '/thumbs/reduction.jpg' }
-        ],
-        interactive: [
-          { label: 'Тренажёр ударения: кликай на слог', url: '/interactive/stress-trainer' },
-          { label: 'Сравнение произношения: ваш голос vs эталон', url: '/interactive/pronunciation-compare' },
-          { label: 'Фонетический конструктор: собери транскрипцию', url: '/interactive/transcription-builder' }
-        ],
-        worksheets: [
-          { label: 'Таблица алфавита с артикуляцией (для печати)', url: '/pdf/alphabet-articulation-chart.pdf', pages: 2 },
-          { label: '50 минимальных пар для отработки', url: '/pdf/minimal-pairs-50.pdf', pages: 5 },
-          { label: 'Скороговорки по уровням сложности', url: '/pdf/tongue-twisters-progressive.pdf', pages: 3 },
-          { label: 'Чек-лист фонетических навыков А1', url: '/pdf/phonetics-a1-checklist.pdf', pages: 1 }
-        ],
-        apps: [
-          { label: 'Forvo: произношение слов носителями', url: 'https://forvo.com/languages/ru/', type: 'external' },
-          { label: 'YouGlish: слова в контексте видео', url: 'https://youglish.com/russian', type: 'external' },
-          { label: 'Russian Pronunciation Trainer (Android/iOS)', url: 'https://...', type: 'app' }
-        ]
-      },
-      
-      review: {
-        keyPoints: [
-          'Русский алфавит: 33 буквы, но 42 звука из-за редукции и ассимиляции',
-          'Редукция: безударные О/А → [ɐ]/[ə], Е/И → [ɪ]/[ъ]',
-          'Твёрдые согласные: Ж, Ш, Ц; мягкие: Ч, Щ, Й',
-          'Оглушение: звонкие → глухие в конце слова и перед глухими',
-          'Ударение свободное и подвижное — учить слова сразу с ударением',
-          'Минимальные пары помогают отработать контрастные звуки'
-        ],
-        commonMistakes: [
-          'Произносить Ы как [i] → тренировать позицию языка',
-          'Не редуцировать О → слушать носителей, имитировать',
-          'Придыхание взрывных [pʰ], [tʰ], [kʰ] → делать "сухие" звуки',
-          'Пропускать мягкость перед е/ё/и/ю/я → сознательно смягчать',
-          'Неправильное ударение в заимствованиях → запоминать исключения'
-        ],
-        nextSteps: [
-          'Перейти к уроку "Базовые фразы" — применять фонетику в речи',
-          'Ежедневно 5 минут: скороговорки + запись себя',
-          'Слушать подкасты для начинающих, обращая внимание на редукцию',
-          'Найти языкового партнёра для практики диктовки имён/адресов'
-        ]
-      }
+      `
     }
   },
 
-  // =====================================================================
-  // 🟢 МОДУЛЬ 1, УРОК 2: БАЗОВЫЕ ФРАЗЫ ДЛЯ ВЫЖИВАНИЯ
-  // =====================================================================
-  
   { 
     id:'survival-phrases', 
+    category:'grammar',
     icon:'🆘', 
-    title:'50 фраз для выживания в русскоязычной среде', 
+    title:'50 фраз для выживания', 
     desc:'Знакомство, просьбы, вопросы, экстренные ситуации',
     level:'A1',
     timeEstimate:'2-3 часа',
-    prerequisites:['alphabet-fonetics'],
-    objectives:[
-      'Использовать 20+ базовых фраз в реальных ситуациях',
-      'Понимать простые вопросы и отвечать на них',
-      'Просить повторить, замедлить, объяснить',
-      'Ориентироваться в экстренных ситуациях'
-    ],
-    successCriteria:[
-      'Могу представиться и спросить имя собеседника',
-      'Могу попросить повторить или говорить медленнее',
-      'Знаю, как спросить дорогу, цену, время',
-      'Могу вызвать помощь или объяснить проблему'
-    ],
     lesson: {
       theory: `
         <div class="lesson-section">
-          <h3>🆘 Фразы для выживания: стратегия "минимум — максимум"</h3>
+          <h3>🆘 Фразы для выживания</h3>
           
-          <h4>📋 Категории фраз с частотностью</h4>
-          <table class="phrase-frequency">
-            <thead>
-              <tr><th>Категория</th><th>Примеры</th><th>Частотность</th><th>Когда использовать</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>👋 Знакомство</strong></td>
-                <td>Меня зовут... / Как вас зовут? / Очень приятно</td>
-                <td>⭐⭐⭐⭐⭐</td>
-                <td>Первая встреча, официальное/неформальное общение</td>
-              </tr>
-              <tr>
-                <td><strong>❓ Понимание</strong></td>
-                <td>Я не понимаю / Повторите, пожалуйста / Говорите медленнее</td>
-                <td>⭐⭐⭐⭐⭐</td>
-                <td>Когда не поняли, нужно уточнение</td>
-              </tr>
-              <tr>
-                <td><strong>🗣️ Просьбы</strong></td>
-                <td>Можно...? / Дайте, пожалуйста / Помогите, пожалуйста</td>
-                <td>⭐⭐⭐⭐⭐</td>
-                <td>Заказ, покупка, просьба о помощи</td>
-              </tr>
-              <tr>
-                <td><strong>📍 Ориентация</strong></td>
-                <td>Где...? / Как пройти к...? / Сколько стоит...?</td>
-                <td>⭐⭐⭐⭐</td>
-                <td>Поиск места, товара, услуги</td>
-              </tr>
-              <tr>
-                <td><strong>🚨 Экстренные</strong></td>
-                <td>Помогите! / Вызовите скорую! / Я потерялся</td>
-                <td>⭐⭐</td>
-                <td>Только в критических ситуациях</td>
-              </tr>
-              <tr>
-                <td><strong>😊 Вежливость</strong></td>
-                <td>Спасибо / Пожалуйста / Извините / Будьте добры</td>
-                <td>⭐⭐⭐⭐⭐</td>
-                <td>Всегда — основа позитивного общения</td>
-              </tr>
-            </tbody>
+          <h4>📋 Категории фраз</h4>
+          <table class="phrase-table">
+            <tr><th>Категория</th><th>Примеры</th><th>Когда использовать</th></tr>
+            <tr><td>👋 Знакомство</td><td>Меня зовут... / Как вас зовут?</td><td>Первая встреча</td></tr>
+            <tr><td>❓ Понимание</td><td>Я не понимаю / Повторите</td><td>Когда не поняли</td></tr>
+            <tr><td>🗣️ Просьбы</td><td>Можно...? / Дайте, пожалуйста</td><td>Заказ, покупка</td></tr>
+            <tr><td>📍 Ориентация</td><td>Где...? / Как пройти?</td><td>Поиск места</td></tr>
+            <tr><td>🚨 Экстренные</td><td>Помогите! / Вызовите скорую!</td><td>Критические ситуации</td></tr>
+            <tr><td>😊 Вежливость</td><td>Спасибо / Пожалуйста</td><td>Всегда</td></tr>
           </table>
 
-          <h4>🎯 Структура успешной фразы</h4>
+          <h4>🎯 Структура фразы</h4>
           <div class="phrase-formula">
-            <div class="formula-card">
-              <strong>✅ Базовая формула:</strong>
-              <code>Вежливое начало + Суть + Вежливое завершение</code>
-              <p><strong>Пример:</strong> <code>Извините</code> + <code>где метро?</code> + <code>пожалуйста</code></p>
-            </div>
-            <div class="formula-card">
-              <strong>✅ Адаптация под ситуацию:</strong>
-              <ul>
-                <li><strong>Официально:</strong> <code>Не могли бы вы подсказать...</code></li>
-                <li><strong>Нейтрально:</strong> <code>Подскажите, пожалуйста...</code></li>
-                <li><strong>Неформально:</strong> <code>Скажи, а где...?</code></li>
-              </ul>
-            </div>
-            <div class="formula-card">
-              <strong>✅ Если не знаете слово:</strong>
-              <ul>
-                <li>Опишите: <code>Это такая штука, которой открывают дверь</code> (ключ)</li>
-                <li>Покажите: жесты + <code>Как это называется?</code></li>
-                <li>Спросите по-английски: <code>Как это по-русски?</code></li>
-              </ul>
-            </div>
+            <code>Вежливое начало + Суть + Вежливое завершение</code>
+            <p><strong>Пример:</strong> <code>Извините</code> + <code>где метро?</code> + <code>пожалуйста</code></p>
           </div>
 
-          <h4>🔄 Грамматический минимум для фраз</h4>
-          <div class="grammar-minimum">
-            <h5>📌 Местоимения (самые нужные)</h5>
-            <table>
-              <tr><th>Русский</th><th>Транслит</th><th>English</th><th>Пример</th></tr>
-              <tr><td>Я</td><td>ya</td><td>I</td><td>Я не понимаю</td></tr>
-              <tr><td>Вы / ты</td><td>vy / ty</td><td>You (formal/informal)</td><td>Вы говорите по-английски?</td></tr>
-              <tr><td>Мы</td><td>my</td><td>We</td><td>Мы потерялись</td></tr>
-              <tr><td>Это</td><td>eto</td><td>This/It</td><td>Это сколько стоит?</td></tr>
-            </table>
-            <h5>📌 Частицы и союзы</h5>
-            <ul>
-              <li><code>не</code> — отрицание: <code>Я не понимаю</code></li>
-              <li><code>ли</code> — вопрос: <code>Можно ли...?</code></li>
-              <li><code>и / а / но</code> — связь: <code>Я хочу чай, но нет сахара</code></li>
-              <li><code>пожалуйста</code> — вежливость: всегда добавляйте в просьбы!</li>
-            </ul>
-            <h5>📌 Глаголы в инфинитиве (для просьб)</h5>
-            <ul>
-              <li><code>повторить</code> — repeat</li>
-              <li><code>помочь</code> — help</li>
-              <li><code>показать</code> — show</li>
-              <li><code>объяснить</code> — explain</li>
-              <li><code>позвонить</code> — call</li>
-            </ul>
-          </div>
-
-          <div class="tip-box warning">
-            ⚠️ <strong>Осторожно: ложные друзья и культурные ловушки</strong>
-            <ul>
-              <li>❌ <strong>"Актуально"</strong> ≠ actual → значит "важно сейчас, в теме"</li>
-              <li>❌ <strong>"Симпатичный"</strong> ≠ sympathetic → значит "привлекательный"</li>
-              <li>❌ <strong>"Магазин"</strong> ≠ magazine → значит "shop" (журнал = журнал)</li>
-              <li>❌ <strong>Прямой перевод вежливости:</strong> "Будьте так добры" звучит архаично; лучше "Пожалуйста" или "Не могли бы вы..."</li>
-              <li>❌ <strong>Излишняя формальность:</strong> В быту чаще используют "ты" с ровесниками, даже при первом знакомстве</li>
-            </ul>
-          </div>
-
-          <div class="tip-box success">
-            ✅ <strong>Стратегия запоминания: метод 3×3</strong>
-            <ol>
-              <li><strong>3 раза прочитать</strong> фразу вслух с правильной интонацией</li>
-              <li><strong>3 раза записать</strong> в тетрадь от руки (моторная память)</li>
-              <li><strong>3 раза использовать</strong> в реальной или смоделированной ситуации</li>
-            </ol>
-            <p><strong>Бонус:</strong> Создайте "фразовые карточки": одна сторона — русский, другая — транслит + ситуация использования</p>
-          </div>
+          <h4>📌 Грамматический минимум</h4>
+          <ul>
+            <li><strong>Местоимения:</strong> Я, Вы/ты, Мы, Это</li>
+            <li><strong>Частицы:</strong> не, ли, пожалуйста</li>
+            <li><strong>Глаголы:</strong> повторить, помочь, показать</li>
+          </ul>
         </div>
       `,
       
       examples: `
         <div class="lesson-section">
-          <h3>💬 Примеры: от фраз к диалогам</h3>
+          <h3>💬 Примеры фраз</h3>
           
-          <h4>📚 Топ-20 фраз с контекстом и вариациями</h4>
           <div class="phrase-cards">
-            <div class="phrase-card essential">
+            <div class="phrase-card">
               <div class="phrase-ru">Меня зовут [имя].</div>
-              <div class="phrase-translit">[Me-nya za-VOOT ...]</div>
-              <div class="phrase-en">My name is [name].</div>
-              <div class="phrase-context">
-                <strong>Контекст:</strong> Знакомство, официальное/неформальное
-                <div class="variations">
-                  <strong>Вариации:</strong>
-                  <ul>
-                    <li>Неформально: <code>Я [имя]</code></li>
-                    <li>Вопрос: <code>А вас как зовут?</code></li>
-                    <li>Ответ: <code>Очень приятно! / Рад(а) знакомству!</code></li>
-                  </ul>
-                </div>
-              </div>
+              <div class="phrase-translit">[Me-nya za-VOOT]</div>
+              <div class="phrase-en">My name is...</div>
               <button class="audio-btn">🔊</button>
             </div>
-            <div class="phrase-card essential">
+            <div class="phrase-card">
               <div class="phrase-ru">Я не понимаю.</div>
               <div class="phrase-translit">[Ya ne po-nee-MA-yu]</div>
-              <div class="phrase-en">I don't understand.</div>
-              <div class="phrase-context">
-                <strong>Контекст:</strong> Когда не поняли сказанное
-                <div class="variations">
-                  <strong>Вариации:</strong>
-                  <ul>
-                    <li>Мягче: <code>Извините, я не совсем понимаю</code></li>
-                    <li>Просьба: <code>Повторите, пожалуйста</code></li>
-                    <li>Уточнение: <code>Что значит [слово]?</code></li>
-                  </ul>
-                </div>
-              </div>
+              <div class="phrase-en">I don't understand</div>
               <button class="audio-btn">🔊</button>
             </div>
-            <div class="phrase-card essential">
+            <div class="phrase-card">
               <div class="phrase-ru">Говорите медленнее, пожалуйста.</div>
-              <div class="phrase-translit">[Ga-va-RI-te med-LEN-nee, pa-ZHAL-sta]</div>
-              <div class="phrase-en">Speak more slowly, please.</div>
-              <div class="phrase-context">
-                <strong>Контекст:</strong> Собеседник говорит слишком быстро
-                <div class="variations">
-                  <strong>Вариации:</strong>
-                  <ul>
-                    <li>Короче: <code>Медленнее, пожалуйста</code></li>
-                    <li>С причиной: <code>Я только учу русский</code></li>
-                    <li>Вопрос: <code>Можно повторить?</code></li>
-                  </ul>
-                </div>
-              </div>
+              <div class="phrase-translit">[Ga-va-RI-te med-LEN-nee]</div>
+              <div class="phrase-en">Speak slower, please</div>
               <button class="audio-btn">🔊</button>
             </div>
-            <div class="phrase-card essential">
+            <div class="phrase-card">
               <div class="phrase-ru">Сколько это стоит?</div>
-              <div class="phrase-translit">[SKOL-ka e-to STO-it?]</div>
+              <div class="phrase-translit">[SKOL-ka e-to STO-it]</div>
               <div class="phrase-en">How much is this?</div>
-              <div class="phrase-context">
-                <strong>Контекст:</strong> Покупки, услуги, такси
-                <div class="variations">
-                  <strong>Вариации:</strong>
-                  <ul>
-                    <li>Конкретнее: <code>Сколько стоит [товар]?</code></li>
-                    <li>О цене: <code>Есть ли скидка?</code></li>
-                    <li>Оплата: <code>Можно картой?</code></li>
-                  </ul>
-                </div>
-              </div>
-              <button class="audio-btn">🔊</button>
-            </div>
-            <div class="phrase-card essential">
-              <div class="phrase-ru">Где находится [место]?</div>
-              <div class="phrase-translit">[Gde na-KHO-dit-sya ...?]</div>
-              <div class="phrase-en">Where is [place] located?</div>
-              <div class="phrase-context">
-                <strong>Контекст:</strong> Поиск места в городе
-                <div class="variations">
-                  <strong>Вариации:</strong>
-                  <ul>
-                    <li>Проще: <code>Где [место]?</code></li>
-                    <li>О дороге: <code>Как пройти к...?</code></li>
-                    <li>О транспорте: <code>Как доехать до...?</code></li>
-                  </ul>
-                </div>
-              </div>
               <button class="audio-btn">🔊</button>
             </div>
           </div>
 
-          <h4>💬 Мини-диалоги: фразы в действии</h4>
-          <div class="dialogue-scenarios">
-            <div class="scenario-card">
-              <div class="scenario-title">🗣️ Сценарий 1: Знакомство на улице</div>
-              <div class="dialogue">
-                <div class="speaker-a">
-                  <div class="ru">Извините, вы не подскажете, где здесь метро?</div>
-                  <div class="translit">[iz-vi-NI-te, vy ne pad-ska-ZHI-te, gde zdes' me-TRO?]</div>
-                </div>
-                <div class="speaker-b">
-                  <div class="ru">Да, конечно. Прямо и направо, 5 минут пешком.</div>
-                  <div class="translit">[da, ka-NYESH-na. PRYA-ma i na-PRA-va, pyat' mi-NUT pesh-KOM]</div>
-                </div>
-                <div class="speaker-a">
-                  <div class="ru">Большое спасибо! А как называется станция?</div>
-                  <div class="translit">[bol-SHO-ye spa-SI-ba! a kak na-zy-VA-et-sya STAN-tsi-ya?]</div>
-                </div>
-                <div class="speaker-b">
-                  <div class="ru">"Пушкинская". Удачи!</div>
-                  <div class="translit">["push-KIN-ska-ya"]. u-DA-chi!</div>
-                </div>
-                <div class="cultural-note">
-                  💡 <strong>Заметка:</strong> Русские часто дают развёрнутые ответы с жестами. Не бойтесь переспросить!
-                </div>
-              </div>
-            </div>
-            <div class="scenario-card">
-              <div class="scenario-title">🗣️ Сценарий 2: В кафе — заказ</div>
-              <div class="dialogue">
-                <div class="speaker-waiter">
-                  <div class="ru">Здравствуйте! Что будете заказывать?</div>
-                </div>
-                <div class="speaker-customer">
-                  <div class="ru">Меню, пожалуйста. ... Я возьму кофе и салат.</div>
-                </div>
-                <div class="speaker-waiter">
-                  <div class="ru">Кофе какой: чёрный, с молоком?</div>
-                </div>
-                <div class="speaker-customer">
-                  <div class="ru">С молоком, пожалуйста. И можно без сахара?</div>
-                </div>
-                <div class="speaker-waiter">
-                  <div class="ru">Конечно. Что-нибудь ещё?</div>
-                </div>
-                <div class="speaker-customer">
-                  <div class="ru">Нет, спасибо. Счёт, пожалуйста.</div>
-                </div>
-                <div class="cultural-note">
-                  💡 <strong>Заметка:</strong> "Счёт, пожалуйста" говорят, когда готовы оплатить. Не ждите, что принесут автоматически.
-                </div>
-              </div>
-            </div>
-            <div class="scenario-card">
-              <div class="scenario-title">🗣️ Сценарий 3: Экстренная ситуация</div>
-              <div class="dialogue">
-                <div class="speaker-you">
-                  <div class="ru">Помогите, пожалуйста! Мне плохо.</div>
-                  <div class="translit">[pa-ma-GI-te, pa-ZHAL-sta! Mne PLO-kha]</div>
-                </div>
-                <div class="speaker-helper">
-                  <div class="ru">Что случилось? Вызовите скорую!</div>
-                </div>
-                <div class="speaker-you">
-                  <div class="ru">У меня болит голова и тошнит.</div>
-                  <div class="translit">[u me-nya ba-LIT ga-lo-VA i ta-SHNIT]</div>
-                </div>
-                <div class="speaker-helper">
-                  <div class="ru">Сядьте, я позвоню 103. У вас есть полис?</div>
-                </div>
-                <div class="cultural-note warning">
-                  ⚠️ <strong>Важно:</strong> Скорая помощь: <strong>103</strong> (бесплатно). Единый номер: <strong>112</strong>. Говорите чётко: адрес, симптомы, имя.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h4>🔄 Фразы с разной степенью вежливости</h4>
-          <div class="politeness-scale">
-            <table>
-              <thead>
-                <tr><th>Ситуация</th><th>Официально</th><th>Нейтрально</th><th>Неформально</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Просьба повторить</td>
-                  <td>Не могли бы вы повторить?</td>
-                  <td>Повторите, пожалуйста</td>
-                  <td>А? / Чё?</td>
-                </tr>
-                <tr>
-                  <td>Просьба о помощи</td>
-                  <td>Будьте добры, помогите...</td>
-                  <td>Помогите, пожалуйста</td>
-                  <td>Помоги!</td>
-                </tr>
-                <tr>
-                  <td>Отказ</td>
-                  <td>К сожалению, я не могу...</td>
-                  <td>Извините, не получится</td>
-                  <td>Не, не могу</td>
-                </tr>
-                <tr>
-                  <td>Благодарность</td>
-                  <td>Благодарю вас</td>
-                  <td>Спасибо большое</td>
-                  <td>Спасиб! / Мерси!</td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="tip">
-              💡 <strong>Совет:</strong> Начинайте с нейтрального варианта — он подходит почти всегда. Официальный — для начальства/незнакомцев старше, неформальный — только с друзьями.
-            </div>
+          <h4>💬 Диалоги</h4>
+          <div class="dialogue-box">
+            <div class="speaker-a">👤 — Извините, где метро?</div>
+            <div class="speaker-b">🗣️ — Прямо и направо, 5 минут.</div>
+            <div class="speaker-a">👤 — Спасибо большое!</div>
+            <div class="speaker-b">🗣️ — Пожалуйста!</div>
           </div>
         </div>
       `,
       
       practice: `
         <div class="lesson-section">
-          <h3>🎯 Практика: фразы в действии</h3>
+          <h3>🎯 Практика</h3>
           
-          <h4>✏️ Задание 1: Сопоставьте фразу и ситуацию</h4>
-          <p>Перетащите фразу в нужную категорию:</p>
-          <div class="matching-task">
-            <div class="draggable" data-category="emergency">Помогите, пожалуйста!</div>
-            <div class="draggable" data-category="understanding">Я не понимаю, повторите</div>
-            <div class="draggable" data-category="shopping">Сколько это стоит?</div>
-            <div class="draggable" data-category="greeting">Меня зовут Анна</div>
-            <div class="draggable" data-category="directions">Где здесь метро?</div>
-            
-            <div class="drop-zone" data-category="greeting">👋 Знакомство</div>
-            <div class="drop-zone" data-category="understanding">❓ Понимание</div>
-            <div class="drop-zone" data-category="directions">📍 Ориентация</div>
-            <div class="drop-zone" data-category="shopping">🛒 Покупки</div>
-            <div class="drop-zone" data-category="emergency">🚨 Экстренно</div>
+          <h4>✏️ Задание 1: Сопоставьте</h4>
+          <p>Соедините фразу с ситуацией:</p>
+          <div class="matching">
+            <div class="match-item" data-match="emergency">Помогите!</div>
+            <div class="match-item" data-match="shopping">Сколько стоит?</div>
+            <div class="match-item" data-match="greeting">Меня зовут...</div>
           </div>
 
-          <h4>✏️ Задание 2: Выберите правильную фразу</h4>
-          <p>Ситуация: Вы не поняли, что сказал собеседник. Что скажете?</p>
-          <div class="multiple-choice">
-            <label><input type="radio" name="q1" value="wrong"> Что?</label>
-            <label><input type="radio" name="q1" value="correct"> Извините, я не понял(а). Повторите, пожалуйста.</label>
-            <label><input type="radio" name="q1" value="wrong"> Говорите нормальнее.</label>
-          </div>
-          <div class="feedback correct">✅ Верно! Вежливо и чётко — так вас точно поймут и захотят помочь.</div>
-          <div class="feedback incorrect">❌ "Что?" может прозвучать грубо. Лучше добавить "извините" и "пожалуйста".</div>
-
-          <h4>🎤 Задание 3: Аудио-диктант</h4>
-          <p>Прослушайте фразу и напишите, что вы услышали:</p>
-          <div class="audio-dictation">
-            <button class="play-audio">🔊 "Извините, где находится ближайшая аптека?"</button>
-            <input type="text" class="dictation-input" placeholder="Напишите по-русски...">
-            <button class="check-btn">Проверить</button>
-            <div class="model-answer" style="display:none">
-              <strong>Правильно:</strong> Извините, где находится ближайшая аптека?<br>
-              <small>Допустимы варианты: "Где здесь аптека?", "Подскажите, где аптека?"</small>
-            </div>
+          <h4>✏️ Задание 2: Выберите фразу</h4>
+          <p>Вы не поняли собеседника. Что скажете?</p>
+          <div class="answers">
+            <div class="answer-option" data-correct="false">Что?</div>
+            <div class="answer-option" data-correct="true">Повторите, пожалуйста</div>
+            <div class="answer-option" data-correct="false">Не понял</div>
           </div>
 
-          <h4>💬 Задание 4: Ролевая игра (чат-бот)</h4>
-          <p>Вы в кафе. Официант спрашивает: <em>"Что будете заказывать?"</em></p>
-          <div class="roleplay-chat">
-            <div class="chat-message bot">
-              <div class="avatar">🤵</div>
-              <div class="text">Что будете заказывать?</div>
-            </div>
-            <textarea class="user-response" placeholder="Напишите ваш ответ..."></textarea>
-            <button class="submit-response">Отправить</button>
-            <div class="feedback-area" style="display:none">
-              <strong>Оценка ответа:</strong>
-              <div class="criteria">
-                <span class="criterion">✅ Вежливость ("пожалуйста")</span>
-                <span class="criterion">✅ Чёткость (название блюда/напитка)</span>
-                <span class="criterion">✅ Грамматика (винительный падеж: "кофе", "салат")</span>
-              </div>
-              <div class="suggestion">
-                <strong>Пример идеального ответа:</strong><br>
-                <code>Я возьму кофе с молоком и салат, пожалуйста.</code>
-              </div>
-            </div>
-          </div>
-
-          <h4>🧩 Задание 5: Соберите фразу из слов</h4>
-          <p>Составьте вежливую просьбу из перемешанных слов:</p>
-          <div class="sentence-builder">
-            <div class="word-bank">
-              <span class="word" draggable="true">пожалуйста</span>
-              <span class="word" draggable="true">повторите</span>
-              <span class="word" draggable="true">извините</span>
-              <span class="word" draggable="true">я</span>
-              <span class="word" draggable="true">не</span>
-              <span class="word" draggable="true">понял</span>
-            </div>
-            <div class="sentence-drop">
-              <div class="drop-slot"></div>
-              <div class="drop-slot"></div>
-              <div class="drop-slot"></div>
-              <div class="drop-slot"></div>
-              <div class="drop-slot"></div>
-              <div class="drop-slot"></div>
-            </div>
-            <button class="check-sentence">Проверить</button>
-            <div class="correct-sentence" style="display:none">
-              <strong>Правильно:</strong> Извините, я не понял, повторите, пожалуйста.
-            </div>
-          </div>
-
-          <h4>🔄 Задание 6: Перевод с адаптацией</h4>
-          <p>Переведите фразу, адаптировав под русскую вежливость:</p>
-          <div class="translation-adaptation">
-            <div class="source">
-              <strong>English:</strong> "Where's the bathroom?"
-            </div>
-            <textarea class="translation" placeholder="Ваш перевод..."></textarea>
-            <button class="check-translation">Проверить</button>
-            <div class="model-answers">
-              <strong>Варианты (от лучшего к допустимому):</strong>
-              <ol>
-                <li><code>Извините, где здесь туалет?</code> ✅ (вежливо + чётко)</li>
-                <li><code>Подскажите, где туалет?</code> ✅ (нейтрально)</li>
-                <li><code>Где туалет?</code> ⚠️ (корректно, но сухо)</li>
-                <li><code>Туалет где?</code> ❌ (звучит грубовато)</li>
-              </ol>
-            </div>
-          </div>
-
-          <h4>🎭 Задание 7: Ситуационный квиз</h4>
-          <p>Выберите лучший ответ в каждой ситуации:</p>
-          <div class="situational-quiz">
-            <div class="quiz-item">
-              <p><strong>Ситуация:</strong> Вы уронили кошелёк. Прохожий поднял его.</p>
-              <div class="options">
-                <label><input type="radio" name="sq1" value="wrong"> Спасибо.</label>
-                <label><input type="radio" name="sq1" value="correct"> Большое спасибо! Вы меня спасли!</label>
-                <label><input type="radio" name="sq1" value="wrong"> О, моё.</label>
-              </div>
-            </div>
-            <div class="quiz-item">
-              <p><strong>Ситуация:</strong> Таксист говорит слишком быстро, вы не понимаете маршрут.</p>
-              <div class="options">
-                <label><input type="radio" name="sq2" value="wrong"> Что? Говорите яснее.</label>
-                <label><input type="radio" name="sq2" value="correct"> Извините, я не совсем понимаю. Можно медленнее?</label>
-                <label><input type="radio" name="sq2" value="wrong"> Я не русский.</label>
-              </div>
-            </div>
-          </div>
-
-          <h4>📊 Задание 8: Личный фразовый набор</h4>
-          <p>Выберите 5 фраз, которые вам нужны СЕЙЧАС, и запишите их:</p>
-          <div class="personal-phrases">
-            <div class="phrase-input">
-              <label>1. <input type="text" placeholder="Фраза по-русски..."></label>
-              <small class="hint">Ситуация: <input type="text" placeholder="Когда использовать?"></small>
-            </div>
-            <div class="phrase-input">
-              <label>2. <input type="text" placeholder="Фраза по-русски..."></label>
-              <small class="hint">Ситуация: <input type="text" placeholder="Когда использовать?"></small>
-            </div>
-            <div class="phrase-input">
-              <label>3. <input type="text" placeholder="Фраза по-русски..."></label>
-              <small class="hint">Ситуация: <input type="text" placeholder="Когда использовать?"></small>
-            </div>
-            <div class="phrase-input">
-              <label>4. <input type="text" placeholder="Фраза по-русски..."></label>
-              <small class="hint">Ситуация: <input type="text" placeholder="Когда использовать?"></small>
-            </div>
-            <div class="phrase-input">
-              <label>5. <input type="text" placeholder="Фраза по-русски..."></label>
-              <small class="hint">Ситуация: <input type="text" placeholder="Когда использовать?"></small>
-            </div>
-            <button class="save-phrases">💾 Сохранить в мой словарь</button>
-          </div>
+          <h4>🎤 Задание 3: Ролевая игра</h4>
+          <p>Вы в кафе. Закажите кофе:</p>
+          <textarea placeholder="Напишите ваш заказ..."></textarea>
+          <button class="check-btn">Проверить</button>
         </div>
-      `,
-      
-      additionalResources: {
-        audio: [
-          { label: 'Топ-20 фраз: произношение носителя', url: '/audio/survival-phrases-native.mp3', duration: '8:45' },
-          { label: 'Мини-диалоги: медленный темп', url: '/audio/dialogues-slow.mp3', duration: '12:30' },
-          { label: 'Мини-диалоги: естественный темп', url: '/audio/dialogues-natural.mp3', duration: '9:15' },
-          { label: 'Экстренные фразы: чёткое произношение', url: '/audio/emergency-phrases.mp3', duration: '4:20' }
-        ],
-        video: [
-          { label: 'Жесты + фразы: невербалика в русском общении', url: 'https://youtube.com/...', duration: '6:10', thumbnail: '/thumbs/gestures.jpg' },
-          { label: 'Как просить повторить: 5 способов', url: 'https://youtube.com/...', duration: '3:45', thumbnail: '/thumbs/repeat.jpg' }
-        ],
-        interactive: [
-          { label: 'Симулятор диалогов: выберите ответ', url: '/interactive/dialogue-simulator' },
-          { label: 'Фразовый конструктор: собери вежливую просьбу', url: '/interactive/politeness-builder' },
-          { label: 'Аудио-квиз: угадай фразу по контексту', url: '/audio/context-quiz' }
-        ],
-        worksheets: [
-          { label: 'Карточки фраз для печати (20 шт.)', url: '/pdf/survival-phrases-flashcards.pdf', pages: 5 },
-          { label: 'Диалоги с пропусками: вставьте фразы', url: '/pdf/dialogues-gap-fill.pdf', pages: 3 },
-          { label: 'Чек-лист: готов ли я к поездке в Россию?', url: '/pdf/russia-trip-checklist.pdf', pages: 2 }
-        ],
-        apps: [
-          { label: 'Google Translate: оффлайн-режим для русского', url: 'https://translate.google.com', type: 'external' },
-          { label: 'Reverso Context: фразы в примерах', url: 'https://context.reverso.net/translation/russian-english', type: 'external' },
-          { label: 'Tandem: языковой обмен с носителями', url: 'https://tandem.net', type: 'app' }
-        ]
-      },
-      
-      review: {
-        keyPoints: [
-          '20 базовых фраз покрывают 80% бытовых ситуаций',
-          'Вежливость = "извините" + "пожалуйста" + чёткая просьба',
-          'Не бойтесь переспрашивать: "Повторите, пожалуйста" — нормальная практика',
-          'Адаптируйте фразу под ситуацию: официально / нейтрально / неформально',
-          'В экстренных случаях: говорите чётко, называйте адрес и симптомы'
-        ],
-        commonMistakes: [
-          'Говорить слишком быстро и надеяться, что поймут',
-          'Пропускать "пожалуйста" в просьбах — звучит как приказ',
-          'Использовать неформальные фразы с незнакомцами',
-          'Переводить дословно с родного языка без учёта культурных норм',
-          'Молчать, когда не понял — лучше переспросить!'
-        ],
-        nextSteps: [
-          'Перейти к уроку "Алфавит и произношение" — отточить фонетику фраз',
-          'Создать персональный набор из 10 самых нужных фраз',
-          'Практиковать 1 фразу в день в реальной ситуации (даже с самим собой)',
-          'Найти языкового партнёра для отработки диалогов'
-        ]
-      }
+      `
     }
   },
 
-  // ... продолжение с ещё 33 уроками в аналогичном формате ...
-  // Для краткости здесь представлены только 2 максимально детализированных урока,
-  // но структура готова к масштабированию на полный курс из 35+ уроков.
-  
-  // Пример сокращённой структуры для остальных уроков:
-  /*
   { 
-    id:'greetings-formal-informal', 
+    id:'greetings', 
+    category:'grammar',
     icon:'👋', 
-    title:'Приветствия и прощания: формальное и неформальное', 
+    title:'Приветствия и прощания', 
+    desc:'Формальное и неформальное общение',
     level:'A1',
-    // ... полная структура как выше ...
+    lesson: {
+      theory: `<div class="lesson-section"><h3>👋 Приветствия</h3><h4>📋 Формальные</h4><ul><li>Здравствуйте!</li><li>Добрый день!</li><li>Доброе утро!</li></ul><h4>📋 Неформальные</h4><ul><li>Привет!</li><li>Здорово!</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="dialogue-box"><div class="speaker-a">👤 — Здравствуйте!</div><div class="speaker-b">🗣️ — Добрый день!</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Как поприветствовать начальника?</p><div class="answers"><div class="answer-option" data-correct="true">Здравствуйте!</div><div class="answer-option" data-correct="false">Привет!</div></div></div>`
+    }
   },
+
   { 
-    id:'numbers-counting', 
+    id:'numbers', 
+    category:'grammar',
     icon:'🔢', 
-    title:'Числа, счёт, даты, время', 
+    title:'Числа и счёт', 
+    desc:'Числительные, даты, время, телефоны',
     level:'A1',
-    // ... 
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🔢 Числа</h3><p>0-ноль, 1-один, 2-два, 3-три, 4-четыре, 5-пять<br>10-десять, 20-двадцать, 30-тридцать, 100-сто</p></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Мне двадцать пять лет</div><div class="tr">I am 25 years old</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Как написать 25?</p><div class="answers"><div class="answer-option" data-correct="true">двадцать пять</div><div class="answer-option" data-correct="false">два пять</div></div></div>`
+    }
   },
+
   { 
-    id:'cases-intro', 
-    icon:'🔄', 
-    title:'Падежи: введение через паттерны', 
-    level:'A2',
-    // ... 
+    id:'parts-of-speech', 
+    category:'grammar',
+    icon:'📝', 
+    title:'Части речи', 
+    desc:'Существительное, глагол, прилагательное',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>📝 Части речи</h3><ul><li><strong>Существительное:</strong> кто? что? (дом, книга)</li><li><strong>Глагол:</strong> что делать? (читать, идти)</li><li><strong>Прилагательное:</strong> какой? (большой, новый)</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Красивый дом</div><div class="tr">Красивый (прил.) + дом (сущ.)</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Что такое "большой"?</p><div class="answers"><div class="answer-option" data-correct="true">Прилагательное</div><div class="answer-option" data-correct="false">Существительное</div></div></div>`
+    }
   },
-  // ... и так до урока 35+ с уровнем C1 ...
-  */
+
+  { 
+    id:'cases', 
+    category:'grammar',
+    icon:'🔄', 
+    title:'Падежи (6 падежей)', 
+    desc:'Именительный, родительный, дательный...',
+    level:'A2',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🔄 6 падежей</h3><ol><li><strong>Именительный:</strong> кто? что? (Москва)</li><li><strong>Родительный:</strong> кого? чего? (Москвы)</li><li><strong>Дательный:</strong> кому? чему? (Москве)</li><li><strong>Винительный:</strong> кого? что? (Москву)</li><li><strong>Творительный:</strong> кем? чем? (Москвой)</li><li><strong>Предложный:</strong> о ком? о чём? (о Москве)</li></ol></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Я живу в Москве</div><div class="tr">Москве — Предложный падеж</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>"Я живу __ Москва"</p><div class="answers"><div class="answer-option" data-correct="true">в Москве</div><div class="answer-option" data-correct="false">в Москву</div></div></div>`
+    }
+  },
+
+  { 
+    id:'gender', 
+    category:'grammar',
+    icon:'♂️', 
+    title:'Род и число', 
+    desc:'Мужской, женский, средний род',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>♂️ Род</h3><ul><li><strong>Мужской:</strong> стол, чай (согласная/-й)</li><li><strong>Женский:</strong> книга, вода (-а/-я)</li><li><strong>Средний:</strong> окно, море (-о/-е)</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Большой город (м.р.)</div><div class="ru">Большая страна (ж.р.)</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Какого рода "виза"?</p><div class="answers"><div class="answer-option" data-correct="true">Женского</div><div class="answer-option" data-correct="false">Мужского</div></div></div>`
+    }
+  },
+
+  { 
+    id:'verbs-present', 
+    category:'grammar',
+    icon:'🏃', 
+    title:'Глаголы: настоящее время', 
+    desc:'I и II спряжение',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🏃 Спряжение</h3><p><strong>I спряжение:</strong> читать — я читаю, ты читаешь</p><p><strong>II спряжение:</strong> говорить — я говорю, ты говоришь</p></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Я работаю в офисе</div><div class="tr">I work in the office</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>"Я __ по-русски" (говорить)</p><div class="answers"><div class="answer-option" data-correct="true">говорю</div><div class="answer-option" data-correct="false">говоришь</div></div></div>`
+    }
+  },
+
+  { 
+    id:'verbs-aspects', 
+    category:'grammar',
+    icon:'⏱️', 
+    title:'Виды глаголов', 
+    desc:'Совершенный и несовершенный вид',
+    level:'A2',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>⏱️ Виды</h3><ul><li><strong>Несовершенный:</strong> читать (процесс)</li><li><strong>Совершенный:</strong> прочитать (результат)</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Я читал (процесс)</div><div class="ru">Я прочитал (результат)</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>"Я уже __ задание" (сделать)</p><div class="answers"><div class="answer-option" data-correct="true">сделал</div><div class="answer-option" data-correct="false">делал</div></div></div>`
+    }
+  },
+
+  { 
+    id:'sentence-structure', 
+    category:'grammar',
+    icon:'🔧', 
+    title:'Структура предложения', 
+    desc:'Порядок слов, вопросы',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🔧 Порядок слов</h3><p>Подлежащее + Сказуемое + Дополнение</p><p>Вопрос: интонацией или словом ЛИ</p></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Где вы живёте?</div><div class="tr">Where do you live?</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Как спросить "Где больница?"</p><div class="answers"><div class="answer-option" data-correct="true">Где находится больница?</div><div class="answer-option" data-correct="false">Больница где?</div></div></div>`
+    }
+  },
+
+  // =====================================================================
+  // 📖 СЛОВАРЬ - РАСШИРЕННЫЙ
+  // =====================================================================
+  
+  { 
+    id:'vocab-family', 
+    category:'vocabulary',
+    icon:'👨‍‍👧', 
+    title:'Семья и отношения', 
+    desc:'Родственники, семейное положение',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>👨‍👩‍ Семья</h3><ul><li>мама, папа, брат, сестра</li><li>бабушка, дедушка</li><li>муж, жена, сын, дочь</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">У меня есть брат</div><div class="tr">I have a brother</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>"У меня __ сестра"</p><div class="answers"><div class="answer-option" data-correct="true">есть</div><div class="answer-option" data-correct="false">имею</div></div></div>`
+    }
+  },
+
+  { 
+    id:'vocab-food', 
+    category:'vocabulary',
+    icon:'🍽️', 
+    title:'Еда и напитки', 
+    desc:'Продукты, блюда, рестораны',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🍽️ Еда</h3><ul><li>хлеб, молоко, мясо, рыба</li><li>овощи, фрукты</li><li>чай, кофе, вода</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Я хочу чай</div><div class="tr">I want tea</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Что вы закажете?</p><textarea placeholder="Напишите..."></textarea></div>`
+    }
+  },
+
+  { 
+    id:'vocab-city', 
+    category:'vocabulary',
+    icon:'🏙️', 
+    title:'Город и транспорт', 
+    desc:'Улицы, здания, метро, автобус',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🏙️ Город</h3><ul><li>улица, площадь, парк</li><li>метро, автобус, такси</li><li>магазин, больница, банк</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Где метро?</div><div class="tr">Where is the metro?</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Как доехать до...?</p><textarea placeholder="Спросите..."></textarea></div>`
+    }
+  },
+
+  { 
+    id:'vocab-time', 
+    category:'vocabulary',
+    icon:'⏰', 
+    title:'Время и даты', 
+    desc:'Дни, месяцы, время суток',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>⏰ Время</h3><ul><li>понедельник, вторник...</li><li>январь, февраль...</li><li>утро, день, вечер, ночь</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Сегодня понедельник</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Какой сегодня день?</p><input type="text" placeholder="Ответ..."></div>`
+    }
+  },
+
+  { 
+    id:'vocab-clothes', 
+    category:'vocabulary',
+    icon:'👔', 
+    title:'Одежда', 
+    desc:'Одежда, обувь, аксессуары',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>👔 Одежда</h3><ul><li>рубашка, брюки, платье</li><li>обувь, куртка, шапка</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Примеры</h3><div class="example-box"><div class="ru">Я покупаю рубашку</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Что вы носите?</p><textarea placeholder="Опишите..."></textarea></div>`
+    }
+  },
+
+  // =====================================================================
+  // 💬 РАЗГОВОРНИК - ПРАКТИЧЕСКИЙ
+  // =====================================================================
+  
+  { 
+    id:'conv-intro', 
+    category:'conversation',
+    icon:'👤', 
+    title:'Знакомство', 
+    desc:'Рассказать о себе',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>👤 Знакомство</h3><ul><li>Меня зовут...</li><li>Я из...</li><li>Я работаю...</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Диалог</h3><div class="dialogue-box"><div class="speaker-a">👤 — Меня зовут Анна</div><div class="speaker-b">🗣️ — Очень приятно!</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Расскажите о себе:</p><textarea placeholder="Меня зовут..."></textarea></div>`
+    }
+  },
+
+  { 
+    id:'conv-shopping', 
+    category:'conversation',
+    icon:'🛒', 
+    title:'Покупки', 
+    desc:'В магазине, на рынке',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🛒 Покупки</h3><ul><li>Сколько стоит?</li><li>Можно примерить?</li><li>Я возьму это</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Диалог</h3><div class="dialogue-box"><div class="speaker-a">👤 — Сколько стоит?</div><div class="speaker-b">🗣️ — 100 рублей</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Задайте вопрос о цене:</p><input type="text" placeholder="Сколько..."></div>`
+    }
+  },
+
+  { 
+    id:'conv-restaurant', 
+    category:'conversation',
+    icon:'🍽️', 
+    title:'В ресторане', 
+    desc:'Заказ еды, комплименты',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🍽️ Ресторан</h3><ul><li>Меню, пожалуйста</li><li>Я возьму...</li><li>Счёт, пожалуйста</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Диалог</h3><div class="dialogue-box"><div class="speaker-a">👤 — Меню, пожалуйста</div><div class="speaker-b">🗣️ — Вот, пожалуйста</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Закажите кофе:</p><textarea placeholder="Я хочу..."></textarea></div>`
+    }
+  },
+
+  { 
+    id:'conv-directions', 
+    category:'conversation',
+    icon:'🗺️', 
+    title:'Как пройти?', 
+    desc:'Спросить дорогу',
+    level:'A1',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🗺️ Дорога</h3><ul><li>Где находится...?</li><li>Как пройти к...?</li><li>Прямо/налево/направо</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Диалог</h3><div class="dialogue-box"><div class="speaker-a">👤 — Где метро?</div><div class="speaker-b">🗣️ — Прямо и направо</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Спросите дорогу:</p><textarea placeholder="Как пройти..."></textarea></div>`
+    }
+  },
+
+  { 
+    id:'conv-health', 
+    category:'conversation',
+    icon:'🏥', 
+    title:'Здоровье', 
+    desc:'У врача, симптомы',
+    level:'A2',
+    lesson: {
+      theory: `<div class="lesson-section"><h3>🏥 Здоровье</h3><ul><li>У меня болит...</li><li>Мне плохо</li><li>Вызовите скорую</li></ul></div>`,
+      examples: `<div class="lesson-section"><h3>💬 Диалог</h3><div class="dialogue-box"><div class="speaker-a">👤 — У меня болит голова</div><div class="speaker-b">🗣️ — Примите таблетку</div></div></div>`,
+      practice: `<div class="lesson-section"><h3>🎯 Практика</h3><p>Опишите симптомы:</p><textarea placeholder="У меня болит..."></textarea></div>`
+    }
+  }
 ];
   
 const vocabularyData = {
