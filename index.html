@@ -670,118 +670,323 @@ examples: `<div class="lesson-section"><h3>Диалог</h3><div class="example-
 practice: `<div class="lesson-section"><h3>Практика</h3><p>Как сказать «Где автобусная остановка»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'transport')"><span>Где остановка автобуса?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'transport')"><span>Где есть автобус?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'transport')"><span>Куда автобус?</span></div></div></div>` }}
 ];
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Словарь с переводами</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+  body { background: #f4f6f9; padding: 20px; color: #222; }
+  
+  .lang-bar {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; padding: 12px;
+    background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .lang-btn {
+    padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; background: #fff;
+    cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+  }
+  .lang-btn:hover { border-color: #94a3b8; background: #f8fafc; }
+  .lang-btn.active { background: #0ea5e9; color: #fff; border-color: #0284c7; }
+  
+  .table-wrap {
+    background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden; max-width: 100%;
+  }
+  .lang-header {
+    padding: 14px 20px; background: #f1f5f9; font-weight: 600; font-size: 16px;
+    border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  th { background: #fafafa; font-weight: 600; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr:hover td { background: #f8fafc; }
+  .ru { font-weight: 500; color: #0f172a; }
+  .tr { color: #64748b; font-style: italic; font-size: 13px; }
+  .target { font-weight: 500; color: #0284c7; }
+  .nav-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .nav-tab {
+    padding: 6px 14px; background: #e2e8f0; border: none; border-radius: 6px;
+    cursor: pointer; font-size: 13px; transition: 0.2s;
+  }
+  .nav-tab.active { background: #0ea5e9; color: #fff; }
+  .nav-tab:hover:not(.active) { background: #cbd5e1; }
+</style>
+</head>
+<body>
+
+<div id="lang-selector" class="lang-bar"></div>
+<div class="nav-tabs" id="category-nav"></div>
+<div class="table-wrap" id="table-container"></div>
+
+<script>
+const LANGS = {
+  en: { name: 'EN', flag: '🇬🇧' }, ky: { name: 'КЫР', flag: '🇰🇬' }, kk: { name: 'ҚАЗ', flag: '🇰🇿' },
+  uz: { name: 'UZ', flag: '🇺🇿' }, tg: { name: 'ТЖК', flag: '🇹🇯' }, hy: { name: 'ՀԱՅ', flag: '🇦🇲' },
+  az: { name: 'AZ', flag: '🇦🇿' }, tr: { name: 'TR', flag: '🇹🇷' }, ar: { name: 'AR', flag: '🇸🇦' },
+  zh: { name: '中', flag: '🇨🇳' }, fa: { name: 'FA', flag: '🇮🇷' }, uk: { name: 'УКР', flag: '🇺🇦' },
+  de: { name: 'DE', flag: '🇩🇪' }, fr: { name: 'FR', flag: '🇫🇷' }, es: { name: 'ES', flag: '🇪🇸' }
+};
+
+let currentLang = 'en';
+let currentCat = 'basic';
+
+// Полные данные с переводами на все языки
 const vocabularyData = {
 basic: [
-{w:'да', tr:'da', t:'yes'},{w:'нет', tr:'net', t:'no'},{w:'пожалуйста', tr:'pozhaluysta', t:'please'},
-{w:'спасибо', tr:'spasibo', t:'thank you'},{w:'привет', tr:'privet', t:'hello (informal)'},
-{w:'здравствуйте', tr:'zdravstvuyte', t:'hello (formal)'},{w:'до свидания', tr:'do svidaniya', t:'goodbye'},
-{w:'да, понял', tr:'da, ponyal', t:'yes, understood'},{w:'не понимаю', tr:'ne ponimayu', t:'I don\'t understand'},
-{w:'повторите', tr:'povtorite', t:'please repeat'},{w:'человек', tr:'chelovek', t:'person/human'},
-{w:'мужчина', tr:'muzhchina', t:'man'},{w:'женщина', tr:'zhenshchina', t:'woman'},
-{w:'ребёнок', tr:'rebyonok', t:'child'},{w:'семья', tr:'semya', t:'family'},
-{w:'друг', tr:'drug', t:'friend'},{w:'имя', tr:'imya', t:'first name'},
-{w:'фамилия', tr:'familiya', t:'surname'},{w:'адрес', tr:'adres', t:'address'},
-{w:'телефон', tr:'telefon', t:'telephone'},{w:'дом', tr:'dom', t:'house/home'},
-{w:'квартира', tr:'kvartira', t:'apartment'},{w:'город', tr:'gorod', t:'city'},
-{w:'страна', tr:'strana', t:'country'},{w:'Россия', tr:'Rossiya', t:'Russia'},
-{w:'работа', tr:'rabota', t:'work/job'},{w:'деньги', tr:'dengi', t:'money'},
-{w:'документ', tr:'dokument', t:'document'},{w:'паспорт', tr:'pasport', t:'passport'},
-{w:'виза', tr:'viza', t:'visa'}
+{w:'да', tr:'da', trs:{en:'yes',ky:'ооба',kk:'иә',uz:'ha',tg:'ҳа',hy:'այո',az:'bəli',tr:'evet',ar:'نعم',zh:'是',fa:'بله',uk:'так',de:'ja',fr:'oui',es:'sí'}},
+{w:'нет', tr:'net', trs:{en:'no',ky:'жок',kk:'жоқ',uz:'yo\'q',tg:'не',hy:'ոչ',az:'xeyr',tr:'hayır',ar:'لا',zh:'不',fa:'نه',uk:'ні',de:'nein',fr:'non',es:'no'}},
+{w:'пожалуйста', tr:'pozhaluysta', trs:{en:'please',ky:'сураныч',kk:'өтінемін',uz:'iltimos',tg:'iltimos',hy:'խնդրում եմ',az:'xahiş edirəm',tr:'lütfen',ar:'رجاءً',zh:'请',fa:'لطفاً',uk:'будь ласка',de:'bitte',fr:'s\'il vous plaît',es:'por favor'}},
+{w:'спасибо', tr:'spasibo', trs:{en:'thank you',ky:'рахмат',kk:'рахмет',uz:'rahmat',tg:'ташаккур',hy:'շնորհակալություն',az:'təşəkkür edirəm',tr:'teşekkür ederim',ar:'شكراً',zh:'谢谢',fa:'ممنون',uk:'дякую',de:'danke',fr:'merci',es:'gracias'}},
+{w:'привет', tr:'privet', trs:{en:'hi',ky:'салам',kk:'сәлем',uz:'salom',tg:'салом',hy:'բարև',az:'salam',tr:'selam',ar:'مرحبا',zh:'你好',fa:'سلام',uk:'привіт',de:'hallo',fr:'salut',es:'hola'}},
+{w:'здравствуйте', tr:'zdravstvuyte', trs:{en:'hello',ky:'саламатсызбы',kk:'сәлеметсіз бе',uz:'assalomu alaykum',tg:'салом',hy:'բարև ձեզ',az:'salam',tr:'merhaba',ar:'أهلاً',zh:'您好',fa:'سلام',uk:'вітаю',de:'guten Tag',fr:'bonjour',es:'buenos días'}},
+{w:'до свидания', tr:'do svidaniya', trs:{en:'goodbye',ky:'кош бол',kk:'сау бол',uz:'xayr',tg:'хуш',hy:'ցտեսություն',az:'görüşənədək',tr:'hoşça kal',ar:'مع السلامة',zh:'再见',fa:'خداحافظ',uk:'до побачення',de:'auf Wiedersehen',fr:'au revoir',es:'adiós'}},
+{w:'да, понял', tr:'da, ponyal', trs:{en:'yes, understood',ky:'ооба, түшүндүм',kk:'иә, түсіндім',uz:'ha, tushundim',tg:'ҳа, фаҳмидам',hy:'այո, հասկացա',az:'bəli, başa düşdüm',tr:'evet, anladım',ar:'نعم، فهمت',zh:'是的，明白了',fa:'بله، فهمیدم',uk:'так, зрозумів',de:'ja, verstanden',fr:'oui, compris',es:'sí, entendido'}},
+{w:'не понимаю', tr:'ne ponimayu', trs:{en:'I don\'t understand',ky:'түшүнбөйм',kk:'түсінбеймін',uz:'tushunmayman',tg:'намефаҳмам',hy:'չեմ հասկանում',az:'başa düşmürəm',tr:'anlamıyorum',ar:'لا أفهم',zh:'我不明白',fa:'نمی‌فهمم',uk:'не розумію',de:'ich verstehe nicht',fr:'je ne comprends pas',es:'no entiendo'}},
+{w:'повторите', tr:'povtorite', trs:{en:'repeat please',ky:'кайталап бериңиз',kk:'қайталаңыз',uz:'qaytaring',tg:'такрор кунед',hy:'կրկնեք խնդրում եմ',az:'təkrar edin',tr:'tekrar edin',ar:'أعد من فضلك',zh:'请重复',fa:'لطفاً تکرار کنید',uk:'повторіть',de:'wiederholen Sie bitte',fr:'répétez s\'il vous plaît',es:'repita por favor'}},
+{w:'человек', tr:'chelovek', trs:{en:'person',ky:'адам',kk:'адам',uz:'odam',tg:'одам',hy:'մարդ',az:'insan',tr:'insan',ar:'شخص',zh:'人',fa:'شخص',uk:'людина',de:'Person',fr:'personne',es:'persona'}},
+{w:'мужчина', tr:'muzhchina', trs:{en:'man',ky:'эркек',kk:'ер адам',uz:'erkak',tg:'мард',hy:'տղամարդ',az:'kişi',tr:'adam',ar:'رجل',zh:'男人',fa:'مرد',uk:'чоловік',de:'Mann',fr:'homme',es:'hombre'}},
+{w:'женщина', tr:'zhenshchina', trs:{en:'woman',ky:'аял',kk:'әйел',uz:'ayol',tg:'зан',hy:'կին',az:'qadın',tr:'kadın',ar:'امرأة',zh:'女人',fa:'زن',uk:'жінка',de:'Frau',fr:'femme',es:'mujer'}},
+{w:'ребёнок', tr:'rebyonok', trs:{en:'child',ky:'бала',kk:'бала',uz:'bola',tg:'кӯдак',hy:'երեխա',az:'uşaq',tr:'çocuk',ar:'طفل',zh:'孩子',fa:'کودک',uk:'дитина',de:'Kind',fr:'enfant',es:'niño'}},
+{w:'семья', tr:'semya', trs:{en:'family',ky:'үй-бүлө',kk:'отбасы',uz:'oilа',tg:'оила',hy:'ընտանիք',az:'ailə',tr:'aile',ar:'عائلة',zh:'家庭',fa:'خانواده',uk:'сім\'я',de:'Familie',fr:'famille',es:'familia'}},
+{w:'друг', tr:'drug', trs:{en:'friend',ky:'дос',kk:'дос',uz:'do\'st',tg:'дӯст',hy:'ընկեր',az:'dost',tr:'arkadaş',ar:'صديق',zh:'朋友',fa:'دوست',uk:'друг',de:'Freund',fr:'ami',es:'amigo'}},
+{w:'имя', tr:'imya', trs:{en:'name',ky:'аты',kk:'есім',uz:'ism',tg:'ном',hy:'անուն',az:'ad',tr:'isim',ar:'اسم',zh:'名字',fa:'نام',uk:'ім\'я',de:'Name',fr:'prénom',es:'nombre'}},
+{w:'фамилия', tr:'familiya', trs:{en:'surname',ky:'фамилиясы',kk:'тегі',uz:'familiya',tg:'насаб',hy:'ազգանուն',az:'soyad',tr:'soyadı',ar:'لقب',zh:'姓氏',fa:'نام خانوادگی',uk:'прізвище',de:'Nachname',fr:'nom de famille',es:'apellido'}},
+{w:'адрес', tr:'adres', trs:{en:'address',ky:'дареги',kk:'мекенжай',uz:'manzil',tg:'суроға',hy:'հասցե',az:'ünvan',tr:'adres',ar:'عنوان',zh:'地址',fa:'آدرس',uk:'адреса',de:'Adresse',fr:'adresse',es:'dirección'}},
+{w:'телефон', tr:'telefon', trs:{en:'phone',ky:'телефон',kk:'телефон',uz:'telefon',tg:'телефон',hy:'հեռախոս',az:'telefon',tr:'telefon',ar:'هاتف',zh:'电话',fa:'تلفن',uk:'телефон',de:'Telefon',fr:'téléphone',es:'teléfono'}},
+{w:'дом', tr:'dom', trs:{en:'house',ky:'үй',kk:'үй',uz:'uy',tg:'хона',hy:'տուն',az:'ev',tr:'ev',ar:'منزل',zh:'房子',fa:'خانه',uk:'будинок',de:'Haus',fr:'maison',es:'casa'}},
+{w:'квартира', tr:'kvartira', trs:{en:'apartment',ky:'квартира',kk:'пәтер',uz:'kvartira',tg:'хона',hy:'բնակարան',az:'mənzil',tr:'daire',ar:'شقة',zh:'公寓',fa:'آپارتمان',uk:'квартира',de:'Wohnung',fr:'appartement',es:'piso'}},
+{w:'город', tr:'gorod', trs:{en:'city',ky:'шаар',kk:'қала',uz:'shahar',tg:'шаҳр',hy:'քաղաք',az:'şəhər',tr:'şehir',ar:'مدينة',zh:'城市',fa:'شهر',uk:'місто',de:'Stadt',fr:'ville',es:'ciudad'}},
+{w:'страна', tr:'strana', trs:{en:'country',ky:'өлкө',kk:'ел',uz:'davlat',tg:'кишвар',hy:'երկիր',az:'ölkə',tr:'ülke',ar:'بلد',zh:'国家',fa:'کشور',uk:'країна',de:'Land',fr:'pays',es:'país'}},
+{w:'Россия', tr:'Rossiya', trs:{en:'Russia',ky:'Россия',kk:'Ресей',uz:'Rossiya',tg:'Русия',hy:'Ռուսաստան',az:'Rusiya',tr:'Rusya',ar:'روسيا',zh:'俄罗斯',fa:'روسیه',uk:'Росія',de:'Russland',fr:'Russie',es:'Rusia'}},
+{w:'работа', tr:'rabota', trs:{en:'work',ky:'иш',kk:'жұмыс',uz:'ish',tg:'кор',hy:'աշխատանք',az:'iş',tr:'iş',ar:'عمل',zh:'工作',fa:'کار',uk:'робота',de:'Arbeit',fr:'travail',es:'trabajo'}},
+{w:'деньги', tr:'dengi', trs:{en:'money',ky:'акча',kk:'ақша',uz:'pul',tg:'пул',hy:'փող',az:'pul',tr:'para',ar:'مال',zh:'钱',fa:'پول',uk:'гроші',de:'Geld',fr:'argent',es:'dinero'}},
+{w:'документ', tr:'dokument', trs:{en:'document',ky:'документ',kk:'құжат',uz:'hujjat',tg:'ҳуҷҷат',hy:'փաստաթուղթ',az:'sənəd',tr:'belge',ar:'وثيقة',zh:'文件',fa:'سند',uk:'документ',de:'Dokument',fr:'document',es:'documento'}},
+{w:'паспорт', tr:'pasport', trs:{en:'passport',ky:'паспорт',kk:'паспорт',uz:'pasport',tg:'шиноснома',hy:'անձնագիր',az:'pasport',tr:'pasaport',ar:'جواز سفر',zh:'护照',fa:'گذرنامه',uk:'паспорт',de:'Pass',fr:'passeport',es:'pasaporte'}},
+{w:'виза', tr:'viza', trs:{en:'visa',ky:'виза',kk:'виза',uz:'viza',tg:'виза',hy:'վիզա',az:'viza',tr:'vize',ar:'تأشيرة',zh:'签证',fa:'ویزا',uk:'віза',de:'Visum',fr:'visa',es:'visado'}}
 ],
 verbs: [
-{w:'быть', tr:'byt\'', t:'to be'},{w:'иметь', tr:'imet\'', t:'to have'},
-{w:'идти', tr:'idti', t:'to go (on foot)'},{w:'ехать', tr:'yekhat\'', t:'to go (by transport)'},
-{w:'жить', tr:'zhit\'', t:'to live'},{w:'работать', tr:'rabotat\'', t:'to work'},
-{w:'говорить', tr:'govorit\'', t:'to speak'},{w:'понимать', tr:'ponimat\'', t:'to understand'},
-{w:'знать', tr:'znat\'', t:'to know'},{w:'хотеть', tr:'khotet\'', t:'to want'},
-{w:'мочь', tr:'moch\'', t:'to be able to'},{w:'делать', tr:'delat\'', t:'to do/make'},
-{w:'купить', tr:'kupit\'', t:'to buy'},{w:'платить', tr:'platit\'', t:'to pay'},
-{w:'есть', tr:'yest\'', t:'to eat'},{w:'пить', tr:'pit\'', t:'to drink'},
-{w:'видеть', tr:'videt\'', t:'to see'},{w:'слышать', tr:'slyshat\'', t:'to hear'},
-{w:'читать', tr:'chitat\'', t:'to read'},{w:'писать', tr:'pisat\'', t:'to write'},
-{w:'учиться', tr:'uchit\'sya', t:'to study'},{w:'помочь', tr:'pomoch\'', t:'to help'},
-{w:'открыть', tr:'otkryt\'', t:'to open'},{w:'закрыть', tr:'zakryt\'', t:'to close'},
-{w:'приехать', tr:'priyekhat\'', t:'to arrive (by transport)'},{w:'уехать', tr:'uyekhat\'', t:'to leave (by transport)'},
-{w:'найти', tr:'nayti', t:'to find'},{w:'дать', tr:'dat\'', t:'to give'},
-{w:'взять', tr:'vzyat\'', t:'to take'},{w:'позвонить', tr:'pozvonit\'', t:'to call'}
+{w:'быть', tr:'byt\'', trs:{en:'to be',ky:'болуу',kk:'болу',uz:'bo\'lmoq',tg:'будан',hy:'լինել',az:'olmaq',tr:'olmak',ar:'يكون',zh:'是',fa:'بودن',uk:'бути',de:'sein',fr:'être',es:'ser'}},
+{w:'иметь', tr:'imet\'', trs:{en:'to have',ky:'ээ болуу',kk:'иелену',uz:'ega bo\'lmoq',tg:'доштан',hy:'ունենալ',az:'malik olmaq',tr:'sahip olmak',ar:'يملك',zh:'有',fa:'داشتن',uk:'мати',de:'haben',fr:'avoir',es:'tener'}},
+{w:'идти', tr:'idti', trs:{en:'to walk',ky:'басуу',kk:'жүру',uz:'yurmoq',tg:'рафтан',hy:'քայլել',az:'yerimək',tr:'yürümek',ar:'يمشي',zh:'走',fa:'راه رفتن',uk:'йти',de:'gehen',fr:'marcher',es:'caminar'}},
+{w:'ехать', tr:'yekhat\'', trs:{en:'to ride',ky:'бара жат',kk:'бару',uz:'bormoq',tg:'равон шудан',hy:'գնալ',az:'getmək',tr:'gitmek',ar:'يذهب',zh:'去',fa:'رفتن',uk:'їхати',de:'fahren',fr:'aller',es:'ir'}},
+{w:'жить', tr:'zhit\'', trs:{en:'to live',ky:'жашоо',kk:'өмір сүру',uz:'yashamoq',tg:'зиндагӣ кардан',hy:'ապրել',az:'yaşamaq',tr:'yaşamak',ar:'يعيش',zh:'生活',fa:'زندگی کردن',uk:'жити',de:'leben',fr:'vivre',es:'vivir'}},
+{w:'работать', tr:'rabotat\'', trs:{en:'to work',ky:'иштөө',kk:'жұмыс істеу',uz:'ishlamoq',tg:'кор кардан',hy:'աշխատել',az:'işləmək',tr:'çalışmak',ar:'يعمل',zh:'工作',fa:'کار کردن',uk:'працювати',de:'arbeiten',fr:'travailler',es:'trabajar'}},
+{w:'говорить', tr:'govorit\'', trs:{en:'to speak',ky:'сүйлөө',kk:'сөйлеу',uz:'gapirmoq',tg:'гап задан',hy:'խոսել',az:'danışmaq',tr:'konuşmak',ar:'يتكلم',zh:'说',fa:'صحبت کردن',uk:'говорити',de:'sprechen',fr:'parler',es:'hablar'}},
+{w:'понимать', tr:'ponimat\'', trs:{en:'to understand',ky:'түшүнүү',kk:'түсіну',uz:'tushunmoq',tg:'фаҳмидан',hy:'հասկանալ',az:'anlamaq',tr:'anlamak',ar:'يفهم',zh:'理解',fa:'فهمیدن',uk:'розуміти',de:'verstehen',fr:'comprendre',es:'entender'}},
+{w:'знать', tr:'znat\'', trs:{en:'to know',ky:'билүү',kk:'білу',uz:'bilmoq',tg:'донистан',hy:'իմանալ',az:'bilmək',tr:'bilmek',ar:'يعرف',zh:'知道',fa:'دانستن',uk:'знати',de:'wissen',fr:'savoir',es:'saber'}},
+{w:'хотеть', tr:'khotet\'', trs:{en:'to want',ky:'каалоо',kk:'қалау',uz:'xohlamoq',tg:'хоҳиш кардан',hy:'ցանկանալ',az:'istəmək',tr:'istemek',ar:'يريد',zh:'想要',fa:'خواستن',uk:'хотіти',de:'wollen',fr:'vouloir',es:'querer'}},
+{w:'мочь', tr:'moch\'', trs:{en:'to can',ky:'ал',kk:'мүмкін',uz:'mumkin',tg:'тавонистан',hy:'կարողանալ',az:'bacarmaq',tr:'yapabilmek',ar:'يستطيع',zh:'能',fa:'توانستن',uk:'могти',de:'können',fr:'pouvoir',es:'poder'}},
+{w:'делать', tr:'delat\'', trs:{en:'to do',ky:'жасоо',kk:'жасау',uz:'qilmoq',tg:'кардан',hy:'անել',az:'etmək',tr:'yapmak',ar:'يفعل',zh:'做',fa:'انجام دادن',uk:'робити',de:'machen',fr:'faire',es:'hacer'}},
+{w:'купить', tr:'kupit\'', trs:{en:'to buy',ky:'сатып алуу',kk:'сатып алу',uz:'sotib olmoq',tg:'харидан',hy:'գնել',az:'almaq',tr:'almak',ar:'يشترى',zh:'买',fa:'خریدن',uk:'купити',de:'kaufen',fr:'acheter',es:'comprar'}},
+{w:'платить', tr:'platit\'', trs:{en:'to pay',ky:'төлөө',kk:'төлеу',uz:'to\'lamoq',tg:'пардохтан',hy:'վճարել',az:'ödəmək',tr:'ödemek',ar:'يدفع',zh:'支付',fa:'پرداخت کردن',uk:'платити',de:'zahlen',fr:'payer',es:'pagar'}},
+{w:'есть', tr:'yest\'', trs:{en:'to eat',ky:'жеп',kk:'жеу',uz:'yemoq',tg:'хӯрдан',hy:'ուտել',az:'yemək',tr:'yemek',ar:'يأكل',zh:'吃',fa:'خوردن',uk:'їсти',de:'essen',fr:'manger',es:'comer'}},
+{w:'пить', tr:'pit\'', trs:{en:'to drink',ky:'ич',kk:'ішу',uz:'ichmoq',tg:'нӯшидан',hy:'խմել',az:'içmək',tr:'içmek',ar:'يشرب',zh:'喝',fa:'نوشیدن',uk:'пити',de:'trinken',fr:'boire',es:'beber'}},
+{w:'видеть', tr:'videt\'', trs:{en:'to see',ky:'көрүү',kk:'көру',uz:'ko\'rmoq',tg:'дидан',hy:'տեսնել',az:'görmək',tr:'görmek',ar:'يرى',zh:'看见',fa:'دیدن',uk:'бачити',de:'sehen',fr:'voir',es:'ver'}},
+{w:'слышать', tr:'slyshat\'', trs:{en:'to hear',ky:'угуу',kk:'есту',uz:'eshitmoq',tg:'шунидан',hy:'լսել',az:'eşitmək',tr:'duymak',ar:'يسمع',zh:'听见',fa:'شنیدن',uk:'чути',de:'hören',fr:'entendre',es:'oír'}},
+{w:'читать', tr:'chitat\'', trs:{en:'to read',ky:'окуу',kk:'оқу',uz:'o\'qimoq',tg:'хондан',hy:'կարդալ',az:'oxumaq',tr:'okumak',ar:'يقرأ',zh:'读',fa:'خواندن',uk:'читати',de:'lesen',fr:'lire',es:'leer'}},
+{w:'писать', tr:'pisat\'', trs:{en:'to write',ky:'жазуу',kk:'жазу',uz:'yozmoq',tg:'навиштан',hy:'գրել',az:'yazmaq',tr:'yazmak',ar:'يكتب',zh:'写',fa:'نوشتن',uk:'писати',de:'schreiben',fr:'écrire',es:'escribir'}},
+{w:'учиться', tr:'uchit\'sya', trs:{en:'to study',ky:'окуу',kk:'оқу',uz:'o\'qimoq',tg:'таҳсил кардан',hy:'սովորել',az:'öyrənmək',tr:'öğrenmek',ar:'يتعلم',zh:'学习',fa:'یاد گرفتن',uk:'вчитися',de:'lernen',fr:'étudier',es:'estudiar'}},
+{w:'помочь', tr:'pomoch\'', trs:{en:'to help',ky:'жардам берүү',kk:'көмектесу',uz:'yordam bermoq',tg:'кӯмак кардан',hy:'օգնել',az:'kömək etmək',tr:'yardım etmek',ar:'يساعد',zh:'帮助',fa:'کمک کردن',uk:'допомогти',de:'helfen',fr:'aider',es:'ayudar'}},
+{w:'открыть', tr:'otkryt\'', trs:{en:'to open',ky:'ачуу',kk:'ашу',uz:'ochmoq',tg:'кушодан',hy:'բացել',az:'açmaq',tr:'açmak',ar:'يفتح',zh:'打开',fa:'باز کردن',uk:'відкрити',de:'öffnen',fr:'ouvrir',es:'abrir'}},
+{w:'закрыть', tr:'zakryt\'', trs:{en:'to close',ky:'жабуу',kk:'жабу',uz:'yopmoq',tg:'пӯшидан',hy:'փակել',az:'bağlamaq',tr:'kapatmak',ar:'يغلق',zh:'关闭',fa:'بستن',uk:'закрити',de:'schließen',fr:'fermer',es:'cerrar'}},
+{w:'приехать', tr:'priyekhat\'', trs:{en:'to arrive',ky:'келүү',kk:'келу',uz:'kelmoq',tg:'расидан',hy:'ժամանել',az:'gəlmək',tr:'gelmek',ar:'يصل',zh:'到达',fa:'رسیدن',uk:'приїхати',de:'ankommen',fr:'arriver',es:'llegar'}},
+{w:'уехать', tr:'uyekhat\'', trs:{en:'to leave',ky:'кетүү',kk:'кету',uz:'ketmoq',tg:'рафтан',hy:'հեռանալ',az:'getmək',tr:'ayrılmak',ar:'يغادر',zh:'离开',fa:'ترک کردن',uk:'виїхати',de:'abreisen',fr:'partir',es:'irse'}},
+{w:'найти', tr:'nayti', trs:{en:'to find',ky:'табуу',kk:'табу',uz:'topmoq',tg:'ёфтан',hy:'գտնել',az:'tapmaq',tr:'bulmak',ar:'يجد',zh:'找到',fa:'پیدا کردن',uk:'знайти',de:'finden',fr:'trouver',es:'encontrar'}},
+{w:'дать', tr:'dat\'', trs:{en:'to give',ky:'берүү',kk:'беру',uz:'bermoq',tg:'додан',hy:'տալ',az:'vermək',tr:'vermek',ar:'يعطي',zh:'给',fa:'دادن',uk:'дати',de:'geben',fr:'donner',es:'dar'}},
+{w:'взять', tr:'vzyat\'', trs:{en:'to take',ky:'алуу',kk:'алу',uz:'olmoq',tg:'гирифтан',hy:'վերցնել',az:'götürmək',tr:'almak',ar:'يأخذ',zh:'拿',fa:'گرفتن',uk:'взяти',de:'nehmen',fr:'prendre',es:'tomar'}},
+{w:'позвонить', tr:'pozvonit\'', trs:{en:'to call',ky:'чалуу',kk:'қоңырау шалу',uz:'qo\'ng\'iroq qilmoq',tg:'занг задан',hy:'զանգահարել',az:'zəng etmək',tr:'aramak',ar:'يتصل',zh:'打电话',fa:'تماس گرفتن',uk:'подзвонити',de:'anrufen',fr:'appeler',es:'llamar'}}
 ],
 time: [
-{w:'сегодня', tr:'segodnya', t:'today'},{w:'вчера', tr:'vchera', t:'yesterday'},
-{w:'завтра', tr:'zavtra', t:'tomorrow'},{w:'сейчас', tr:'seychas', t:'now'},
-{w:'потом', tr:'potom', t:'later'},{w:'всегда', tr:'vsegda', t:'always'},
-{w:'никогда', tr:'nikogda', t:'never'},{w:'иногда', tr:'inogda', t:'sometimes'},
-{w:'утро', tr:'utro', t:'morning'},{w:'день', tr:'den\'', t:'day/afternoon'},
-{w:'вечер', tr:'vecher', t:'evening'},{w:'ночь', tr:'noch\'', t:'night'},
-{w:'неделя', tr:'nedelya', t:'week'},{w:'месяц', tr:'mesyats', t:'month'},
-{w:'год', tr:'god', t:'year'},{w:'час', tr:'chas', t:'hour'},
-{w:'минута', tr:'minuta', t:'minute'},{w:'понедельник', tr:'ponedelnik', t:'Monday'},
-{w:'вторник', tr:'vtornik', t:'Tuesday'},{w:'среда', tr:'sreda', t:'Wednesday'},
-{w:'четверг', tr:'chetverg', t:'Thursday'},{w:'пятница', tr:'pyatnitsa', t:'Friday'},
-{w:'суббота', tr:'subbota', t:'Saturday'},{w:'воскресенье', tr:'voskresenye', t:'Sunday'},
-{w:'январь', tr:'yanvar\'', t:'January'},{w:'февраль', tr:'fevral\'', t:'February'},
-{w:'март', tr:'mart', t:'March'},{w:'июнь', tr:'iyun\'', t:'June'},
-{w:'сентябрь', tr:'sentyabr\'', t:'September'},{w:'декабрь', tr:'dekabr\'', t:'December'}
+{w:'сегодня', tr:'segodnya', trs:{en:'today',ky:'бүгүн',kk:'бүгін',uz:'bugun',tg:'имрӯз',hy:'այսօր',az:'bu gün',tr:'bugün',ar:'اليوم',zh:'今天',fa:'امروز',uk:'сьогодні',de:'heute',fr:'aujourd\'hui',es:'hoy'}},
+{w:'вчера', tr:'vchera', trs:{en:'yesterday',ky:'кече',kk:'кеше',uz:'kecha',tg:'дирӯз',hy:'երեկ',az:'dünən',tr:'dün',ar:'أمس',zh:'昨天',fa:'دیروز',uk:'вчора',de:'gestern',fr:'hier',es:'ayer'}},
+{w:'завтра', tr:'zavtra', trs:{en:'tomorrow',ky:'эртең',kk:'ертең',uz:'ertaga',tg:'фардо',hy:'վաղը',az:'sabah',tr:'yarın',ar:'غداً',zh:'明天',fa:'فردا',uk:'завтра',de:'morgen',fr:'demain',es:'mañana'}},
+{w:'сейчас', tr:'seychas', trs:{en:'now',ky:'азыр',kk:'қазір',uz:'hozir',tg:'ҳозир',hy:'հիմա',az:'indi',tr:'şimdi',ar:'الآن',zh:'现在',fa:'اکنون',uk:'зараз',de:'jetzt',fr:'maintenant',es:'ahora'}},
+{w:'потом', tr:'potom', trs:{en:'later',ky:'кийинчерээк',kk:'кейін',uz:'keyin',tg:'баъд',hy:'հետո',az:'sonra',tr:'sonra',ar:'لاحقاً',zh:'以后',fa:'بعداً',uk:'потім',de:'später',fr:'plus tard',es:'luego'}},
+{w:'всегда', tr:'vsegda', trs:{en:'always',ky:'ар дайым',kk:'әрқашан',uz:'doim',tg:'ҳамеша',hy:'միշտ',az:'həmişə',tr:'her zaman',ar:'دائماً',zh:'总是',fa:'همیشه',uk:'завжди',de:'immer',fr:'toujours',es:'siempre'}},
+{w:'никогда', tr:'nikogda', trs:{en:'never',ky:'эч качан',kk:'ешқашан',uz:'hech qachon',tg:'ҳеҷ гоҳ',hy:'երբեք',az:'heç vaxt',tr:'asla',ar:'أبداً',zh:'从不',fa:'هرگز',uk:'ніколи',de:'nie',fr:'jamais',es:'nunca'}},
+{w:'иногда', tr:'inogda', trs:{en:'sometimes',ky:'кээде',kk:'кейде',uz:'ba\'zan',tg:'баъзан',hy:'երբեմն',az:'bəzən',tr:'bazen',ar:'أحياناً',zh:'有时',fa:'گاهی',uk:'іноді',de:'manchmal',fr:'parfois',es:'a veces'}},
+{w:'утро', tr:'utro', trs:{en:'morning',ky:'таң',kk:'таң',uz:'ertalab',tg:'субҳ',hy:'առավոտ',az:'səhər',tr:'sabah',ar:'صباح',zh:'早上',fa:'صبح',uk:'ранок',de:'Morgen',fr:'matin',es:'mañana'}},
+{w:'день', tr:'den\'', trs:{en:'day',ky:'күн',kk:'күн',uz:'kun',tg:'рӯз',hy:'օր',az:'gün',tr:'gün',ar:'يوم',zh:'天',fa:'روز',uk:'день',de:'Tag',fr:'jour',es:'día'}},
+{w:'вечер', tr:'vecher', trs:{en:'evening',ky:'кеч',kk:'кеш',uz:'kechqurun',tg:'шаб',hy:'երեկո',az:'axşam',tr:'akşam',ar:'مساء',zh:'晚上',fa:'عصر',uk:'вечір',de:'Abend',fr:'soir',es:'tarde'}},
+{w:'ночь', tr:'noch\'', trs:{en:'night',ky:'түн',kk:'түн',uz:'tun',tg:'шаб',hy:'գիշեր',az:'gecə',tr:'gece',ar:'ليل',zh:'夜晚',fa:'شب',uk:'ніч',de:'Nacht',fr:'nuit',es:'noche'}},
+{w:'неделя', tr:'nedelya', trs:{en:'week',ky:'апта',kk:'апта',uz:'hafta',tg:'ҳафта',hy:'շաբաթ',az:'həftə',tr:'hafta',ar:'أسبوع',zh:'周',fa:'هفته',uk:'тиждень',de:'Woche',fr:'semaine',es:'semana'}},
+{w:'месяц', tr:'mesyats', trs:{en:'month',ky:'ай',kk:'ай',uz:'oy',tg:'моҳ',hy:'ամիս',az:'ay',tr:'ay',ar:'شهر',zh:'月',fa:'ماه',uk:'місяць',de:'Monat',fr:'mois',es:'mes'}},
+{w:'год', tr:'god', trs:{en:'year',ky:'жыл',kk:'жыл',uz:'yil',tg:'сол',hy:'տարի',az:'il',tr:'yıl',ar:'سنة',zh:'年',fa:'سال',uk:'рік',de:'Jahr',fr:'an',es:'año'}},
+{w:'час', tr:'chas', trs:{en:'hour',ky:'саат',kk:'сағат',uz:'soat',tg:'соат',hy:'ժամ',az:'saat',tr:'saat',ar:'ساعة',zh:'小时',fa:'ساعت',uk:'година',de:'Stunde',fr:'heure',es:'hora'}},
+{w:'минута', tr:'minuta', trs:{en:'minute',ky:'мүнөт',kk:'минут',uz:'daqiqa',tg:'дақиқа',hy:'րոպե',az:'dəqiqə',tr:'dakika',ar:'دقيقة',zh:'分钟',fa:'دقیقه',uk:'хвилина',de:'Minute',fr:'minute',es:'minuto'}},
+{w:'понедельник', tr:'ponedelnik', trs:{en:'Monday',ky:'дүйшөмбү',kk:'дүйсенбі',uz:'dushanba',tg:'душанбе',hy:'երկուշաբթի',az:'bazar ertəsi',tr:'pazartesi',ar:'الإثنين',zh:'星期一',fa:'دوشنبه',uk:'понеділок',de:'Montag',fr:'lundi',es:'lunes'}},
+{w:'вторник', tr:'vtornik', trs:{en:'Tuesday',ky:'шейшемби',kk:'сейсенбі',uz:'seshanba',tg:'сешанбе',hy:'երեքշաբթի',az:'çərşənbə axşamı',tr:'salı',ar:'الثلاثاء',zh:'星期二',fa:'سه‌شنبه',uk:'вівторок',de:'Dienstag',fr:'mardi',es:'martes'}},
+{w:'среда', tr:'sreda', trs:{en:'Wednesday',ky:'шаршемби',kk:'сәрсенбі',uz:'chorshanba',tg:'чоршанбе',hy:'չորեքշաբթի',az:'çərşənbə',tr:'çarşamba',ar:'الأربعاء',zh:'星期三',fa:'چهارشنبه',uk:'середа',de:'Mittwoch',fr:'mercredi',es:'miércoles'}},
+{w:'четверг', tr:'chetverg', trs:{en:'Thursday',ky:'бейшемби',kk:'бейсенбі',uz:'payshanba',tg:'панҷшанбе',hy:'հինգշաբթի',az:'cümə axşamı',tr:'perşembe',ar:'الخميس',zh:'星期四',fa:'پنجشنبه',uk:'четвер',de:'Donnerstag',fr:'jeudi',es:'jueves'}},
+{w:'пятница', tr:'pyatnitsa', trs:{en:'Friday',ky:'жума',kk:'жұма',uz:'juma',tg:'ҷумъа',hy:'ուրբաթ',az:'cümə',tr:'cuma',ar:'الجمعة',zh:'星期五',fa:'جمعه',uk:'п\'ятниця',de:'Freitag',fr:'vendredi',es:'viernes'}},
+{w:'суббота', tr:'subbota', trs:{en:'Saturday',ky:'ишемби',kk:'сенбі',uz:'shanba',tg:'шанбе',hy:'շաբաթ',az:'şənbə',tr:'cumartesi',ar:'السبت',zh:'星期六',fa:'شنبه',uk:'субота',de:'Samstag',fr:'samedi',es:'sábado'}},
+{w:'воскресенье', tr:'voskresenye', trs:{en:'Sunday',ky:'жекшемби',kk:'жексенбі',uz:'yakshanba',tg:'якшанбе',hy:'կիրակի',az:'bazar',tr:'pazar',ar:'الأحد',zh:'星期日',fa:'یکشنبه',uk:'неділя',de:'Sonntag',fr:'dimanche',es:'domingo'}},
+{w:'январь', tr:'yanvar\'', trs:{en:'January',ky:'январь',kk:'қаңтар',uz:'yanvar',tg:'январ',hy:'հունվար',az:'yanvar',tr:'ocak',ar:'يناير',zh:'一月',fa:'ژانویه',uk:'січень',de:'Januar',fr:'janvier',es:'enero'}},
+{w:'февраль', tr:'fevral\'', trs:{en:'February',ky:'февраль',kk:'ақпан',uz:'fevral',tg:'феврал',hy:'փետրվար',az:'fevral',tr:'şubat',ar:'فبراير',zh:'二月',fa:'فوریه',uk:'лютий',de:'Februar',fr:'février',es:'febrero'}},
+{w:'март', tr:'mart', trs:{en:'March',ky:'март',kk:'наурыз',uz:'mart',tg:'март',hy:'մարտ',az:'mart',tr:'mart',ar:'مارس',zh:'三月',fa:'مارس',uk:'березень',de:'März',fr:'mars',es:'marzo'}},
+{w:'июнь', tr:'iyun\'', trs:{en:'June',ky:'июнь',kk:'маусым',uz:'iyun',tg:'июн',hy:'հունիս',az:'iyun',tr:'haziran',ar:'يونيو',zh:'六月',fa:'ژوئن',uk:'червень',de:'Juni',fr:'juin',es:'junio'}},
+{w:'сентябрь', tr:'sentyabr\'', trs:{en:'September',ky:'сентябрь',kk:'қыркүйек',uz:'sentabr',tg:'сентябр',hy:'սեպտեմբեր',az:'sentyabr',tr:'eylül',ar:'سبتمبر',zh:'九月',fa:'سپتامبر',uk:'вересень',de:'September',fr:'septembre',es:'septiembre'}},
+{w:'декабрь', tr:'dekabr\'', trs:{en:'December',ky:'декабрь',kk:'желтоқсан',uz:'dekabr',tg:'декабр',hy:'դեկտեմբեր',az:'dekabr',tr:'aralık',ar:'ديسمبر',zh:'十二月',fa:'دسامبر',uk:'грудень',de:'Dezember',fr:'décembre',es:'diciembre'}}
 ],
 places: [
-{w:'магазин', tr:'magazin', t:'shop/store'},{w:'аптека', tr:'apteka', t:'pharmacy'},
-{w:'больница', tr:'bolnitsa', t:'hospital'},{w:'поликлиника', tr:'poliklinika', t:'clinic'},
-{w:'банк', tr:'bank', t:'bank'},{w:'почта', tr:'pochta', t:'post office'},
-{w:'школа', tr:'shkola', t:'school'},{w:'университет', tr:'universitet', t:'university'},
-{w:'работа', tr:'rabota', t:'workplace'},{w:'офис', tr:'ofis', t:'office'},
-{w:'рынок', tr:'rynok', t:'market'},{w:'ресторан', tr:'restoran', t:'restaurant'},
-{w:'кафе', tr:'kafe', t:'cafe'},{w:'гостиница', tr:'gostinitsa', t:'hotel'},
-{w:'аэропорт', tr:'aeroport', t:'airport'},{w:'вокзал', tr:'vokzal', t:'train station'},
-{w:'метро', tr:'metro', t:'metro/subway'},{w:'автобус', tr:'avtobus', t:'bus'},
-{w:'полиция', tr:'politsiya', t:'police'},{w:'суд', tr:'sud', t:'court'},
-{w:'мэрия', tr:'meriya', t:'city hall'},{w:'МФЦ', tr:'MFTs', t:'multifunctional center'},
-{w:'УФМС', tr:'UFMS', t:'migration service'},{w:'налоговая', tr:'nalogovaya', t:'tax office'},
-{w:'пенсионный фонд', tr:'pensionnyy fond', t:'pension fund'},
-{w:'библиотека', tr:'biblioteka', t:'library'},{w:'музей', tr:'muzey', t:'museum'},
-{w:'парк', tr:'park', t:'park'},{w:'площадь', tr:'ploshchad\'', t:'square'},
-{w:'улица', tr:'ulitsa', t:'street'}
+{w:'магазин', tr:'magazin', trs:{en:'shop',ky:'дүкөн',kk:'дүкен',uz:'do\'kon',tg:'мағоза',hy:'խանութ',az:'mağaza',tr:'dükkan',ar:'متجر',zh:'商店',fa:'مغازه',uk:'магазин',de:'Laden',fr:'magasin',es:'tienda'}},
+{w:'аптека', tr:'apteka', trs:{en:'pharmacy',ky:'дарыкана',kk:'дәріхана',uz:'doriхона',tg:'дорухона',hy:'դեղատուն',az:'əczaxana',tr:'eczane',ar:'صيدلية',zh:'药店',fa:'داروخانه',uk:'аптека',de:'Apotheke',fr:'pharmacie',es:'farmacia'}},
+{w:'больница', tr:'bolnitsa', trs:{en:'hospital',ky:'оорукана',kk:'аурухана',uz:'kasalxona',tg:'беморхона',hy:'հիվանդանոց',az:'xəstəxana',tr:'hastane',ar:'مستشفى',zh:'医院',fa:'بیمارستان',uk:'лікарня',de:'Krankenhaus',fr:'hôpital',es:'hospital'}},
+{w:'поликлиника', tr:'poliklinika', trs:{en:'clinic',ky:'поликлиника',kk:'поликлиника',uz:'poliklinika',tg:'поликлиника',hy:'պոլիկլինիկա',az:'poliklinika',tr:'poliklinik',ar:'عيادة',zh:'诊所',fa:'درمانگاه',uk:'поліклініка',de:'Klinik',fr:'clinique',es:'clínica'}},
+{w:'банк', tr:'bank', trs:{en:'bank',ky:'банк',kk:'банк',uz:'bank',tg:'банк',hy:'բանկ',az:'bank',tr:'banka',ar:'بنك',zh:'银行',fa:'بانک',uk:'банк',de:'Bank',fr:'banque',es:'banco'}},
+{w:'почта', tr:'pochta', trs:{en:'post office',ky:'почта',kk:'пошта',uz:'pochta',tg:'почта',hy:'փոստ',az:'poçt',tr:'posta',ar:'بريد',zh:'邮局',fa:'پست',uk:'пошта',de:'Post',fr:'poste',es:'correo'}},
+{w:'школа', tr:'shkola', trs:{en:'school',ky:'мектеп',kk:'мектеп',uz:'maktab',tg:'мактаб',hy:'դպրոց',az:'məktəb',tr:'okul',ar:'مدرسة',zh:'学校',fa:'مدرسه',uk:'школа',de:'Schule',fr:'école',es:'escuela'}},
+{w:'университет', tr:'universitet', trs:{en:'university',ky:'университет',kk:'университет',uz:'universitet',tg:'университет',hy:'համալսարան',az:'universitet',tr:'üniversite',ar:'جامعة',zh:'大学',fa:'دانشگاه',uk:'університет',de:'Universität',fr:'université',es:'universidad'}},
+{w:'работа', tr:'rabota', trs:{en:'workplace',ky:'жумуш',kk:'жұмыс',uz:'ish joyi',tg:'ҷои кор',hy:'աշխատավայր',az:'iş yeri',tr:'işyeri',ar:'مقر العمل',zh:'工作场所',fa:'محل کار',uk:'робоче місце',de:'Arbeitsplatz',fr:'lieu de travail',es:'lugar de trabajo'}},
+{w:'офис', tr:'ofis', trs:{en:'office',ky:'офис',kk:'офис',uz:'ofis',tg:'офис',hy:'գրասենյակ',az:'ofis',tr:'ofis',ar:'مكتب',zh:'办公室',fa:'دفتر',uk:'офіс',de:'Büro',fr:'bureau',es:'oficina'}},
+{w:'рынок', tr:'rynok', trs:{en:'market',ky:'базар',kk:'базар',uz:'bozor',tg:'бозор',hy:'շուկա',az:'bazar',tr:'pazar',ar:'سوق',zh:'市场',fa:'بازار',uk:'ринок',de:'Markt',fr:'marché',es:'mercado'}},
+{w:'ресторан', tr:'restoran', trs:{en:'restaurant',ky:'ресторан',kk:'мектепхана',uz:'restoran',tg:'ресторан',hy:'ռեստորան',az:'restoran',tr:'restoran',ar:'مطعم',zh:'餐厅',fa:'رستوران',uk:'ресторан',de:'Restaurant',fr:'restaurant',es:'restaurante'}},
+{w:'кафе', tr:'kafe', trs:{en:'cafe',ky:'кафе',kk:'кафе',uz:'kafe',tg:'кафе',hy:'սրճարան',az:'kafe',tr:'kafe',ar:'مقهى',zh:'咖啡馆',fa:'کافه',uk:'кафе',de:'Café',fr:'café',es:'cafetería'}},
+{w:'гостиница', tr:'gostinitsa', trs:{en:'hotel',ky:'мехманкана',kk:'қонақ үй',uz:'mehmonхона',tg:'меҳмонхона',hy:'հյուրանոց',az:'otel',tr:'otel',ar:'فندق',zh:'酒店',fa:'هتل',uk:'готель',de:'Hotel',fr:'hôtel',es:'hotel'}},
+{w:'аэропорт', tr:'aeroport', trs:{en:'airport',ky:'аэропорт',kk:'аэропорт',uz:'aeroport',tg:'аэропорт',hy:'օդանավակայան',az:'hava limanı',tr:'havalimanı',ar:'مطار',zh:'机场',fa:'فرودگاه',uk:'аеропорт',de:'Flughafen',fr:'aéroport',es:'aeropuerto'}},
+{w:'вокзал', tr:'vokzal', trs:{en:'station',ky:'бекет',kk:'вокзал',uz:'vokzal',tg:'истгоҳ',hy:'կայարան',az:'vağzal',tr:'istasyon',ar:'محطة',zh:'车站',fa:'ایستگاه',uk:'вокзал',de:'Bahnhof',fr:'gare',es:'estación'}},
+{w:'метро', tr:'metro', trs:{en:'metro',ky:'метро',kk:'метро',uz:'metro',tg:'метро',hy:'մետրո',az:'metro',tr:'metro',ar:'مترو',zh:'地铁',fa:'مترو',uk:'метро',de:'U-Bahn',fr:'métro',es:'metro'}},
+{w:'автобус', tr:'avtobus', trs:{en:'bus',ky:'автобус',kk:'автобус',uz:'avtobus',tg:'автобус',hy:'ավտոբուս',az:'avtobus',tr:'otobüs',ar:'حافلة',zh:'公交车',fa:'اتوبوس',uk:'автобус',de:'Bus',fr:'bus',es:'autobús'}},
+{w:'полиция', tr:'politsiya', trs:{en:'police',ky:'милиция',kk:'полиция',uz:'politsiya',tg:'полиция',hy:'ոստիկանություն',az:'polisiya',tr:'polis',ar:'شرطة',zh:'警察',fa:'پلیس',uk:'поліція',de:'Polizei',fr:'police',es:'policía'}},
+{w:'суд', tr:'sud', trs:{en:'court',ky:'сот',kk:'сот',uz:'sud',tg:'суд',hy:'դատարան',az:'məhkəmə',tr:'mahkeme',ar:'محكمة',zh:'法院',fa:'دادگاه',uk:'суд',de:'Gericht',fr:'tribunal',es:'juzgado'}},
+{w:'мэрия', tr:'meriya', trs:{en:'city hall',ky:'мэрия',kk:'әкімдік',uz:'hokimiyat',tg:'шаҳрдорӣ',hy:'քաղաքապետարան',az:'bəlediyyə',tr:'belediye',ar:'بلدية',zh:'市政府',fa:'شهرداری',uk:'мерія',de:'Rathaus',fr:'mairie',es:'ayuntamiento'}},
+{w:'МФЦ', tr:'MFTs', trs:{en:'center',ky:'МФЦ',kk:'ХҚКО',uz:'MYM',tg:'ММЦ',hy:'ԿԿ',az:'XDM',tr:'Hizmet Merkezi',ar:'مركز خدمات',zh:'服务中心',fa:'مرکز خدمات',uk:'ЦНАП',de:'Bürgeramt',fr:'centre de services',es:'centro de atención'}},
+{w:'УФМС', tr:'UFMS', trs:{en:'migration service',ky:'миграция кызматы',kk:'миграция қызметі',uz:'migratsiya xizmati',tg:'хадамоти муҳоҷират',hy:'միգրացիայի ծառայություն',az:'miqrasiya xidməti',tr:'göç idaresi',ar:'خدمة الهجرة',zh:'移民局',fa:'اداره مهاجرت',uk:'міграційна служба',de:'Ausländerbehörde',fr:'service d\'immigration',es:'servicio de migración'}},
+{w:'налоговая', tr:'nalogovaya', trs:{en:'tax office',ky:'салык инспекциясы',kk:'салық инспекциясы',uz:'solig idorasi',tg:'идораи молия',hy:'հարկային',az:'vergi idarəsi',tr:'vergi dairesi',ar:'مكتب الضرائب',zh:'税务局',fa:'اداره مالیات',uk:'податкова',de:'Finanzamt',fr:'service des impôts',es:'agencia tributaria'}},
+{w:'пенсионный фонд', tr:'pensionnyy fond', trs:{en:'pension fund',ky:'пенсиондук фонд',kk:'зейнетақы қоры',uz:'pensya jamg\'armasi',tg:'фонди нафақа',hy:'կենսաթոշակային հիմնադրամ',az:'pensiya fondu',tr:'emeklilik fondu',ar:'صندوق التقاعد',zh:'养老基金',fa:'صندوق بازنشستگی',uk:'пенсійний фонд',de:'Rentenversicherung',fr:'caisse de retraite',es:'fondo de pensiones'}},
+{w:'библиотека', tr:'biblioteka', trs:{en:'library',ky:'китепкана',kk:'кітапхана',uz:'kutubхона',tg:'китобхона',hy:'գրադարան',az:'kitabxana',tr:'kütüphane',ar:'مكتبة',zh:'图书馆',fa:'کتابخانه',uk:'бібліотека',de:'Bibliothek',fr:'bibliothèque',es:'biblioteca'}},
+{w:'музей', tr:'muzey', trs:{en:'museum',ky:'музей',kk:'музей',uz:'muzey',tg:'музей',hy:'թանգարան',az:'muzey',tr:'müze',ar:'متحف',zh:'博物馆',fa:'موزه',uk:'музей',de:'Museum',fr:'musée',es:'museo'}},
+{w:'парк', tr:'park', trs:{en:'park',ky:'парк',kk:'саябақ',uz:'bog\'',tg:'парк',hy:'զբոսայգի',az:'park',tr:'park',ar:'حديقة',zh:'公园',fa:'پارک',uk:'парк',de:'Park',fr:'parc',es:'parque'}},
+{w:'площадь', tr:'ploshchad\'', trs:{en:'square',ky:'аянт',kk:'алаң',uz:'maydon',tg:'майдон',hy:'հրապարակ',az:'meydan',tr:'meydan',ar:'ساحة',zh:'广场',fa:'میدان',uk:'площа',de:'Platz',fr:'place',es:'plaza'}},
+{w:'улица', tr:'ulitsa', trs:{en:'street',ky:'көчө',kk:'көше',uz:'ko\'cha',tg:'кӯча',hy:'փողոց',az:'küçə',tr:'sokak',ar:'شارع',zh:'街道',fa:'خیابان',uk:'вулиця',de:'Straße',fr:'rue',es:'calle'}}
 ],
 food: [
-{w:'хлеб', tr:'khleb', t:'bread'},{w:'вода', tr:'voda', t:'water'},
-{w:'молоко', tr:'moloko', t:'milk'},{w:'мясо', tr:'myaso', t:'meat'},
-{w:'рыба', tr:'ryba', t:'fish'},{w:'курица', tr:'kuritsa', t:'chicken'},
-{w:'яйцо', tr:'yaytso', t:'egg'},{w:'сыр', tr:'syr', t:'cheese'},
-{w:'овощи', tr:'ovoshchi', t:'vegetables'},{w:'фрукты', tr:'frukty', t:'fruits'},
-{w:'рис', tr:'ris', t:'rice'},{w:'суп', tr:'sup', t:'soup'},
-{w:'борщ', tr:'borshch', t:'borscht (beet soup)'},{w:'пельмени', tr:'pelmeni', t:'dumplings'},
-{w:'блины', tr:'bliny', t:'pancakes (blini)'},{w:'каша', tr:'kasha', t:'porridge'},
-{w:'соль', tr:'sol\'', t:'salt'},{w:'сахар', tr:'sakhar', t:'sugar'},
-{w:'масло', tr:'maslo', t:'butter/oil'},{w:'чай', tr:'chay', t:'tea'},
-{w:'кофе', tr:'kofe', t:'coffee'},{w:'сок', tr:'sok', t:'juice'},
-{w:'пиво', tr:'pivo', t:'beer'},{w:'вино', tr:'vino', t:'wine'},
-{w:'завтрак', tr:'zavtrak', t:'breakfast'},{w:'обед', tr:'obed', t:'lunch'},
-{w:'ужин', tr:'uzhin', t:'dinner'},{w:'вкусно', tr:'vkusno', t:'delicious'},
-{w:'горячо', tr:'goryacho', t:'hot'},{w:'холодно', tr:'kholodno', t:'cold'}
+{w:'хлеб', tr:'khleb', trs:{en:'bread',ky:'нан',kk:'нан',uz:'non',tg:'нон',hy:'հաց',az:'çörək',tr:'ekmek',ar:'خبز',zh:'面包',fa:'نان',uk:'хліб',de:'Brot',fr:'pain',es:'pan'}},
+{w:'вода', tr:'voda', trs:{en:'water',ky:'суу',kk:'су',uz:'suv',tg:'об',hy:'ջուր',az:'su',tr:'su',ar:'ماء',zh:'水',fa:'آب',uk:'вода',de:'Wasser',fr:'eau',es:'agua'}},
+{w:'молоко', tr:'moloko', trs:{en:'milk',ky:'сүт',kk:'сүт',uz:'sut',tg:'шир',hy:'կաթ',az:'süd',tr:'süt',ar:'حليب',zh:'牛奶',fa:'شیر',uk:'молоко',de:'Milch',fr:'lait',es:'leche'}},
+{w:'мясо', tr:'myaso', trs:{en:'meat',ky:'эт',kk:'ет',uz:'go\'sht',tg:'гӯшт',hy:'միս',az:'ət',tr:'et',ar:'لحم',zh:'肉',fa:'گوشت',uk:'м\'ясо',de:'Fleisch',fr:'viande',es:'carne'}},
+{w:'рыба', tr:'ryba', trs:{en:'fish',ky:'балык',kk:'балық',uz:'baliq',tg:'моҳӣ',hy:'ձուկ',az:'balıq',tr:'balık',ar:'سمك',zh:'鱼',fa:'ماهی',uk:'риба',de:'Fisch',fr:'poisson',es:'pescado'}},
+{w:'курица', tr:'kuritsa', trs:{en:'chicken',ky:'тоок',kk:'тауық',uz:'tovuq',tg:'мурғ',hy:'հավ',az:'toyuq',tr:'tavuk',ar:'دجاج',zh:'鸡肉',fa:'مرغ',uk:'курка',de:'Huhn',fr:'poulet',es:'pollo'}},
+{w:'яйцо', tr:'yaytso', trs:{en:'egg',ky:'жумуртка',kk:'жұмыртқа',uz:'tuxum',tg:'тухм',hy:'ձու',az:'yumurta',tr:'yumurta',ar:'بيض',zh:'蛋',fa:'تخم‌مرغ',uk:'яйце',de:'Ei',fr:'œuf',es:'huevo'}},
+{w:'сыр', tr:'syr', trs:{en:'cheese',ky:'сыр',kk:'ірімшік',uz:'pishloq',tg:'панир',hy:'պանիր',az:'pendir',tr:'peynir',ar:'جبن',zh:'奶酪',fa:'پنیر',uk:'сир',de:'Käse',fr:'fromage',es:'queso'}},
+{w:'овощи', tr:'ovoshchi', trs:{en:'vegetables',ky:'жашылчалар',kk:'көкөністер',uz:'sabzavotlar',tg:'сабзавот',hy:'բանջարեղեն',az:'tərəvəz',tr:'sebze',ar:'خضروات',zh:'蔬菜',fa:'سبزیجات',uk:'овочі',de:'Gemüse',fr:'légumes',es:'verduras'}},
+{w:'фрукты', tr:'frukty', trs:{en:'fruits',ky:'жемиштер',kk:'жемістер',uz:'mevalar',tg:'меваҳо',hy:'մրգեր',az:'meyvələr',tr:'meyveler',ar:'فواكه',zh:'水果',fa:'میوه‌ها',uk:'фрукти',de:'Obst',fr:'fruits',es:'frutas'}},
+{w:'рис', tr:'ris', trs:{en:'rice',ky:'күрүч',kk:'күріш',uz:'guruch',tg:'биринҷ',hy:'բրինձ',az:'düyü',tr:'pirinç',ar:'أرز',zh:'米',fa:'برنج',uk:'рис',de:'Reis',fr:'riz',es:'arroz'}},
+{w:'суп', tr:'sup', trs:{en:'soup',ky:'шорпо',kk:'сорпа',uz:'sho\'rva',tg:'шӯрбо',hy:'ապուր',az:'şorba',tr:'çorba',ar:'حساء',zh:'汤',fa:'سوپ',uk:'суп',de:'Suppe',fr:'soupe',es:'sopa'}},
+{w:'борщ', tr:'borshch', trs:{en:'borscht',ky:'борщ',kk:'борщ',uz:'borscht',tg:'борщ',hy:'բորշչ',az:'borş',tr:'borsch',ar:'بورشت',zh:'红菜汤',fa:'بورشت',uk:'борщ',de:'Borschtsch',fr:'bortsch',es:'borscht'}},
+{w:'пельмени', tr:'pelmeni', trs:{en:'dumplings',ky:'чучвара',kk:'манти',uz:'manti',tg:'чучвара',hy:'խինկալի',az:'manti',tr:'mantı',ar:'زلابية',zh:'饺子',fa:'مانتی',uk:'вареники',de:'Teigtaschen',fr:'raviolis',es:'dumplings'}},
+{w:'блины', tr:'bliny', trs:{en:'pancakes',ky:'куймак',kk:'құймақ',uz:'qalmoq',tg:'блинҳо',hy:'բլինչիկ',az:'blin',tr:'krep',ar:'فطائر',zh:'薄饼',fa:'پنکیک',uk:'млинці',de:'Pfannkuchen',fr:'crêpes',es:'tortitas'}},
+{w:'каша', tr:'kasha', trs:{en:'porridge',ky:'ботко',kk:'бөткі',uz:'bo\'tqa',tg:'ширберинҷ',hy:'շիլա',az:'krep',tr:'lapa',ar:'عصيدة',zh:'粥',fa:'فرنی',uk:'каша',de:'Brei',fr:'bouillie',es:'gachas'}},
+{w:'соль', tr:'sol\'', trs:{en:'salt',ky:'туз',kk:'тұз',uz:'tuz',tg:'намак',hy:'աղ',az:'duz',tr:'tuz',ar:'ملح',zh:'盐',fa:'نمک',uk:'сіль',de:'Salz',fr:'sel',es:'sal'}},
+{w:'сахар', tr:'sakhar', trs:{en:'sugar',ky:'кант',kk:'қант',uz:'shakar',tg:'шакар',hy:'շաքար',az:'şəkər',tr:'şeker',ar:'سكر',zh:'糖',fa:'شکر',uk:'цукор',de:'Zucker',fr:'sucre',es:'azúcar'}},
+{w:'масло', tr:'maslo', trs:{en:'butter',ky:'сары май',kk:'сары май',uz:'sariyog\'',tg:'равған',hy:'կարագ',az:'kərə yağı',tr:'tereyağı',ar:'زبدة',zh:'黄油',fa:'کره',uk:'вершкове масло',de:'Butter',fr:'beurre',es:'mantequilla'}},
+{w:'чай', tr:'chay', trs:{en:'tea',ky:'чай',kk:'шай',uz:'choy',tg:'чой',hy:'թեյ',az:'çay',tr:'çay',ar:'شاي',zh:'茶',fa:'چای',uk:'чай',de:'Tee',fr:'thé',es:'té'}},
+{w:'кофе', tr:'kofe', trs:{en:'coffee',ky:'кофе',kk:'кофе',uz:'kofe',tg:'қаҳва',hy:'սուրճ',az:'kofe',tr:'kahve',ar:'قهوة',zh:'咖啡',fa:'قهوه',uk:'кава',de:'Kaffee',fr:'café',es:'café'}},
+{w:'сок', tr:'sok', trs:{en:'juice',ky:'шыра',kk:'шырын',uz:'sharbat',tg:'шарбат',hy:'հյութ',az:'şirə',tr:'meyve suyu',ar:'عصير',zh:'果汁',fa:'آبمیوه',uk:'сік',de:'Saft',fr:'jus',es:'jugo'}},
+{w:'пиво', tr:'pivo', trs:{en:'beer',ky:'сыра',kk:'сыра',uz:'pivo',tg:'обҷав',hy:'գարեջուր',az:'pivо',tr:'bira',ar:'بيرة',zh:'啤酒',fa:'آبجو',uk:'пиво',de:'Bier',fr:'bière',es:'cerveza'}},
+{w:'вино', tr:'vino', trs:{en:'wine',ky:'шарап',kk:'шарап',uz:'vino',tg:'шароб',hy:'գինի',az:'şərab',tr:'şarap',ar:'نبيذ',zh:'葡萄酒',fa:'شراب',uk:'вино',de:'Wein',fr:'vin',es:'vino'}},
+{w:'завтрак', tr:'zavtrak', trs:{en:'breakfast',ky:'таңкы тамак',kk:'таңғы ас',uz:'nonushta',tg:'наҳорӣ',hy:'նախաճաշ',az:'səhər yeməyi',tr:'kahvaltı',ar:'فطور',zh:'早餐',fa:'صبحانه',uk:'сніданок',de:'Frühstück',fr:'petit déjeuner',es:'desayuno'}},
+{w:'обед', tr:'obed', trs:{en:'lunch',ky:'түшкү тамак',kk:'түскі ас',uz:'tushlik',tg:'хӯроки нисфирӯзӣ',hy:'ճաշ',az:'nahar',tr:'öğle yemeği',ar:'غداء',zh:'午餐',fa:'ناهار',uk:'обід',de:'Mittagessen',fr:'déjeuner',es:'almuerzo'}},
+{w:'ужин', tr:'uzhin', trs:{en:'dinner',ky:'кечки тамак',kk:'кешкі ас',uz:'kechki ovqat',tg:'хӯроки шом',hy:'ընթրիք',az:'axşam yeməyi',tr:'akşam yemeği',ar:'عشاء',zh:'晚餐',fa:'شام',uk:'вечеря',de:'Abendessen',fr:'dîner',es:'cena'}},
+{w:'вкусно', tr:'vkusno', trs:{en:'delicious',ky:'даамдуу',kk:'дәмді',uz:'mazali',tg:'лазиз',hy:'համեղ',az:'dadlı',tr:'lezzetli',ar:'لذيذ',zh:'好吃',fa:'خوشمزه',uk:'смачно',de:'lecker',fr:'délicieux',es:'delicioso'}},
+{w:'горячо', tr:'goryacho', trs:{en:'hot',ky:'ысык',kk:'ыстық',uz:'issiq',tg:'гарм',hy:'տաք',az:'isti',tr:'sıcak',ar:'ساخن',zh:'热',fa:'داغ',uk:'гаряче',de:'heiß',fr:'chaud',es:'caliente'}},
+{w:'холодно', tr:'kholodno', trs:{en:'cold',ky:'суук',kk:'суық',uz:'sovuq',tg:'сард',hy:'սառը',az:'soyuq',tr:'soğuk',ar:'بارد',zh:'冷',fa:'سرد',uk:'холодно',de:'kalt',fr:'froid',es:'frío'}}
 ],
 official: [
-{w:'заявление', tr:'zayavleniye', t:'application/statement'},
-{w:'справка', tr:'spravka', t:'certificate/reference'},
-{w:'договор', tr:'dogovor', t:'contract/agreement'},
-{w:'квитанция', tr:'kvitantsiya', t:'receipt'},
-{w:'регистрация', tr:'registratsiya', t:'registration'},
-{w:'разрешение', tr:'razresheniye', t:'permit/permission'},
-{w:'патент', tr:'patent', t:'work permit (patent)'},
-{w:'миграция', tr:'migratsiya', t:'migration'},
-{w:'гражданство', tr:'grazhdanstvo', t:'citizenship'},
-{w:'вид на жительство', tr:'vid na zhitelstvo', t:'residence permit (ВНЖ)'},
-{w:'временная регистрация', tr:'vremennaya registratsiya', t:'temporary registration'},
-{w:'постоянная регистрация', tr:'postoyannaya registratsiya', t:'permanent registration'},
-{w:'миграционная карта', tr:'migratsionnaya karta', t:'migration card'},
-{w:'нотариус', tr:'notarius', t:'notary'},{w:'перевод', tr:'perevod', t:'translation'},
-{w:'апостиль', tr:'apostil\'', t:'apostille'},{w:'налог', tr:'nalog', t:'tax'},
-{w:'штраф', tr:'shtraf', t:'fine/penalty'},{w:'депортация', tr:'deportatsiya', t:'deportation'},
-{w:'продление', tr:'prodleniye', t:'extension'},{w:'отказ', tr:'otkaz', t:'refusal'},
-{w:'одобрение', tr:'odobreniye', t:'approval'},{w:'подпись', tr:'podpis\'', t:'signature'},
-{w:'печать', tr:'pechat\'', t:'stamp/seal'},{w:'оригинал', tr:'original', t:'original'},
-{w:'копия', tr:'kopiya', t:'copy'},{w:'перевод с нотариусом', tr:'perevod s notariusom', t:'notarized translation'},
-{w:'работодатель', tr:'rabotodatel\'', t:'employer'},{w:'сотрудник', tr:'sotrudnik', t:'employee'},
-{w:'трудовой договор', tr:'trudovoy dogovor', t:'employment contract'}
+{w:'заявление', tr:'zayavleniye', trs:{en:'application',ky:'арыз',kk:'өтініш',uz:'ariza',tg:'ариза',hy:'հայտարարություն',az:'ərizə',tr:'başvuru',ar:'طلب',zh:'申请',fa:'درخواست',uk:'заява',de:'Antrag',fr:'demande',es:'solicitud'}},
+{w:'справка', tr:'spravka', trs:{en:'certificate',ky:'маалымкат',kk:'анықтама',uz:'ma\'lumotnoma',tg:'маълумотнома',hy:'տեղեկանք',az:'arayış',tr:'belge',ar:'شهادة',zh:'证明',fa:'گواهی',uk:'довідка',de:'Bescheinigung',fr:'attestation',es:'certificado'}},
+{w:'договор', tr:'dogovor', trs:{en:'contract',ky:'келишим',kk:'келісімшарт',uz:'shartnoma',tg:'шартнома',hy:'պայմանագիր',az:'müqavilə',tr:'sözleşme',ar:'عقد',zh:'合同',fa:'قرارداد',uk:'договір',de:'Vertrag',fr:'contrat',es:'contrato'}},
+{w:'квитанция', tr:'kvitantsiya', trs:{en:'receipt',ky:'чек',kk:'түбіртек',uz:'chek',tg:'қайд',hy:'անդորրագիր',az:'qəbz',tr:'makbuz',ar:'إيصال',zh:'收据',fa:'رسید',uk:'квитанція',de:'Quittung',fr:'reçu',es:'recibo'}},
+{w:'регистрация', tr:'registratsiya', trs:{en:'registration',ky:'каттоо',kk:'тіркеу',uz:'ro\'yxatdan o\'tish',tg:'бақайдгири',hy:'գրանցում',az:'qeydiyyat',tr:'kayıt',ar:'تسجيل',zh:'登记',fa:'ثبت‌نام',uk:'реєстрація',de:'Registrierung',fr:'enregistrement',es:'registro'}},
+{w:'разрешение', tr:'razresheniye', trs:{en:'permit',ky:'уруксат',kk:'рұқсат',uz:'ruxsatnoma',tg:'иҷозатнома',hy:'թույլտվություն',az:'icazə',tr:'izin',ar:'تصريح',zh:'许可',fa:'مجوز',uk:'дозвіл',de:'Erlaubnis',fr:'autorisation',es:'permiso'}},
+{w:'патент', tr:'patent', trs:{en:'patent',ky:'патент',kk:'патент',uz:'patent',tg:'патент',hy:'արտոնագիր',az:'patent',tr:'patent',ar:'براءة اختراع',zh:'专利',fa:'حق اختراع',uk:'патент',de:'Patent',fr:'patente',es:'patente'}},
+{w:'миграция', tr:'migratsiya', trs:{en:'migration',ky:'миграция',kk:'миграция',uz:'migratsiya',tg:'муҳоҷират',hy:'միգրացիա',az:'miqrasiya',tr:'göç',ar:'هجرة',zh:'移民',fa:'مهاجرت',uk:'міграція',de:'Migration',fr:'migration',es:'migración'}},
+{w:'гражданство', tr:'grazhdanstvo', trs:{en:'citizenship',ky:'жарандык',kk:'азаматтық',uz:'fuqarolik',tg:'шаҳрвандӣ',hy:'քաղաքացիություն',az:'vətəndaşlıq',tr:'vatandaşlık',ar:'جنسية',zh:'国籍',fa:'تابعیت',uk:'громадянство',de:'Staatsbürgerschaft',fr:'nationalité',es:'nacionalidad'}},
+{w:'вид на жительство', tr:'vid na zhitelstvo', trs:{en:'residence permit',ky:'жашоо уруксаты',kk:'тұруға рұқсат',uz:'yashash uchun ruxsatnoma',tg:'иҷозати иқомат',hy:'բնակության թույլտվություն',az:'yaşayış icazəsi',tr:'oturum izni',ar:'إقامة',zh:'居留许可',fa:'اقامت',uk:'вид на проживання',de:'Aufenthaltserlaubnis',fr:'titre de séjour',es:'permiso de residencia'}},
+{w:'временная регистрация', tr:'vremennaya registratsiya', trs:{en:'temporary registration',ky:'убактылуу каттоо',kk:'уақытша тіркеу',uz:'vaqtinchalik ro\'yxat',tg:'бақайдгирии муваққатӣ',hy:'ժամանակավոր գրանցում',az:'müvəqqəti qeydiyyat',tr:'geçici kayıt',ar:'تسجيل مؤقت',zh:'临时登记',fa:'ثبت موقت',uk:'тимчасова реєстрація',de:'vorübergehende Anmeldung',fr:'enregistrement temporaire',es:'registro temporal'}},
+{w:'постоянная регистрация', tr:'postoyannaya registratsiya', trs:{en:'permanent registration',ky:'туруктуу каттоо',kk:'тұрақты тіркеу',uz:'doimiy ro\'yxat',tg:'бақайдгирии доимӣ',hy:'մշտական գրանցում',az:'daimi qeydiyyat',tr:'daimi kayıt',ar:'تسجيل دائم',zh:'永久登记',fa:'ثبت دائم',uk:'постійна реєстрація',de:'Hauptwohnsitz',fr:'enregistrement permanent',es:'registro permanente'}},
+{w:'миграционная карта', tr:'migratsionnaya karta', trs:{en:'migration card',ky:'миграция картасы',kk:'миграциялық карта',uz:'migratsiya kartasi',tg:'картаи муҳоҷиратӣ',hy:'միգրացիոն քարտ',az:'miqrasiya kartı',tr:'göç kartı',ar:'بطاقة هجرة',zh:'移民卡',fa:'کارت مهاجرت',uk:'міграційна карта',de:'Migrationskarte',fr:'carte de migration',es:'tarjeta migratoria'}},
+{w:'нотариус', tr:'notarius', trs:{en:'notary',ky:'нотариус',kk:'нотариус',uz:'notarius',tg:'нотариус',hy:'նոտարիուս',az:'notarius',tr:'noter',ar:'كاتب عدل',zh:'公证人',fa:'دفترخانه‌دار',uk:'нотаріус',de:'Notar',fr:'notaire',es:'notario'}},
+{w:'перевод', tr:'perevod', trs:{en:'translation',ky:'котормо',kk:'аударма',uz:'tarjima',tg:'тарҷума',hy:'թարգմանություն',az:'tərcümə',tr:'çeviri',ar:'ترجمة',zh:'翻译',fa:'ترجمه',uk:'переклад',de:'Übersetzung',fr:'traduction',es:'traducción'}},
+{w:'апостиль', tr:'apostil\'', trs:{en:'apostille',ky:'апостил',kk:'апостиль',uz:'apostil',tg:'апостил',hy:'ապոստիլ',az:'apostil',tr:'apostil',ar:'ختم التصديق',zh:'海牙认证',fa:'آپوستیل',uk:'апостиль',de:'Apostille',fr:'apostille',es:'apostilla'}},
+{w:'налог', tr:'nalog', trs:{en:'tax',ky:'салык',kk:'салық',uz:'solig',tg:'молиёт',hy:'հարկ',az:'vergi',tr:'vergi',ar:'ضريبة',zh:'税',fa:'مالیات',uk:'податок',de:'Steuer',fr:'impôt',es:'impuesto'}},
+{w:'штраф', tr:'shtraf', trs:{en:'fine',ky:'айып',kk:'айыппұл',uz:'jarima',tg:'ҷарима',hy:'տուգանք',az:'cərimə',tr:'ceza',ar:'غرامة',zh:'罚款',fa:'جریمه',uk:'штраф',de:'Strafe',fr:'amende',es:'multa'}},
+{w:'депортация', tr:'deportatsiya', trs:{en:'deportation',ky:'депортация',kk:'депортация',uz:'deportatsiya',tg:'депортатсия',hy:'դեպորտացիա',az:'deportasiya',tr:'sınır dışı',ar:'ترحيل',zh:'驱逐出境',fa:'اخراج',uk:'депортація',de:'Abschiebung',fr:'expulsion',es:'deportación'}},
+{w:'продление', tr:'prodleniye', trs:{en:'extension',ky:'узартуу',kk:'ұзарту',uz:'uzaytirish',tg:'тӯлонкунӣ',hy:'երկարաձգում',az:'uzadılma',tr:'uzatma',ar:'تمديد',zh:'延长',fa:'تمدید',uk:'продовження',de:'Verlängerung',fr:'prolongation',es:'prórroga'}},
+{w:'отказ', tr:'otkaz', trs:{en:'refusal',ky:'баш тартуу',kk:'бас тарту',uz:'rad etish',tg:'рад кардан',hy:'մերժում',az:'imtina',tr:'ret',ar:'رفض',zh:'拒绝',fa:'رد',uk:'відмова',de:'Ablehnung',fr:'refus',es:'rechazo'}},
+{w:'одобрение', tr:'odobreniye', trs:{en:'approval',ky:'макулдук',kk:'мақұлдау',uz:'tasdiq',tg:'тасдиқ',hy:'հաստատում',az:'təsdiq',tr:'onay',ar:'موافقة',zh:'批准',fa:'تأیید',uk:'схвалення',de:'Genehmigung',fr:'approbation',es:'aprobación'}},
+{w:'подпись', tr:'podpis\'', trs:{en:'signature',ky:'кол тамга',kk:'қолтаңба',uz:'imzo',tg:'имзо',hy:'ստորագրություն',az:'imza',tr:'imza',ar:'توقيع',zh:'签名',fa:'امضا',uk:'підпис',de:'Unterschrift',fr:'signature',es:'firma'}},
+{w:'печать', tr:'pechat\'', trs:{en:'stamp',ky:'мөөр',kk:'мөр',uz:'muhr',tg:'мӯҳр',hy:'կնիք',az:'möhr',tr:'damga',ar:'ختم',zh:'印章',fa:'مهر',uk:'печатка',de:'Stempel',fr:'sceau',es:'sello'}},
+{w:'оригинал', tr:'original', trs:{en:'original',ky:'оригинал',kk:'түпнұсқа',uz:'asl nusxa',tg:'асл',hy:'բնօրինակ',az:'orijinal',tr:'orijinal',ar:'أصلي',zh:'原件',fa:'اصل',uk:'оригінал',de:'Original',fr:'original',es:'original'}},
+{w:'копия', tr:'kopiya', trs:{en:'copy',ky:'көчүрмө',kk:'көшірме',uz:'nusxa',tg:'нусха',hy:'պատճեն',az:'surət',tr:'kopya',ar:'نسخة',zh:'复印件',fa:'کپی',uk:'копія',de:'Kopie',fr:'copie',es:'copia'}},
+{w:'перевод с нотариусом', tr:'perevod s notariusom', trs:{en:'notarized translation',ky:'нотариалдуу котормо',kk:'нотариалды аударма',uz:'notarial tarjima',tg:'тарҷумаи нотариалӣ',hy:'նոտարական թարգմանություն',az:'notarial tərcümə',tr:'noter onaylı çeviri',ar:'ترجمة موثقة',zh:'公证翻译',fa:'ترجمه رسمی',uk:'нотаріальний переклад',de:'beglaubigte Übersetzung',fr:'traduction notariée',es:'traducción notariada'}},
+{w:'работодатель', tr:'rabotodatel\'', trs:{en:'employer',ky:'жумуш берүүчү',kk:'жұмыс беруші',uz:'ish beruvchi',tg:'корфармо',hy:'գործատու',az:'işəgötürən',tr:'işveren',ar:'صاحب عمل',zh:'雇主',fa:'کارفرما',uk:'роботодавець',de:'Arbeitgeber',fr:'employeur',es:'empleador'}},
+{w:'сотрудник', tr:'sotrudnik', trs:{en:'employee',ky:'кызматкер',kk:'қызметкер',uz:'xodim',tg:'корманд',hy:'աշխատակից',az:'əməkdaş',tr:'çalışan',ar:'موظف',zh:'员工',fa:'کارمند',uk:'співробітник',de:'Mitarbeiter',fr:'employé',es:'empleado'}},
+{w:'трудовой договор', tr:'trudovoy dogovor', trs:{en:'employment contract',ky:'эмгек келишими',kk:'еңбек шарты',uz:'mehnat shartnomasi',tg:'шартномаи меҳнатӣ',hy:'աշխատանքային պայմանագիր',az:'əmək müqaviləsi',tr:'iş sözleşmesi',ar:'عقد عمل',zh:'劳动合同',fa:'قرارداد کار',uk:'трудовий договір',de:'Arbeitsvertrag',fr:'contrat de travail',es:'contrato laboral'}}
 ]
 };
+
+// Утилиты
+function getTrans(word, lang) {
+  return word.trs?.[lang] || word.t || '—';
+}
+
+function renderSelector() {
+  const box = document.getElementById('lang-selector');
+  box.innerHTML = '';
+  Object.entries(LANGS).forEach(([code, l]) => {
+    const btn = document.createElement('button');
+    btn.className = `lang-btn ${code === currentLang ? 'active' : ''}`;
+    btn.innerHTML = `${l.flag} ${l.name}`;
+    btn.onclick = () => { currentLang = code; renderSelector(); renderTable(); };
+    box.appendChild(btn);
+  });
+}
+
+function renderNav() {
+  const box = document.getElementById('category-nav');
+  box.innerHTML = '';
+  Object.keys(vocabularyData).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = `nav-tab ${cat === currentCat ? 'active' : ''}`;
+    btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    btn.onclick = () => { currentCat = cat; renderNav(); renderTable(); };
+    box.appendChild(btn);
+  });
+}
+
+function renderTable() {
+  const box = document.getElementById('table-container');
+  const words = vocabularyData[currentCat] || [];
+  const l = LANGS[currentLang];
+  
+  box.innerHTML = `
+    <div class="lang-header">${l.flag} Перевод на: ${l.name}</div>
+    <table>
+      <thead><tr><th>Русский</th><th>Транскрипция</th><th>${l.flag} ${l.name}</th></tr></thead>
+      <tbody></tbody>
+    </table>`;
+    
+  const tbody = box.querySelector('tbody');
+  words.forEach(w => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="ru">${w.w}</td><td class="tr">${w.tr}</td><td class="target">${getTrans(w, currentLang)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+  renderSelector();
+  renderNav();
+  renderTable();
+});
+</script>
+</body>
+</html>
 const phrasesData = {
 emergency: [
 {w:'Помогите!', tr:'Pomogite!', t:'Help!'},
