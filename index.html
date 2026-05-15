@@ -641,66 +641,851 @@ status.className = 'translator-status';
 // 🗂️ ДАННЫЕ (Полные, детальные данные из 1-го файла)
 // ============================================================
 const russianData = [
-{ id:'alphabet', icon:'🔤', title:'Алфавит и звуки', desc:'33 буквы, гласные, согласные, ударение', lesson: {
-theory: `<div class="lesson-section"><h3>Русский алфавит — 33 буквы</h3><p><strong>Гласные (10):</strong> А, Е, Ё, И, О, У, Ы, Э, Ю, Я</p><p><strong>Согласные (21):</strong> Б, В, Г, Д, Ж, З, Й, К, Л, М, Н, П, Р, С, Т, Ф, Х, Ц, Ч, Ш, Щ</p><p><strong>Знаки (2):</strong> Ъ (твёрдый), Ь (мягкий)</p><p><strong>Ударение</strong> может падать на любой слог: мо-ло-КО, ДО-ма, го-РОД</p><p><strong>Всегда твёрдые:</strong> Ж, Ш, Ц &nbsp; <strong>Всегда мягкие:</strong> Ч, Щ, Й</p><p><strong>Буква Ё</strong> всегда ударная: ёж, лёд, ёлка</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры чтения</h3><div class="example-box"><div class="ru">МАМА</div><div class="tr">[MA-ma] — мать</div></div><div class="example-box"><div class="ru">ДОМ</div><div class="tr">[dom] — дом</div></div><div class="example-box"><div class="ru">РОССИЯ</div><div class="tr">[RO-ssi-ya] — Россия</div></div><div class="example-box"><div class="ru">ЁЛКА</div><div class="tr">[YOL-ka] — ёлка (новогоднее дерево)</div></div><div class="example-box"><div class="ru">ПРИВЕТ</div><div class="tr">[pri-VYET] — привет</div></div><div class="example-box"><div class="ru">СПАСИБО</div><div class="tr">[spa-SI-ba] — спасибо</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Выберите правильную транслитерацию слова «ГОРОД»:</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'alphabet')"><span>go-ROT</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'alphabet')"><span>ГО-род</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'alphabet')"><span>go-ROD</span></div></div></div>` }},
-{ id:'parts', icon:'📝', title:'Части речи', desc:'Существительное, глагол, прилагательное', lesson: {
-theory: `<div class="lesson-section"><h3>Части речи в русском языке</h3><p><strong>Существительное</strong> — кто? что? (человек, город, книга)</p><p><strong>Глагол</strong> — что делать? (работать, жить, идти)</p><p><strong>Прилагательное</strong> — какой? (большой, красивый, новый)</p><p><strong>Местоимение</strong> — я, ты, он, она, мы, вы, они</p><p><strong>Наречие</strong> — как? когда? где? (быстро, сейчас, здесь)</p><p><strong>Предлог</strong> — в, на, из, к, с, от, по, за, под, над, перед, между</p><p><strong>Числительное</strong> — один, два, три... первый, второй...</p><p><strong>Союз</strong> — и, а, но, или, что, если, когда, потому что</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">Я живу в Москве</div><div class="tr">Я (мест.) живу (глаг.) в (предл.) Москве (сущ.)</div></div><div class="example-box"><div class="ru">Красивый город</div><div class="tr">Красивый (прил.) город (сущ.)</div></div><div class="example-box"><div class="ru">Он работает быстро</div><div class="tr">Он (мест.) работает (глаг.) быстро (нареч.)</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Что такое слово «большой»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'parts')"><span>Существительное</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'parts')"><span>Прилагательное</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'parts')"><span>Глагол</span></div></div></div>` }},
-{ id:'cases', icon:'🔄', title:'Падежи (6 падежей)', desc:'Именительный, родительный, дательный...', lesson: {
-theory: `<div class="lesson-section"><h3>6 падежей русского языка</h3><p><strong>1. Именительный (кто? что?)</strong> — начальная форма: Москва, студент</p><p><strong>2. Родительный падеж (кого? чего?)</strong> — из Москвы, нет студента</p><p><strong>3. Дательный падеж (кому? чему?)</strong> — к Москве, дать студенту</p><p><strong>4. Винительный падеж (кого? что?)</strong> — вижу Москву, люблю студента</p><p><strong>5. Творительный падеж (кем? чем?)</strong> — с Москвой, стать студентом</p><p><strong>6. Предложный падеж (о ком? о чём?)</strong> — в Москве, о студенте</p><p><em>Запомни предлоги:</em> В/НА + Предложный (место), ИЗ/ОТ + Родительный, К/ПО + Дательный</p></div>`,
-examples: `<div class="lesson-section"><h3>Склонение слова «книга» по падежам</h3><div class="example-box"><div class="ru">Это книга (Им.) → читать книгу (Вин.) → нет книги (Род.) → дать книге (Дат.) → с книгой (Твор.) → в книге (Пред.)</div></div><div class="example-box"><div class="ru">Я живу в Москве</div><div class="tr">Москве — Предложный падеж</div></div><div class="example-box"><div class="ru">Я еду из Москвы</div><div class="tr">Москвы — Родительный падеж</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>«Я живу __ Москва» — какой падеж нужен?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,2,'cases')"><span>Родительный падеж — «Москвы»</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,2,'cases')"><span>Винительный падеж — «Москву»</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,2,'cases')"><span>Предложный падеж — «Москве»</span></div></div></div>` }},
-{ id:'gender', icon:'♂️', title:'Род и число', desc:'Мужской, женский, средний род, множественное число', lesson: {
-theory: `<div class="lesson-section"><h3>Грамматический род</h3><p><strong>Мужской род</strong> — оканчивается на согласную или -й: студент, чай, день</p><p><strong>Женский род</strong> — оканчивается на -а/-я или -ь: женщина, неделя, ночь</p><p><strong>Средний род</strong> — оканчивается на -о/-е: окно, море, время</p><p><strong>Множественное число:</strong></p><p>стол → столы | книга → книги | окно → окна</p><p><strong>Исключения:</strong> ребёнок → дети | человек → люди | год → лет</p><p><strong>Числительные и существительные:</strong><br>1 год, 2–4 года, 5+ лет<br>1 книга, 2–4 книги, 5+ книг</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры согласования</h3><div class="example-box"><div class="ru">Большой город (м. р.) — Большая страна (ж. р.) — Большое море (ср. р.)</div></div><div class="example-box"><div class="ru">Красивый дом — Красивая девушка — Красивое здание</div></div><div class="example-box"><div class="ru">Мой паспорт (м.) — Моя виза (ж.) — Моё разрешение (с.)</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Какого рода слово «виза»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'gender')"><span>мужского</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'gender')"><span>Женского</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'gender')"><span>Среднего</span></div></div></div>` }},
-{ id:'verbs', icon:'🏃', title:'Спряжение глаголов', desc:'I и II спряжение, личные окончания', lesson: {
-theory: `<div class="lesson-section"><h3>Спряжение глаголов</h3><p><strong>I спряжение</strong> (-ать/-ять, кроме исключений): читать, знать, жить</p><table style="width:100%;border-collapse:collapse;margin:1rem 0;"><tr style="background:var(--primary);color:white;"><th style="padding:0.5rem;">Лицо</th><th>читать</th><th>знать</th></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Я</td><td>чита<b>ю</b></td><td>зна<b>ю</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Ты</td><td>чита<b>ешь</b></td><td>зна<b>ешь</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Он/Она</td><td>чита<b>ет</b></td><td>зна<b>ет</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Мы</td><td>чита<b>ем</b></td><td>зна<b>ем</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Вы</td><td>чита<b>ете</b></td><td>зна<b>ете</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Они</td><td>чита<b>ют</b></td><td>зна<b>ют</b></td></tr></table><p><strong>II спряжение</strong> (-ить/-еть/-ать, исключения): говорить, любить, смотреть</p><table style="width:100%;border-collapse:collapse;margin:1rem 0;"><tr style="background:var(--primary);color:white;"><th style="padding:0.5rem;">Лицо</th><th>говорить</th></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Я</td><td>гово<b>рю</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Ты</td><td>гово<b>ришь</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Он/Она</td><td>гово<b>рит</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Мы</td><td>гово<b>рим</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Вы</td><td>гово<b>рите</b></td></tr><tr><td style="padding:0.5rem;border:1px solid var(--border);">Они</td><td>гово<b>рят</b></td></tr></table></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">Я работаю в офисе</div><div class="tr">I work in the office</div></div><div class="example-box"><div class="ru">Он говорит по-русски</div><div class="tr">He speaks Russian</div></div><div class="example-box"><div class="ru">Мы живём в России</div><div class="tr">We live in Russia</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>«Я __ по-русски» — какая форма глагола «говорить»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,2,'verbs')"><span>говоришь</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,2,'verbs')"><span>говорит</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,2,'verbs')"><span>говорю</span></div></div></div>` }},
-{ id:'aspects', icon:'⏱️', title:'Виды глаголов', desc:'Совершенный и несовершенный вид', lesson: {
-theory: `<div class="lesson-section"><h3>Виды глаголов</h3><p><strong>Несовершенный вид</strong> — незавершенное/повторяющееся действие: читать, писать, делать</p><p><strong>Совершенный вид</strong> — завершенное/однократное действие: прочитать, написать, сделать</p><p>Обычно образуется с помощью приставок: по-, про-, на-, за-, вы-, с-, у-, пере-</p><table style="width:100%;border-collapse:collapse;margin:1rem 0;"><tr style="background:var(--primary);color:white;"><th>Несов.</th><th>Сов.</th><th>Смысл</th></tr><tr><td style="border:1px solid var(--border);padding:0.5rem;">читать</td><td>прочитать</td><td>читать/дочитать</td></tr><tr><td style="border:1px solid var(--border);padding:0.5rem;">писать</td><td>написать</td><td>писать/написать</td></tr><tr><td style="border:1px solid var(--border);padding:0.5rem;">делать</td><td>сделать</td><td>делать/завершить</td></tr><tr><td style="border:1px solid var(--border);padding:0.5rem;">учить</td><td>выучить</td><td>учить/выучить</td></tr><tr><td style="border:1px solid var(--border);padding:0.5rem;">говорить</td><td>сказать</td><td>говорить/сказать</td></tr></table></div>`,
-examples: `<div class="lesson-section"><h3>Примеры в контексте</h3><div class="example-box"><div class="ru">Я читал книгу весь день</div><div class="tr">Несов. — процесс (I was reading all day)</div></div><div class="example-box"><div class="ru">Я прочитал книгу за 3 часа</div><div class="tr">Сов. — завершено (I finished reading in 3 hours)</div></div><div class="example-box"><div class="ru">Каждый день я пишу заявления</div><div class="tr">Несов. — повторяющееся действие</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>«Я уже __ домашнее задание» — совершённый вид:</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'aspects')"><span>сделал</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'aspects')"><span>делал</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'aspects')"><span>делаю</span></div></div></div>` }},
-{ id:'sentence', icon:'🔧', title:'Структура предложения', desc:'Порядок слов, вопросительные предложения', lesson: {
-theory: `<div class="lesson-section"><h3>Структура предложения</h3><p><strong>Базовый порядок:</strong> Подлежащее + Сказуемое + Дополнение</p><p>В русском языке порядок слов более свободный, чем в английском.</p><p><strong>Утвердительное предложение:</strong> Я иду в магазин. / В магазин иду я.</p><p><strong>Отрицательное:</strong> Я НЕ иду в магазин. (частица НЕ перед глаголом)</p><p><strong>Вопросительное:</strong></p><ul><li>Интонацией: Ты идёшь в магазин? (голос повышается)</li><li>Словом ЛИ: Идёшь ли ты в магазин?</li><li>Вопросительными словами: Куда ты идёшь? Когда? Почему? Как?</li></ul><p><strong>Вопросительные слова:</strong> кто, что, где, куда, откуда, когда, как, почему, зачем, сколько, какой, чей</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">Где вы живёте?</div><div class="tr">Where do you live?</div></div><div class="example-box"><div class="ru">Я не понимаю по-русски</div><div class="tr">I don't understand Russian</div></div><div class="example-box"><div class="ru">Сколько стоит этот товар?</div><div class="tr">How much does this product cost?</div></div><div class="example-box"><div class="ru">Когда открывается банк?</div><div class="tr">When does the bank open?</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как спросить «Где находится больница?» по-русски?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'sentence')"><span>Где находится больница?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'sentence')"><span>Больница где находится ли?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'sentence')"><span>Где больница находится?</span></div></div></div>` }},
-{ id:'spelling', icon:'✏️', title:'Правила орфографии', desc:'ЖИ/ШИ, ЧА/ЩА, ЧУ/ЩУ, мягкий знак', lesson: {
-theory: `<div class="lesson-section"><h3>Основные правила орфографии</h3><p><strong>ЖИ/ШИ пиши с И:</strong> жизнь, машина, лыжи, шире, живой</p><p><strong>ЧА/ЩА пиши с А:</strong> чайник, часть, площадь, задача</p><p><strong>ЧУ/ЩУ пиши через У:</strong> чувство, чудо, щука, ищу</p><p><strong>Мягкий знак (Ь):</strong></p><ul><li>Смягчает согласный: соль, мель, день</li><li>В глаголах на -ться/-тся: мыться, он моется</li><li>После шипящих у сущ. ж. р.: ночь, дочь, рожь</li></ul><p><strong>Безударные гласные:</strong> проверяй ударением: вОды → вода, лЕса → лес</p><p><strong>Приставки:</strong> без-/бес- (безопасный/беспечный — перед глухими Б→С)</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">жить (жи→и) / машина / лыжи</div></div><div class="example-box"><div class="ru">чашка / площадь / задача</div></div><div class="example-box"><div class="ru">Нужно мыТЬСЯ каждый день. Он моЕТСЯ.</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как правильно пишется: ж_знь?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'spelling')"><span>жызнь</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'spelling')"><span>жизнь</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'spelling')"><span>жезнь</span></div></div></div>` }},
-{ id:'punctuation', icon:'❗', title:'Пунктуация', desc:'Запятая, точка, тире, двоеточие', lesson: {
-theory: `<div class="lesson-section"><h3>Основные знаки препинания</h3><p><strong>Запятая (,)</strong> — между однородными членами, перед союзами НО/А/ДА, в сложных предложениях, при обращении</p><p><strong>Тире (—)</strong> — между подлежащим и сказуемым (оба сущ.): Москва — столица России</p><p><strong>Двоеточие (:)</strong> — перед перечислением, перед прямой речью</p><p><strong>Восклицательный знак (!)</strong> — восклицание, команда: Стоп! Осторожно!</p><p><strong>Вопросительный знак (?)</strong> — конец вопроса</p><p><strong>Прямая речь:</strong> «Я говорю», — сказал он.</p><p><strong>В официальных документах</strong> важна точность пунктуации!</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">Москва, Санкт-Петербург, Казань — крупные города.</div></div><div class="example-box"><div class="ru">Россия — федеративное государство.</div></div><div class="example-box"><div class="ru">Документы: паспорт, виза, полис.</div></div><div class="example-box"><div class="ru">Он спросил: «Где ваш паспорт?»</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Какой знак нужен: «Москва _ столица России»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,2,'punctuation')"><span>Запятая (,)</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,2,'punctuation')"><span>Двоеточие (:)</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,2,'punctuation')"><span>Тире (—)</span></div></div></div>` }},
-{ id:'numbers', icon:'🔢', title:'Числа и счет', desc:'Числительные, даты, телефоны', lesson: {
-theory: `<div class="lesson-section"><h3>Числа по-русски</h3><p>0-ноль, 1-один, 2-два, 3-три, 4-четыре, 5-пять, 6-шесть, 7-семь, 8-восемь, 9-девять, 10-десять</p><p>11-одиннадцать, 12-двенадцать, 13-тринадцать, ..., 20-двадцать</p><p>30 — тридцать, 40 — сорок, 50 — пятьдесят, 60 — шестьдесят, 70 — семьдесят, 80 — восемьдесят, 90 — девяносто, 100 — сто</p><p>200-двести, 300-триста, 400-четыреста, 500-пятьсот, 1000-тысяча, 1000000-миллион</p><p><strong>Порядковые:</strong> первый, второй, третий, четвёртый, пятый, шестой, седьмой, восьмой, девятый, десятый</p><p><strong>Даты:</strong> 1 января — первое января; 9 мая — девятое мая</p><p><strong>Время:</strong> 9:00 — девять часов; 9:30 — половина десятого; 9:15 — четверть десятого</p></div>`,
-examples: `<div class="lesson-section"><h3>Примеры</h3><div class="example-box"><div class="ru">Мой номер телефона: восемь девятьсот двадцать три...</div></div><div class="example-box"><div class="ru">Я живу в России уже 3 года (три года)</div></div><div class="example-box"><div class="ru">Патент стоит 5000 рублей (пять тысяч)</div></div><div class="example-box"><div class="ru">Сегодня 1 января — Новый год!</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как написать число «25» словами?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'numbers')"><span>двадцать четыре</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'numbers')"><span>двадцать пять</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'numbers')"><span>пятнадцать два</span></div></div></div>` }},
-{ id:'greetings', icon:'👋', title:'Приветствия и вежливость', desc:'Формальное и неформальное общение', lesson: {
-theory: `<div class="lesson-section"><h3>Приветствия</h3><p><strong>Формальные:</strong> Здравствуйте! Добрый день! Добрый вечер! Доброе утро!</p><p><strong>Неформальные:</strong> Привет! Здорово! Хай! Салют!</p><p><strong>Прощание:</strong> До свидания (формально), пока / до встречи (неформально), спокойной ночи</p><p><strong>Вежливые слова:</strong></p><ul><li>Пожалуйста — please / you're welcome</li><li>Спасибо — thank you</li><li>Извините / Простите — excuse me / sorry</li><li>Будьте добры... — Не могли бы вы...</li><li>Не могли бы вы... — Could you...</li></ul><p><strong>«Вы» и «ты»:</strong> Вы — уважительное обращение, ты — неформальное/близкое</p></div>`,
-examples: `<div class="lesson-section"><h3>Диалоги</h3><div class="example-box"><div class="ru">— Здравствуйте! Я новый сотрудник.<br>— Добро пожаловать! Меня зовут Иван.</div></div><div class="example-box"><div class="ru">— Извините, вы не знаете, где УФМС?<br>— Конечно, это на улице Ленина.</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как поприветствовать начальника?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'greetings')"><span>Здравствуйте!</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'greetings')"><span>Привет!</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'greetings')"><span>Хай!</span></div></div></div>` }},
-{ id:'documents', icon:'📄', title:'Язык документов', desc:'Заявления, справки, официальные тексты', lesson: {
-theory: `<div class="lesson-section"><h3>Официальный стиль</h3><p><strong>Стандартные фразы для заявлений:</strong></p><ul><li>Прошу Вас... — I request you...</li><li>В связи с... — В связи с...</li><li>На основании... — На основании...</li><li>Настоящим подтверждаю... — Настоящим подтверждаю...</li><li>Приложения: — Приложения:</li></ul><p><strong>Структура заявления:</strong> Кому → От кого → Заголовок → Текст → Подпись → Дата</p><p><strong>Важные слова:</strong> заявление, справка, договор, уведомление, квитанция, регистрация, разрешение, продление, отказ, одобрение</p></div>`,
-examples: `<div class="lesson-section"><h3>Пример заявления</h3><div class="example-box"><div class="ru">Директору ООО «Ромашка»<br>от Ахмедова Рустама Алиевича<br><br>ЗАЯВЛЕНИЕ<br>Прошу принять меня на работу на должность менеджера с 01.01.2024.<br><br>Подпись: ___ Дата: ___</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Что означает слово «квитанция»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,2,'documents')"><span>Заявление</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,2,'documents')"><span>Паспорт</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,2,'documents')"><span>Платёжный документ (квитанция)</span></div></div></div>` }},
-{ id:'medical', icon:'🏥', title:'Медицина и здоровье', desc:'Симптомы, больница, скорая помощь', lesson: {
-theory: `<div class="lesson-section"><h3>Медицинская лексика</h3><p><strong>Врачи:</strong> терапевт, хирург, педиатр, гинеколог, стоматолог, окулист, невролог, кардиолог</p><p><strong>Симптомы:</strong> боль (pain), температура (fever), кашель (cough), насморк (runny nose), головокружение (dizziness), тошнота (nausea)</p><p><strong>Фразы, которые можно услышать от врача:</strong></p><ul><li>У меня болит... голова/живот/горло/спина</li><li>Мне плохо / Я плохо себя чувствую</li><li>Вызовите скорую! — Вызывайте скорую!</li><li>Мне нужен рецепт — I need a prescription</li></ul><p><strong>Скорая помощь: 103</strong> | Единый номер: <strong>112</strong></p><p><strong>Полис ОМС</strong> — обязательное медицинское страхование (для граждан РФ и лиц с видом на жительство)</p></div>`,
-examples: `<div class="lesson-section"><h3>Диалог в поликлинике</h3><div class="example-box"><div class="ru">— У вас есть полис?<br>— Да, вот он.<br>— Что вас беспокоит?<br>— У меня болит голова уже 3 дня.</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как сказать «У меня болит живот»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'medical')"><span>У меня болит живот</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'medical')"><span>У меня болит живот</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'medical')"><span>У меня сильно болит живот</span></div></div></div>` }},
-{ id:'shopping', icon:'🛒', title:'Магазин и покупки', desc:'В магазине, на рынке, в торговом центре', lesson: {
-theory: `<div class="lesson-section"><h3>Покупки по-русски</h3><p><strong>В магазине:</strong> касса (checkout), цена (price), скидка (discount), чек (receipt), сдача (change)</p><p><strong>Полезные фразы:</strong></p><ul><li>Сколько стоит? — How much?</li><li>Есть ли скидка? — Is there a discount?</li><li>Можно примерить? — Can I try it on?</li><li>Я возьму это — I'll take this</li><li>Есть ли другой размер? — Is there another size?</li><li>Мне нужна скидочная карта — I need a loyalty card</li></ul><p><strong>Продукты:</strong> хлеб, молоко, мясо, рыба, овощи, фрукты, яйца, сахар, соль, масло</p><p><strong>Типы магазинов:</strong> продуктовый, аптека, универмаг, рынок, торговый центр (ТЦ)</p></div>`,
-examples: `<div class="lesson-section"><h3>Диалог в магазине</h3><div class="example-box"><div class="ru">— Сколько стоит этот хлеб?<br>— 45 рублей.<br>— Дайте два, пожалуйста.<br>— С вас 90 рублей.</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как узнать цену товара?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,1,'shopping')"><span>Сколько это стоит?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,1,'shopping')"><span>Сколько стоит?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,1,'shopping')"><span>Назови цену!</span></div></div></div>` }},
-{ id:'transport', icon:'🚇', title:'Транспорт', desc:'Метро, автобус, такси, железная дорога', lesson: {
-theory: `<div class="lesson-section"><h3>Транспорт в России</h3><p><strong>Виды транспорта:</strong> метро, автобус, троллейбус, трамвай, маршрутка, такси, электричка, поезд, самолёт</p><p><strong>В метро:</strong></p><ul><li>Пополнить карту (Тройка) — refill the card</li><li>Следующая станция... — Следующая станция...</li><li>Осторожно, двери закрываются! — Двери закрываются!</li></ul><p><strong>Такси:</strong> Яндекс Go, Gett, Uber — оплата картой или наличными</p><p><strong>РЖД (ж/д):</strong> плацкарт, купе, СВ, «Ласточка», «Сапсан»</p><p><strong>Полезные фразы:</strong></p><ul><li>Как доехать до...? — Как добраться до...?</li><li>Где остановка? — Где находится автобусная остановка?</li><li>Один билет до... — One ticket to...</li></ul></div>`,
-examples: `<div class="lesson-section"><h3>Диалог</h3><div class="example-box"><div class="ru">— Как добраться до Красной площади?<br>— На метро до станции «Охотный Ряд».</div></div><div class="example-box"><div class="ru">— Один билет до Санкт-Петербурга, пожалуйста.<br>— Купе или плацкарт?</div></div></div>`,
-practice: `<div class="lesson-section"><h3>Практика</h3><p>Как сказать «Где автобусная остановка»?</p><div class="answers"><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,0,0,'transport')"><span>Где остановка автобуса?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,1,0,'transport')"><span>Где есть автобус?</span></div><div class="answer-option" onclick="app.russian.checkLessonAnswer(this,2,0,'transport')"><span>Куда автобус?</span></div></div></div>` }}
+  // === БАЗОВЫЙ УРОВЕНЬ (A1-A2) ===
+  { id:'alphabet', icon:'🔤', title:'Алфавит и звуки', desc:'33 буквы, произношение, ударение', level:'A1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🇷🇺 Русский алфавит — 33 буквы</h3>
+      <p><strong>Гласные (10):</strong> А [a], Е [ye], Ё [yo], И [ee], О [o], У [oo], Ы [y], Э [e], Ю [yu], Я [ya]</p>
+      <p><strong>Согласные (21):</strong> Б, В, Г, Д, Ж, З, Й, К, Л, М, Н, П, Р, С, Т, Ф, Х, Ц, Ч, Ш, Щ</p>
+      <p><strong>Знаки (2):</strong> Ъ (твёрдый), Ь (мягкий знак)</p>
+      <div class="tip-box">💡 <strong>Совет:</strong> Ударение меняет значение: зАмок (castle) ≠ замОк (lock)</div>
+      <p><strong>Всегда твёрдые:</strong> Ж, Ш, Ц &nbsp; | &nbsp; <strong>Всегда мягкие:</strong> Ч, Щ, Й</p>
+      <p><strong>Редукция гласных:</strong> О без ударения звучит как [а]: мОлоко → [малако]</p>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>🔊 Аудио-примеры (транслитерация)</h3>
+      <div class="example-box"><div class="ru">ПРИВЕТ</div><div class="tr">[pri-VYET] — hello</div><div class="audio">🔊</div></div>
+      <div class="example-box"><div class="ru">СПАСИБО</div><div class="tr">[spa-SI-ba] — thank you</div><div class="audio">🔊</div></div>
+      <div class="example-box"><div class="ru">ХОРОШО</div><div class="tr">[ha-ra-SHO] — good/okay</div><div class="audio">🔊</div></div>
+      <div class="example-box"><div class="ru">ПОЖАЛУЙСТА</div><div class="tr">[pa-ZHAL-sta] — please/you're welcome</div><div class="audio">🔊</div></div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎯 Практика произношения</h3>
+      <p>Запишите и сравните своё произношение:</p>
+      <div class="practice-task">
+        <label>🗣️ Скажите: "Меня зовут [ваше имя]"</label>
+        <input type="text" placeholder="Транслитерация: Me-nya za-VOOT...">
+        <button class="record-btn">🎤 Записать</button>
+      </div>
+    </div>`
+  }},
+
+  { id:'essential-phrases', icon:'💬', title:'50 фраз для выживания', desc:'Самые нужные выражения для старта', level:'A1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🚨 Фразы, которые нужно знать сразу</h3>
+      <table class="phrase-table">
+        <tr><th>Русский</th><th>Транслит</th><th>English</th><th>Когда использовать</th></tr>
+        <tr><td>Меня зовут...</td><td>Me-nya za-VOOT</td><td>My name is...</td><td>Знакомство</td></tr>
+        <tr><td>Я не понимаю</td><td>Ya ne po-nee-MA-yu</td><td>I don't understand</td><td>Если не поняли</td></tr>
+        <tr><td>Повторите, пожалуйста</td><td>Pov-to-RI-te, pa-ZHAL-sta</td><td>Repeat, please</td><td>Попросить повторить</td></tr>
+        <tr><td>Как это сказать по-русски?</td><td>Kak e-to ska-ZAT' pa-RUS-ski?</td><td>How to say this in Russian?</td><td>Учить новые слова</td></tr>
+        <tr><td>Где туалет?</td><td>Gde tua-LET?</td><td>Where is the bathroom?</td><td>🚻 Срочно!</td></tr>
+        <tr><td>Сколько стоит?</td><td>SKOL-ka STO-it?</td><td>How much?</td><td>Покупки</td></tr>
+        <tr><td>Мне нужно...</td><td>Mne NUZH-na...</td><td>I need...</td><td>Просьбы</td></tr>
+        <tr><td>Помогите, пожалуйста!</td><td>Pa-ma-GI-te, pa-ZHAL-sta!</td><td>Help me, please!</td><td>Экстренно</td></tr>
+      </table>
+      <div class="tip-box">🎯 <strong>Совет:</strong> Выучите сначала эти 8 фраз — они покрывают 80% бытовых ситуаций!</div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Мини-диалоги</h3>
+      <div class="dialogue-box">
+        <div class="speaker-a">👤 — Извините, где метро?</div>
+        <div class="speaker-b">🗣️ — Прямо и направо, 5 минут.</div>
+        <div class="speaker-a">👤 — Спасибо большое!</div>
+        <div class="speaker-b">🗣️ — Пожалуйста!</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎭 Ролевая игра</h3>
+      <p>Вы потерялись. Спросите дорогу:</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,1,'essential-phrases')">
+          <span>Извините, как пройти к Красной площади?</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'essential-phrases')">
+          <span>Красная площадь где?</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'essential-phrases')">
+          <span>Я хочу Красная площадь</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === ГРАММАТИКА ДЛЯ РАЗГОВОРА ===
+  { id:'cases-conversational', icon:'🔄', title:'Падежи в живой речи', desc:'Как носители реально используют падежи', level:'A2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🎯 Падежи: теория → практика</h3>
+      <p><strong>Не учите таблицы — учите паттерны!</strong></p>
+      
+      <h4>📍 МЕСТО (Где?) → Предложный падеж</h4>
+      <p><code>в + -е / на + -е</code>: в Москв<strong>е</strong>, на работ<strong>е</strong>, в парк<strong>е</strong></p>
+      
+      <h4>🚶 ДВИЖЕНИЕ (Куда?) → Винительный падеж</h4>
+      <p><code>в + -у / на + -у</code>: в Москв<strong>у</strong>, на работ<strong>у</strong>, в парк</p>
+      
+      <h4>🔙 ОТКУДА? → Родительный падеж</h4>
+      <p><code>из / с + -ы/-и</code>: из Москв<strong>ы</strong>, с работ<strong>ы</strong>, из парк<strong>а</strong></p>
+      
+      <div class="pattern-box">
+        <strong>🧠 Запомните связки:</strong>
+        <ul>
+          <li><code>жить / работать / быть</code> + <strong>в/на + Предложный</strong></li>
+          <li><code>ехать / идти / лететь</code> + <strong>в/на + Винительный</strong></li>
+          <li><code>вернуться / приехать</code> + <strong>из/с + Родительный</strong></li>
+        </ul>
+      </div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Реальные примеры</h3>
+      <div class="example-box">
+        <div class="ru">— Где ты живёшь? — Я живу <strong>в Москве</strong>.</div>
+        <div class="ru">— Куда ты едешь? — Я еду <strong>в Москву</strong>.</div>
+        <div class="ru">— Откуда ты? — Я <strong>из Москвы</strong>.</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— Ты на работе? — Нет, я иду <strong>на работу</strong>.</div>
+        <div class="ru">— Когда вернёшься <strong>с работы</strong>? — В 6 вечера.</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>✍️ Вставьте правильный падеж</h3>
+      <p>"Я живу ___ (Москва), работаю ___ (банк), а завтра еду ___ (Петербург)"</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,2,'cases-conversational')">
+          <span>в Москве / в банке / в Петербург</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'cases-conversational')">
+          <span>в Москву / на банк / в Петербурге</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'cases-conversational')">
+          <span>из Москвы / в банке / из Петербурга</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  { id:'verbs-conversational', icon:'🗣️', title:'Глаголы в разговоре', desc:'Спряжение + аспекты + частые ошибки', level:'A2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🔥 Топ-20 глаголов для разговора</h3>
+      <table class="verb-table">
+        <tr><th>Инфинитив</th><th>Я</th><th>Ты</th><th>Он/Она</th><th>Мы/Вы/Они</th></tr>
+        <tr><td>говорить</td><td>говорю</td><td>говоришь</td><td>говорит</td><td>говорят</td></tr>
+        <tr><td>понимать</td><td>понимаю</td><td>понимаешь</td><td>понимает</td><td>понимают</td></tr>
+        <tr><td>хотеть</td><td>хочу</td><td>хочешь</td><td>хочет</td><td>хотят</td></tr>
+        <tr><td>мочь</td><td>могу</td><td>можешь</td><td>может</td><td>могут</td></tr>
+        <tr><td>знать</td><td>знаю</td><td>знаешь</td><td>знает</td><td>знают</td></tr>
+      </table>
+      
+      <h4>⚡ Аспекты глаголов: когда что использовать?</h4>
+      <div class="aspect-grid">
+        <div class="aspect-card imperfective">
+          <strong>Несовершенный</strong><br>
+          <small>процесс / повторение</small><br>
+          <code>Я читаю книгу</code> (сейчас)<br>
+          <code>Я читал каждый день</code> (регулярно)
+        </div>
+        <div class="aspect-card perfective">
+          <strong>Совершенный</strong><br>
+          <small>результат / однократно</small><br>
+          <code>Я прочитал книгу</code> (закончил)<br>
+          <code>Я прочитаю завтра</code> (план)
+        </div>
+      </div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Глаголы в контексте</h3>
+      <div class="example-box">
+        <div class="ru">— Ты <strong>понимаешь</strong> по-русски? — Немного <strong>понимаю</strong>.</div>
+        <div class="ru">— Я <strong>хочу</strong> выучить русский. — Ты <strong>можешь</strong>!</div>
+        <div class="ru">— Что ты <strong>делал</strong> вчера? — <strong>Читал</strong> книгу, но не <strong>прочитал</strong> до конца.</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎯 Выберите правильный аспект</h3>
+      <p>"Вчера я ___ (читать) интересную статью"</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,1,'verbs-conversational')">
+          <span>читал</span> <small>(процесс)</small>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'verbs-conversational')">
+          <span>прочитал</span> <small>(если закончили)</small>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === РАЗГОВОРНЫЕ ТЕМЫ (B1) ===
+  { id:'small-talk', icon:'☕', title:'Small Talk: светская беседа', desc:'Как начать и поддержать разговор', level:'B1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🗨️ Фразы для начала разговора</h3>
+      
+      <h4>🌤️ О погоде (универсально!)</h4>
+      <ul>
+        <li><code>Какая сегодня погода!</code> — What weather today!</li>
+        <li><code>Наконец-то тепло / холодно</code> — Finally warm/cold</li>
+        <li><code>Вы не знаете, будет ли дождь?</code> — Do you know if it will rain?</li>
+      </ul>
+      
+      <h4>👋 Реакции и поддержка беседы</h4>
+      <ul>
+        <li><code>Правда?</code> / <code>Серьёзно?</code> — Really?</li>
+        <li><code>Интересно!</code> / <code>Здорово!</code> — Interesting! / Great!</li>
+        <li><code>А что потом?</code> — And then what?</li>
+        <li><code>Понимаю вас</code> — I understand you</li>
+      </ul>
+      
+      <h4>🔄 Как плавно сменить тему</h4>
+      <ul>
+        <li><code>Кстати...</code> — By the way...</li>
+        <li><code>Это напоминает мне...</code> — That reminds me...</li>
+        <li><code>А вы не в курсе...?</code> — Are you aware...?</li>
+      </ul>
+      
+      <div class="tip-box">💡 <strong>Лайфхак:</strong> Русские любят задавать личные вопросы ("Семья есть?", "Откуда вы?"). Это не бестактность, а интерес!</div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Диалог: знакомство на мероприятии</h3>
+      <div class="dialogue-box">
+        <div class="speaker-a">👤 — Добрый вечер! Вы впервые на этой конференции?</div>
+        <div class="speaker-b">🗣️ — Да, впервые. А вы?</div>
+        <div class="speaker-a">👤 — Второй раз. Кстати, из какого вы города?</div>
+        <div class="speaker-b">🗣️ — Я из Берлина. А вы?</div>
+        <div class="speaker-a">👤 — Из Москвы. Вам нравится у нас?</div>
+        <div class="speaker-b">🗣️ — Очень! Особенно архитектура...</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎭 Практика: продолжите диалог</h3>
+      <p>Собеседник говорит: <em>"Я только что приехал из отпуска"</em></p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,2,'small-talk')">
+          <span>О, здорово! А где отдыхали?</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'small-talk')">
+          <span>Хорошо. Мне нужно идти.</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'small-talk')">
+          <span>Я тоже люблю отпуск.</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  { id:'expressing-opinions', icon:'💭', title:'Выражение мнения', desc:'Как говорить "я думаю", "мне кажется", аргументировать', level:'B1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🗣️ Фразы для выражения мнения</h3>
+      
+      <h4>🟢 Мягкое мнение (вежливо)</h4>
+      <ul>
+        <li><code>Мне кажется, что...</code> — It seems to me that...</li>
+        <li><code>Я думаю, что...</code> — I think that...</li>
+        <li><code>На мой взгляд...</code> — In my opinion...</li>
+        <li><code>Если честно...</code> — To be honest...</li>
+      </ul>
+      
+      <h4>🔴 Уверенное мнение</h4>
+      <ul>
+        <li><code>Я убеждён, что...</code> — I'm convinced that...</li>
+        <li><code>Безусловно...</code> — Undoubtedly...</li>
+        <li><code>Это очевидно, потому что...</code> — It's obvious because...</li>
+      </ul>
+      
+      <h4>🤝 Согласие и несогласие</h4>
+      <table class="opinion-table">
+        <tr><th>Согласие</th><th>Несогласие (вежливо)</th></tr>
+        <tr><td>Согласен / Согласна</td><td>Я бы поспорил(а)...</td></tr>
+        <tr><td>Точно! / Именно!</td><td>Не совсем так...</td></tr>
+        <tr><td>Поддерживаю</td><td>У меня другое мнение...</td></tr>
+        <tr><td>Это хорошая мысль</td><td>Интересная точка зрения, но...</td></tr>
+      </table>
+      
+      <h4>🧱 Аргументация</h4>
+      <ul>
+        <li><code>Во-первых... во-вторых... в-третьих...</code></li>
+        <li><code>С одной стороны... с другой стороны...</code></li>
+        <li><code>Например...</code> / <code>Допустим...</code></li>
+        <li><code>По этой причине...</code> / <code>Следовательно...</code></li>
+      </ul>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Пример: обсуждение фильма</h3>
+      <div class="dialogue-box">
+        <div class="speaker-a">👤 — Мне кажется, фильм был слишком длинным.</div>
+        <div class="speaker-b">🗣️ — Не совсем согласен. Мне нравится, что режиссёр не торопился.</div>
+        <div class="speaker-a">👤 — Понимаю, но, на мой взгляд, середину можно было сократить.</div>
+        <div class="speaker-b">🗣️ — Интересная точка зрения. Хотя, если честно, мне важнее атмосфера, чем темп.</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>✍️ Выразите мнение вежливо</h3>
+      <p>Вы не согласны: "Русский язык очень сложный"</p>
+      <textarea placeholder="Например: 'Я понимаю, почему так кажется, но на самом деле...'"></textarea>
+      <button class="check-btn">Проверить</button>
+    </div>`
+  }},
+
+  { id:'colloquial-speech', icon:'⚡', title:'Разговорный русский: сокращения и сленг', desc:'Как говорят носители в реальной жизни', level:'B1+', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🔥 Живая речь: что нужно знать</h3>
+      
+      <h4>✂️ Частые сокращения</h4>
+      <table class="slang-table">
+        <tr><th>Полная форма</th><th>Разговорная</th><th>Пример</th></tr>
+        <tr><td>здравствуйте</td><td>здрасьте / привет</td><td>Здрасьте, можно пройти?</td></tr>
+        <tr><td>пожалуйста</td><td>пожалста / пж</td><td>Спасибо! — Пожалста!</td></tr>
+        <tr><td>сейчас</td><td>ща</td><td>Ща приду!</td></tr>
+        <tr><td>конечно</td><td>конешно / ага</td><td>— Пойдёшь? — Ага!</td></tr>
+        <tr><td>ничего</td><td>ниче / норм</td><td>Как дела? — Норм.</td></tr>
+        <tr><td>вы / ты</td><td>ты (в неформ.)</td><td>Ты не подскажешь?</td></tr>
+      </table>
+      
+      <h4>🗣️ Слова-паразиты (использовать умеренно!)</h4>
+      <ul>
+        <li><code>ну...</code> — well... (для паузы)</li>
+        <li><code>вот...</code> — like... / so...</li>
+        <li><code>типа...</code> — kinda... / like... (молодёжный)</li>
+        <li><code>короче...</code> — long story short...</li>
+        <li><code>как бы...</code> — sort of...</li>
+      </ul>
+      
+      <h4>💬 Современный сленг (2024)</h4>
+      <ul>
+        <li><code>краш</code> — crush (someone you like)</li>
+        <li><code>рофл</code> — LOL / розыгрыш</li>
+        <li><code>кринж</code> — cringe</li>
+        <li><code>вайб</code> — vibe</li>
+        <li><code>чилить</code> — to chill</li>
+        <li><code>агриться</code> — to get angry</li>
+      </ul>
+      
+      <div class="warning-box">⚠️ <strong>Важно:</strong> Сленг используйте только с друзьями! С начальством/незнакомцами — только литературный язык.</div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Сравнение: официально vs разговорно</h3>
+      <div class="comparison-box">
+        <div class="formal">
+          <strong>🎩 Официально:</strong><br>
+          «Не могли бы вы подсказать, где находится ближайшая станция метро?»
+        </div>
+        <div class="informal">
+          <strong>👕 Разговорно:</strong><br>
+          «Скажи, а где тут метро?» / «Подскажи, метро далеко?»
+        </div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— Ща, я только сообщение отправлю.</div>
+        <div class="tr">"One sec, just sending a message."</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— Ну, короче, он типа пришёл, а мы уже ушли.</div>
+        <div class="tr">"So, like, he showed up but we'd already left."</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎯 Переведите на разговорный стиль</h3>
+      <p><em>"Я не могу сейчас разговаривать, перезвоню позже"</em></p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,2,'colloquial-speech')">
+          <span>Ща не могу говорить, перезвоню!</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'colloquial-speech')">
+          <span>Я не имею возможности вести беседу в данный момент</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'colloquial-speech')">
+          <span>Не могу говорить, потом позвоню</span> <small>(правильно, но не разговорно)</small>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === СИТУАЦИОННЫЕ ДИАЛОГИ (B1-B2) ===
+  { id:'restaurant-dialogue', icon:'🍽️', title:'В кафе и ресторане', desc:'Заказ, жалобы, комплименты', level:'B1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🍽️ Фразы для ресторана</h3>
+      
+      <h4>📋 Заказ</h4>
+      <ul>
+        <li><code>Можно меню, пожалуйста?</code></li>
+        <li><code>Что вы посоветуете?</code> — What do you recommend?</li>
+        <li><code>Я возьму...</code> / <code>Мне, пожалуйста,...</code></li>
+        <li><code>Без лука, пожалуйста</code> — No onions, please</li>
+        <li><code>У вас есть вегетарианские блюда?</code></li>
+      </ul>
+      
+      <h4>⚠️ Проблемы и жалобы (вежливо!)</h4>
+      <ul>
+        <li><code>Извините, это не то, что я заказывал(а)</code></li>
+        <li><code>Блюдо холодное, можно подогреть?</code></li>
+        <li><code>Можно позвать менеджера?</code></li>
+        <li><code>У меня аллергия на...</code></li>
+      </ul>
+      
+      <h4>😊 Комплименты и благодарность</h4>
+      <ul>
+        <li><code>Очень вкусно!</code> / <code>Просто объедение!</code></li>
+        <li><code>Спасибо, всё было прекрасно</code></li>
+        <li><code>Передайте повару мой комплимент!</code></li>
+      </ul>
+      
+      <h4>💳 Расчёт</h4>
+      <ul>
+        <li><code>Счёт, пожалуйста</code> / <code>Можно расплатиться?</code></li>
+        <li><code>Раздельный счёт, пожалуйста</code> — Separate bills</li>
+        <li><code>У вас принимают карту?</code></li>
+        <li><code>Чаевые включены?</code> — Is service charge included?</li>
+      </ul>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Полный диалог</h3>
+      <div class="dialogue-box">
+        <div class="speaker-waiter">🤵 — Добрый вечер! Столик на двоих?</div>
+        <div class="speaker-customer">👤 — Да, пожалуйста. Можно меню?</div>
+        <div class="speaker-waiter">🤵 — Конечно. Что будете пить?</div>
+        <div class="speaker-customer">👤 — Мне воду без газа, а ему кофе.</div>
+        <div class="speaker-waiter">🤵 — Готовы заказать?</div>
+        <div class="speaker-customer">👤 — Да, я возьму салат и пасту. А что посоветуете на десерт?</div>
+        <div class="speaker-waiter">🤵 — Наш фирменный чизкейк!</div>
+        <div class="speaker-customer">👤 — Отлично, давайте попробуем.</div>
+        <!-- Later... -->
+        <div class="speaker-customer">👤 — Счёт, пожалуйста. Всё было очень вкусно!</div>
+        <div class="speaker-waiter">🤵 — Спасибо! Карта или наличными?</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎭 Ролевая игра: вы — клиент</h3>
+      <p>Официант принёс не тот заказ. Что скажете?</p>
+      <textarea placeholder="Например: 'Извините, но я заказывал(а)...'"></textarea>
+      <div class="hint">💡 Подсказка: начните с "Извините" и чётко назовите, что не так</div>
+    </div>`
+  }},
+
+  { id:'phone-conversations', icon:'📞', title:'Телефонные разговоры', desc:'Звонки, сообщения, видеосвязь', level:'B1', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>📱 Фразы для телефонного общения</h3>
+      
+      <h4>🔔 Начало разговора</h4>
+      <ul>
+        <li><code>Алло?</code> — Hello? (только при звонке)</li>
+        <li><code>Добрый день, это [имя]</code></li>
+        <li><code>Можно поговорить с...?</code> / <code>Соедините, пожалуйста, с...</code></li>
+        <li><code>Вы меня слышите?</code> — Can you hear me?</li>
+      </ul>
+      
+      <h4>🔇 Проблемы со связью</h4>
+      <ul>
+        <li><code>Плохо слышно, повторите</code></li>
+        <li><code>Вы говорите слишком быстро</code></li>
+        <li><code>Можете говорить медленнее?</code></li>
+        <li><code>Давайте я перезвоню</code></li>
+      </ul>
+      
+      <h4>✉️ Голосовые сообщения и чаты</h4>
+      <ul>
+        <li><code>Напишу в вотсап</code> — I'll text on WhatsApp</li>
+        <li><code>Отправил(а) голосовое</code> — Sent a voice message</li>
+        <li><code>Посмотрите сообщение</code> — Check the message</li>
+        <li><code>Ответь, когда освободишься</code> — Reply when free</li>
+      </ul>
+      
+      <h4>🔚 Завершение разговора</h4>
+      <ul>
+        <li><code>Спасибо за звонок</code></li>
+        <li><code>Хорошего дня!</code> / <code>Всего доброго!</code></li>
+        <li><code>Созвонимся позже</code> — Let's talk later</li>
+        <li><code>На связи!</code> — Keep in touch! (неформально)</li>
+      </ul>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Пример: деловой звонок</h3>
+      <div class="dialogue-box">
+        <div class="speaker-a">📞 — Алло, добрый день! Это Анна из компании "Вектор".</div>
+        <div class="speaker-b">🗣️ — Здравствуйте, Анна. Слушаю вас.</div>
+        <div class="speaker-a">📞 — Подскажите, вы получили наше письмо?</div>
+        <div class="speaker-b">🗣️ — Да, спасибо. Я как раз хотел(а) вам перезвонить...</div>
+        <div class="speaker-a">📞 — Отлично! У вас есть вопросы?</div>
+        <div class="speaker-b">🗣️ — Только один: когда можно подписать договор?</div>
+        <div class="speaker-a">📞 — На следующей неделе. Я пришлю варианты по почте.</div>
+        <div class="speaker-b">🗣️ — Договорились. Спасибо, всего доброго!</div>
+        <div class="speaker-a">📞 — Вам тоже! До связи!</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎧 Аудио-практика</h3>
+      <p>Прослушайте сообщение и ответьте:</p>
+      <div class="audio-player">
+        <button>🔊 "Алло, это Мария. Вы не могли бы перезвонить через 10 минут?"</button>
+      </div>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,1,'phone-conversations')">
+          <span>Да, конечно. Перезвоню через 10 минут.</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'phone-conversations')">
+          <span>Кто это?</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'phone-conversations')">
+          <span>Я не могу сейчас</span> <small>(грубо без объяснения)</small>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === ПРОДВИНУТЫЕ ТЕМЫ (B2) ===
+  { id:'idioms-expressions', icon:'🎭', title:'Идиомы и устойчивые выражения', desc:'Как звучать как носитель', level:'B2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🇷🇺 Топ-30 русских идиом для разговора</h3>
+      
+      <h4>💡 Популярные выражения</h4>
+      <table class="idiom-table">
+        <tr><th>Идиома</th><th>Значение</th><th>Пример</th></tr>
+        <tr><td>Рукой подать</td><td>Очень близко</td><td>Магазин рукой подать — 2 минуты пешком</td></tr>
+        <tr><td>Водить за нос</td><td>Обманывать</td><td>Не води меня за нос, говори правду</td></tr>
+        <tr><td>Бить баклуши</td><td>Бездельничать</td><td>Хватит бить баклуши, займись делом!</td></tr>
+        <tr><td>Себе на уме</td><td>Хитрый, скрытный</td><td>Он себе на уме, ничего не рассказывает</td></tr>
+        <tr><td>Душа в пятки ушла</td><td>Очень испугался</td><td>Когда он закричал, у меня душа в пятки ушла</td></tr>
+        <tr><td>Не в своей тарелке</td><td>Неловко, неуютно</td><td>На вечеринке я был не в своей тарелке</td></tr>
+        <tr><td>Спустя рукава</td><td>Небрежно, плохо</td><td>Он работает спустя рукава</td></tr>
+        <tr><td>Яблоку негде упасть</td><td>Очень много людей</td><td>На концерте яблоку негде упасть</td></tr>
+      </table>
+      
+      <h4>🗣️ Фразеологизмы для эмоций</h4>
+      <ul>
+        <li><code>Сердце ёкнуло</code> — сердце сжалось (от страха/волнения)</li>
+        <li><code>Глаза разбежались</code> — много выбора, растерялся</li>
+        <li><code>Уши вянут</code> — стыдно слушать</li>
+        <li><code>Руки опускаются</code> — теряю мотивацию</li>
+        <li><code>Голова идёт кругом</code> — перегруз информации</li>
+      </ul>
+      
+      <h4>🎯 Как использовать идиомы</h4>
+      <div class="tip-box">
+        ✅ Используйте 1-2 идиомы в разговоре — это сделает речь живой.<br>
+        ❌ Не перегружайте: 5+ идиом = неестественно.<br>
+        💡 Лучше знать 10 идиом идеально, чем 50 поверхностно.
+      </div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Идиомы в контексте</h3>
+      <div class="example-box">
+        <div class="ru">— Как новая работа?<br>— Нормально, но начальник водит за нос: обещал повышение, а тишина.</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— Пойдём в тот новый ресторан?<br>— Да там яблоку негде упасть! Давай в другой.</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— Ты видел цены на билеты?<br>— Да, глаза разбежались! Не знаю, что выбрать.</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎭 Подберите идиому</h3>
+      <p>Ситуация: "В комнате было очень много людей"</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,2,'idioms-expressions')">
+          <span>Яблоку негде упасть</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'idioms-expressions')">
+          <span>Рукой подать</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'idioms-expressions')">
+          <span>Бить баклуши</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  { id:'discourse-markers', icon:'🔗', title:'Слова-связки: как строить речь', desc:'ну, вот, значит, короче, кстати...', level:'B2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🧵 Дискурсивные маркеры: "клей" для речи</h3>
+      
+      <h4>🔹 Для начала мысли</h4>
+      <ul>
+        <li><code>Ну...</code> — (пауза, обдумывание) "Ну, я думаю..."</li>
+        <li><code>В общем...</code> — Generally speaking...</li>
+        <li><code>Так вот...</code> — So, as I was saying...</li>
+      </ul>
+      
+      <h4>🔹 Для развития мысли</h4>
+      <ul>
+        <li><code>Значит...</code> — So / It means...</li>
+        <li><code>То есть...</code> — That is / I mean...</li>
+        <li><code>Допустим...</code> — Let's say...</li>
+        <li><code>Скажем так...</code> — Let's put it this way...</li>
+      </ul>
+      
+      <h4>🔹 Для смены темы / возврата</h4>
+      <ul>
+        <li><code>Кстати...</code> — By the way...</li>
+        <li><code>К слову...</code> — Speaking of which...</li>
+        <li><code>Возвращаясь к...</code> — Getting back to...</li>
+      </ul>
+      
+      <h4>🔹 Для завершения / итога</h4>
+      <ul>
+        <li><code>Короче...</code> — Long story short...</li>
+        <li><code>В итоге...</code> — In the end...</li>
+        <li><code>Так что...</code> — So that's why...</li>
+      </ul>
+      
+      <h4>🔹 Для уточнения / смягчения</h4>
+      <ul>
+        <li><code>Как бы...</code> — Kind of / Sort of</li>
+        <li><code>Вроде бы...</code> — Seems like...</li>
+        <li><code>Наверное...</code> — Probably...</li>
+      </ul>
+      
+      <div class="flow-example">
+        <strong>Пример связной речи:</strong><br>
+        <code>Ну, в общем, ситуация такая...</code><br>
+        <code>Значит, я пришёл, а там...</code><br>
+        <code>Кстати, ты же помнишь, что...</code><br>
+        <code>Короче, пришлось решать самому.</code>
+      </div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Естественная речь с маркерами</h3>
+      <div class="example-box">
+        <div class="ru">— Ну, как съездил?<br>— В общем, неплохо. Значит, прилетели, заселились... Кстати, отель был прямо у моря! Короче, отдохнул отлично.</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">— То есть ты не придёшь?<br>— Ну, как бы... Скорее всего, нет. Дело в том, что...</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>✍️ Вставьте подходящий маркер</h3>
+      <p>"___, я хотел спросить: ты не видел мои ключи?"</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,1,'discourse-markers')">
+          <span>Кстати</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'discourse-markers')">
+          <span>Короче</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'discourse-markers')">
+          <span>В итоге</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === КУЛЬТУРНЫЙ КОДЕКС ===
+  { id:'cultural-communication', icon:'🌍', title:'Культура общения в России', desc:'Невербалика, табу, этикет', level:'B2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🇷🇺 Что важно знать о русском общении</h3>
+      
+      <h4>🤝 Невербальная коммуникация</h4>
+      <ul>
+        <li><strong>Зрительный контакт:</strong> важен, показывает уважение и честность</li>
+        <li><strong>Дистанция:</strong> ближе, чем в Северной Европе, но дальше, чем в Латинской Америке</li>
+        <li><strong>Рукопожатие:</strong> твёрдое, с зрительным контактом; мужчины — обязательно</li>
+        <li><strong>Улыбка:</strong> не "дежурная", а только при реальной причине — не улыбаться не значит быть грубым!</li>
+      </ul>
+      
+      <h4>🚫 Темы-табу (на начальном этапе)</h4>
+      <ul>
+        <li>Политика (особенно с незнакомцами)</li>
+        <li>Зарплата / стоимость покупок (личный вопрос)</li>
+        <li>Критика России "снаружи" (может быть воспринята болезненно)</li>
+        <li>Личная жизнь (спрашивают, но отвечают не всегда)</li>
+      </ul>
+      
+      <h4>✅ Темы, которые любят русские</h4>
+      <ul>
+        <li>Путешествия и впечатления</li>
+        <li>Еда и рецепты ("А у вас так готовят?")</li>
+        <li>Культура: литература, музыка, кино</li>
+        <li>Спорт (особенно хоккей, футбол)</li>
+        <li>Сравнение культур ("А как у вас принято?")</li>
+      </ul>
+      
+      <h4>🎁 Подарки и гостеприимство</h4>
+      <ul>
+        <li>В гости — с небольшим подарком (шоколад, вино, цветы <em>нечётное количество!</em>)</li>
+        <li>Отказ от угощения — может обидеть; лучше взять немного</li>
+        <li>"Проходите, чувствуйте себя как дома" — приглашение к неформальности</li>
+      </ul>
+      
+      <div class="tip-box">💡 <strong>Золотое правило:</strong> Русские ценят искренность больше, чем идеальную вежливость. Лучше сказать "не знаю" с улыбкой, чем кивать, не понимая.</div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Культурные нюансы в диалогах</h3>
+      <div class="example-box">
+        <div class="ru">👤 — Спасибо за приглашение! Можно я принесу торт?<br>🗣️ — Ой, не надо, у нас всё есть!<br>👤 — Всё равно хочу, это традиция у нас.<br>🗣️ — Ну, если только маленький... 😊</div>
+        <div class="note">💭 Отказ — формальность; настойчивость = уважение к традиции</div>
+      </div>
+      <div class="example-box">
+        <div class="ru">👤 — А сколько вы платите за квартиру?<br>🗣️ — Ой, это личное... Давайте лучше о путешествиях?</div>
+        <div class="note">💭 Вопрос о деньгах — деликатная тема; мягкий отказ нормален</div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎭 Ситуация: вас пригласили в гости</h3>
+      <p>Хозяин говорит: "Проходите, раздевайтесь, чай будете?"</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,2,'cultural-communication')">
+          <span>Спасибо! С удовольствием. Можно я помогу?</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'cultural-communication')">
+          <span>Нет, спасибо, я не хочу чай</span> <small>(может обидеть)</small>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'cultural-communication')">
+          <span>Сколько стоит этот сервиз?</span> <small>(неуместно)</small>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === ПРАКТИКА: АУДИРОВАНИЕ И ГОВОРЕНИЕ ===
+  { id:'listening-fast-speech', icon:'👂', title:'Понимание быстрой речи', desc:'Редукции, слияния, интонация', level:'B2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>⚡ Почему носители "говорят неразборчиво"</h3>
+      
+      <h4>🔊 Фонетические явления живой речи</h4>
+      <table class="phonetics-table">
+        <tr><th>Письменно</th><th>В быстрой речи</th><th>Пример</th></tr>
+        <tr><td>что</td><td>шо / чё</td><td>Ты чё делаешь?</td></tr>
+        <tr><td>потому что</td><td>потамушта / па-чу</td><td>Па-чу я устал</td></tr>
+        <tr><td>здравствуйте</td><td>здрасьте</td><td>Здрасьте, можно пройти?</td></tr>
+        <tr><td>вы говорите</td><td>вы гворите</td><td>Вы гворите слишком быстро</td></tr>
+        <tr><td>я не знаю</td><td>я не знаю → [йа ни знайу]</td><td>Йа ни знайу, честно</td></tr>
+        <tr><td>сколько</td><td>скока</td><td>Скока времени?</td></tr>
+      </table>
+      
+      <h4>🎯 Стратегии понимания</h4>
+      <ol>
+        <li><strong>Не переводите слово в слово</strong> — ловите общий смысл</li>
+        <li><strong>Слушайте ключевые слова</strong> — глаголы, существительные</li>
+        <li><strong>Обращайте внимание на интонацию</strong> — вопрос/утверждение/ирония</li>
+        <li><strong>Не бойтесь переспрашивать</strong> — "Повторите, пожалуйста"</li>
+        <li><strong>Тренируйтесь с субтитрами</strong> — сначала с русскими, потом без</li>
+      </ol>
+      
+      <h4>🎧 Где тренироваться</h4>
+      <ul>
+        <li>Подкасты: "Russian with Max", "Comprehensible Russian"</li>
+        <li>YouTube: влоги с субтитрами (настройте скорость 0.75x)</li>
+        <li>Сериалы: "Кухня", "Интерны" (бытовая лексика + юмор)</li>
+        <li>Новости: "МИР 24" (чёткая дикция, актуальная лексика)</li>
+      </ul>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>🔊 Аудио-примеры (транскрипция)</h3>
+      <div class="audio-example">
+        <button>🔊 "Ща приду, только штаны найду"</button>
+        <div class="transcript">
+          <strong>Полная форма:</strong> Сейчас приду, только штаны найду.<br>
+          <strong>Значение:</strong> I'll be right there, just need to find my pants.
+        </div>
+      </div>
+      <div class="audio-example">
+        <button>🔊 "Ты чё, серьёзно?"</button>
+        <div class="transcript">
+          <strong>Полная форма:</strong> Ты что, серьёзно?<br>
+          <strong>Интонация:</strong> удивление / недоверие
+        </div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎧 Упражнение: расшифруйте</h3>
+      <p>Прослушайте и выберите правильный вариант:</p>
+      <div class="audio-player">
+        <button>🔊 "Па-чу я не успел"</button>
+      </div>
+      <div class="answers">
+        <div class="answer-option" onclick="app.checkAnswer(this,1,'listening-fast-speech')">
+          <span>Потому что я не успел</span> ✓
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'listening-fast-speech')">
+          <span>Пойду, я не успел</span>
+        </div>
+        <div class="answer-option" onclick="app.checkAnswer(this,0,'listening-fast-speech')">
+          <span>Почему я не успел</span>
+        </div>
+      </div>
+    </div>`
+  }},
+
+  // === ФИНАЛЬНЫЙ УРОК: ПЛАН ДО B2 ===
+  { id:'roadmap-to-fluency', icon:'🗺️', title:'Ваш путь к свободному русскому', desc:'План, ресурсы, советы', level:'B2', lesson: {
+    theory: `<div class="lesson-section">
+      <h3>🎯 Как достичь разговорного уровня (реалистичный план)</h3>
+      
+      <h4>📊 Этапы прогресса</h4>
+      <div class="roadmap">
+        <div class="stage a1">
+          <strong>A1 (1-2 мес):</strong> Алфавит, базовые фразы, простые вопросы
+        </div>
+        <div class="stage a2">
+          <strong>A2 (3-4 мес):</strong> Падежи в контексте, бытовые диалоги, настоящее/прошедшее время
+        </div>
+        <div class="stage b1">
+          <strong>B1 (5-8 мес):</strong> Мнение, аргументация, ситуационные диалоги, понимание медленной речи
+        </div>
+        <div class="stage b2">
+          <strong>B2 (9-12 мес):</strong> Свободное общение, идиомы, понимание быстрой речи, культурный контекст
+        </div>
+      </div>
+      
+      <h4>⏰ Ежедневная практика (30 мин)</h4>
+      <table class="practice-plan">
+        <tr><th>День</th><th>Фокус</th><th>Задание</th></tr>
+        <tr><td>Пн</td><td>🗣️ Говорение</td><td>5 мин: монолог на тему дня (записать на диктофон)</td></tr>
+        <tr><td>Вт</td><td>👂 Аудирование</td><td>15 мин: подкаст + выписать 3 новых слова</td></tr>
+        <tr><td>Ср</td><td>📚 Грамматика</td><td>1 паттерн: 10 примеров в контексте</td></tr>
+        <tr><td>Чт</td><td>💬 Диалоги</td><td>Разыграть 1 ситуацию (с партнёром / перед зеркалом)</td></tr>
+        <tr><td>Пт</td><td>✍️ Письмо</td><td>5 предложений: дневник / сообщение другу</td></tr>
+        <tr><td>Сб</td><td>🎬 Контент</td><td>Сериал/видео с субтитрами + пересказать сюжет</td></tr>
+        <tr><td>Вс</td><td>🔄 Повторение</td><td>Повторить сложные моменты недели</td></tr>
+      </table>
+      
+      <h4>🛠️ Полезные инструменты</h4>
+      <ul>
+        <li><strong>Словари:</strong> Yandex.Translate (с примерами), Reverso Context</li>
+        <li><strong>Произношение:</strong> Forvo (аудио от носителей), YouGlish (слова в видео)</li>
+        <li><strong>Разговорная практика:</strong> Tandem, HelloTalk, italki (уроки с носителями)</li>
+        <li><strong>Грамматика:</strong> "Russian Grammar in Use", сайт "Ruslang.ru"</li>
+        <li><strong>Мотивация:</strong> вести "языковой дневник" — записывать маленькие победы</li>
+      </ul>
+      
+      <div class="motivation-box">
+        ✨ <strong>Главный секрет:</strong> Ошибки — это не провал, а данные для улучшения.<br>
+        Каждый раз, когда вы говорите — вы тренируете мозг. Даже если неидеально.<br>
+        <em>Лучше сказать с ошибкой, чем молчать.</em>
+      </div>
+    </div>`,
+    examples: `<div class="lesson-section">
+      <h3>💬 Пример прогресса: одна и та же фраза</h3>
+      <div class="progression-box">
+        <div class="level a1">
+          <strong>A1:</strong> "Я хотеть кофе." ❌
+        </div>
+        <div class="level a2">
+          <strong>A2:</strong> "Я хочу кофе, пожалуйста." ✓ (грамматика)
+        </div>
+        <div class="level b1">
+          <strong>B1:</strong> "Не могли бы вы мне кофе, пожалуйста? Чёрный, без сахара." ✓ (вежливость + детали)
+        </div>
+        <div class="level b2">
+          <strong>B2:</strong> "Можно мне капучино, если не сложно? И, кстати, у вас есть альтернативное молоко?" ✓ (естественность + инициатива)
+        </div>
+      </div>
+    </div>`,
+    practice: `<div class="lesson-section">
+      <h3>🎯 Ваш личный план</h3>
+      <p>Выберите 1 цель на эту неделю:</p>
+      <div class="answers">
+        <div class="answer-option" onclick="app.setGoal(this,'roadmap-to-fluency')">
+          <span>🗣️ Выучить 5 новых фраз для разговора и использовать их</span>
+        </div>
+        <div class="answer-option" onclick="app.setGoal(this,'roadmap-to-fluency')">
+          <span>👂 Послушать 3 подкаста и выписать 10 слов</span>
+        </div>
+        <div class="answer-option" onclick="app.setGoal(this,'roadmap-to-fluency')">
+          <span>💬 Провести 1 разговор на русском (онлайн/оффлайн)</span>
+        </div>
+      </div>
+      <textarea placeholder="Моя дополнительная цель: ..."></textarea>
+    </div>`
+  }}
 ];
   
 const vocabularyData = {
