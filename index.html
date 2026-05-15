@@ -1228,7 +1228,7 @@ translator.init();
 renderNav() {
 localStorage.setItem('rf_user', JSON.stringify(this.currentUser));
 document.getElementById('navControls').innerHTML = `
-<button class="icon-btn" onclick="app.toggleTheme()" title="Тема">🌙</button>
+<button class="icon-btn" onclick="app.toggleTheme()" title="Тема">☀️</button>
 <span style="color:var(--text-secondary);font-size:0.9rem;">👤 ${this.currentUser.email.split('@')[0]}</span>
 <button class="btn btn-secondary" onclick="app.logout()">Выход</button>`;
 this.router.navigate('dashboard');
@@ -1236,7 +1236,7 @@ this.router.navigate('dashboard');
 renderNavGuest() {
 localStorage.removeItem('rf_user');
 document.getElementById('navControls').innerHTML = `
-<button class="icon-btn" onclick="app.toggleTheme()" title="Тема">☀️</button>
+<button class="icon-btn" onclick="app.toggleTheme()" title="Тема">🌙</button>
 <button class="btn btn-primary" onclick="app.showAuthModal()">Войти</button>`;
 }
 toggleTheme() {
