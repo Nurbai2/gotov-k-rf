@@ -641,145 +641,200 @@ status.className = 'translator-status';
 // 🗂️ ДАННЫЕ (Полные, детальные данные из 1-го файла)
 // ============================================================
 const russianData = [
-  // =====================================================================
-  //  ГРАММАТИКА - ПОЛНЫЙ КУРС
-  // =====================================================================
-  
   { 
-    id:'alphabet', 
+    id:'alphabet-phonetics-deep', 
     category:'grammar',
     icon:'🔤', 
-    title:'Алфавит и фонетика', 
-    desc:'33 буквы, 42 звука, редукция, ассимиляция, ударение',
+    title:'Алфавит и фонетика: полная система', 
+    desc:'33 буквы, 42 звука, редукция, оглушение, ударение, интонация, правила чтения',
     level:'A1',
-    timeEstimate:'3-4 часа',
+    timeEstimate:'4-5 часов',
+    prerequisites:[],
+    objectives:[
+      'Читать любые слова по правилам, даже незнакомые',
+      'Понимать и воспроизводить редукцию гласных в потоке речи',
+      'Автоматически оглушать/озвончать согласные в зависимости от позиции',
+      'Ставить правильное ударение в 100+ частотных словах',
+      'Улавливать и воспроизводить интонационные паттерны (вопрос, утверждение, перечисление)'
+    ],
     lesson: {
       theory: `
         <div class="lesson-section">
-          <h3>🇷🇺 Русский алфавит: полная система</h3>
+          <h3>🇷🇺 Русский алфавит и фонетическая система</h3>
           
-          <h4>📋 Таблица всех букв с произношением</h4>
-          <table class="alphabet-table">
-            <tr><th>Буква</th><th>Название</th><th>Звук (МФА)</th><th>Пример</th><th>Англ. аналог</th></tr>
-            <tr><td>А а</td><td>а</td><td>[a], [ɐ], [ə]</td><td>мама [ˈmamə]</td><td>father</td></tr>
-            <tr><td>Б б</td><td>бэ</td><td>[b], [bʲ]</td><td>банк [bank]</td><td>bed</td></tr>
-            <tr><td>В в</td><td>вэ</td><td>[v], [vʲ]</td><td>вода [vɐˈda]</td><td>vine</td></tr>
-            <tr><td>Г г</td><td>гэ</td><td>[g], [gʲ]</td><td>город [ˈgorət]</td><td>go</td></tr>
-            <tr><td>Д д</td><td>дэ</td><td>[d], [dʲ]</td><td>дом [dom]</td><td>dog</td></tr>
-            <tr><td>Е е</td><td>е</td><td>[je], [ʲe]</td><td>еда [jɪˈda]</td><td>yes</td></tr>
-            <tr><td>Ё ё</td><td>ё</td><td>[jo], [ʲo]</td><td>ёж [joʂ]</td><td>yore</td></tr>
-            <tr><td>Ж ж</td><td>жэ</td><td>[ʐ]</td><td>жизнь [ʐɨznʲ]</td><td>measure</td></tr>
-            <tr><td>З з</td><td>зэ</td><td>[z], [zʲ]</td><td>зима [zʲɪˈma]</td><td>zoo</td></tr>
-            <tr><td>И и</td><td>и</td><td>[i]</td><td>мир [mʲir]</td><td>see</td></tr>
-            <tr><td>Й й</td><td>и краткое</td><td>[j]</td><td>мой [moj]</td><td>yes</td></tr>
-            <tr><td>К к</td><td>ка</td><td>[k], [kʲ]</td><td>кот [kot]</td><td>sky</td></tr>
-            <tr><td>Л л</td><td>эль</td><td>[l], [lʲ]</td><td>лампа [ˈlampə]</td><td>light</td></tr>
-            <tr><td>М м</td><td>эм</td><td>[m], [mʲ]</td><td>мама [ˈmamə]</td><td>mother</td></tr>
-            <tr><td>Н н</td><td>эн</td><td>[n], [nʲ]</td><td>нос [nos]</td><td>no</td></tr>
-            <tr><td>О о</td><td>о</td><td>[o], [ɐ], [ə]</td><td>окно [ɐˈkno]</td><td>more</td></tr>
-            <tr><td>П п</td><td>пэ</td><td>[p], [pʲ]</td><td>папа [ˈpapə]</td><td>spin</td></tr>
-            <tr><td>Р р</td><td>эр</td><td>[r]</td><td>рука [rʊˈka]</td><td>rolled R</td></tr>
-            <tr><td>С с</td><td>эс</td><td>[s], [sʲ]</td><td>сок [sok]</td><td>see</td></tr>
-            <tr><td>Т т</td><td>тэ</td><td>[t], [tʲ]</td><td>там [tam]</td><td>stop</td></tr>
-            <tr><td>У у</td><td>у</td><td>[u]</td><td>утро [ˈutrə]</td><td>boot</td></tr>
-            <tr><td>Ф ф</td><td>эф</td><td>[f], [fʲ]</td><td>фон [fon]</td><td>fun</td></tr>
-            <tr><td>Х х</td><td>ха</td><td>[x], [xʲ]</td><td>хлеб [xlʲep]</td><td>loch</td></tr>
-            <tr><td>Ц ц</td><td>цэ</td><td>[t͡s]</td><td>цвет [t͡svʲet]</td><td>cats</td></tr>
-            <tr><td>Ч ч</td><td>че</td><td>[t͡ɕ]</td><td>чай [t͡ɕaj]</td><td>church</td></tr>
-            <tr><td>Ш ш</td><td>ша</td><td>[ʂ]</td><td>школа [ˈkolə]</td><td>ship</td></tr>
-            <tr><td>Щ щ</td><td>ща</td><td>[ɕː]</td><td>щётка [ˈɕotkə]</td><td>fresh cheese</td></tr>
-            <tr><td>Ъ ъ</td><td>твёрдый знак</td><td>[◌]</td><td>подъезд [pɐdˈjest]</td><td>-</td></tr>
-            <tr><td>Ы ы</td><td>ы</td><td>[ɨ]</td><td>мы [mɨ]</td><td>no equivalent</td></tr>
-            <tr><td>Ь ь</td><td>мягкий знак</td><td>[◌ʲ]</td><td>день [dʲenʲ]</td><td>-</td></tr>
-            <tr><td>Э э</td><td>э</td><td>[ɛ]</td><td>этот [ˈɛtət]</td><td>bed</td></tr>
-            <tr><td>Ю ю</td><td>ю</td><td>[ju], [ʲu]</td><td>юг [juk]</td><td>you</td></tr>
-            <tr><td>Я я</td><td>я</td><td>[ja], [ʲa]</td><td>яма [ˈjamə]</td><td>yacht</td></tr>
+          <h4>📊 1. Алфавит: буква → название → звук</h4>
+          <p>В русском алфавите <strong>33 буквы</strong>, но звуков <strong>42</strong>. Буквы ≠ звуки. Многие буквы обозначают несколько звуков в зависимости от позиции.</p>
+          <table class="alphabet-full">
+            <thead><tr><th>Буква</th><th>Название</th><th>Звук(и)</th><th>МФА</th><th>Пример</th></tr></thead>
+            <tbody>
+              <tr><td>А а</td><td>а</td><td>[а], [ɐ], [ə]</td><td>[a]/[ɐ]/[ə]</td><td>м<strong>а</strong>ма [ˈmamə]</td></tr>
+              <tr><td>Б б</td><td>бэ</td><td>[б], [б']</td><td>[b]/[bʲ]</td><td><strong>б</strong>анк [bank], <strong>б</strong>ить [bʲitʲ]</td></tr>
+              <tr><td>В в</td><td>вэ</td><td>[в], [в']</td><td>[v]/[vʲ]</td><td><strong>в</strong>ода [vɐˈda]</td></tr>
+              <tr><td>Г г</td><td>гэ</td><td>[г], [г']</td><td>[g]/[gʲ]</td><td><strong>г</strong>ород [ˈgorət]</td></tr>
+              <tr><td>Д д</td><td>дэ</td><td>[д], [д']</td><td>[d]/[dʲ]</td><td><strong>д</strong>ом [dom], <strong>д</strong>ень [dʲenʲ]</td></tr>
+              <tr><td>Е е</td><td>е</td><td>[йэ], [э]</td><td>[je]/[ʲe]</td><td><strong>е</strong>да [jɪda], л<strong>е</strong>с [lʲes]</td></tr>
+              <tr><td>Ё ё</td><td>ё</td><td>[йо], [о]</td><td>[jo]/[ʲo]</td><td><strong>ё</strong>ж [joʂ], лёд [lʲot]</td></tr>
+              <tr><td>Ж ж</td><td>жэ</td><td>[ж] (всегда твёрдый)</td><td>[ʐ]</td><td><strong>ж</strong>изнь [ʐznʲ]</td></tr>
+              <tr><td>З з</td><td>зэ</td><td>[з], [з']</td><td>[z]/[zʲ]</td><td><strong>з</strong>има [zʲɪˈma]</td></tr>
+              <tr><td>И и</td><td>и</td><td>[и]</td><td>[i]</td><td>м<strong>и</strong>р [mʲir]</td></tr>
+              <tr><td>Й й</td><td>и краткое</td><td>[й] (всегда мягкий)</td><td>[j]</td><td>мо<strong>й</strong> [moj]</td></tr>
+              <tr><td>К к</td><td>ка</td><td>[к], [к']</td><td>[k]/[kʲ]</td><td><strong>к</strong>от [kot]</td></tr>
+              <tr><td>Л л</td><td>эль</td><td>[л], [л']</td><td>[l]/[l]</td><td><strong>л</strong>ампа [ˈlampə]</td></tr>
+              <tr><td>М м</td><td>эм</td><td>[м], [м']</td><td>[m]/[m]</td><td><strong>м</strong>ама [ˈmamə]</td></tr>
+              <tr><td>Н н</td><td>эн</td><td>[н], [н']</td><td>[n]/[nʲ]</td><td><strong>н</strong>ос [nos], <strong>н</strong>ет [nʲet]</td></tr>
+              <tr><td>О о</td><td>о</td><td>[о], [ɐ], [ə]</td><td>[o]/[ɐ]/[ə]</td><td><strong>о</strong>кно [ɐˈkno]</td></tr>
+              <tr><td>П п</td><td>пэ</td><td>[п], [п']</td><td>[p]/[pʲ]</td><td><strong>п</strong>апа [ˈpapə]</td></tr>
+              <tr><td>Р р</td><td>эр</td><td>[р] (вибрационный)</td><td>[r]</td><td><strong>р</strong>ука [rʊˈka]</td></tr>
+              <tr><td>С с</td><td>эс</td><td>[с], [с']</td><td>[s]/[sʲ]</td><td><strong>с</strong>ок [sok]</td></tr>
+              <tr><td>Т т</td><td>тэ</td><td>[т], [т']</td><td>[t]/[tʲ]</td><td><strong>т</strong>ам [tam]</td></tr>
+              <tr><td>У у</td><td>у</td><td>[у]</td><td>[u]</td><td><strong>у</strong>тро [ˈutrə]</td></tr>
+              <tr><td>Ф ф</td><td>эф</td><td>[ф], [ф']</td><td>[f]/[fʲ]</td><td><strong>ф</strong>он [fon]</td></tr>
+              <tr><td>Х х</td><td>ха</td><td>[х], [х']</td><td>[x]/[xʲ]</td><td><strong>х</strong>леб [xlʲep]</td></tr>
+              <tr><td>Ц ц</td><td>цэ</td><td>[ц] (всегда твёрдый)</td><td>[t͡s]</td><td><strong>ц</strong>вет [t͡svʲet]</td></tr>
+              <tr><td>Ч ч</td><td>че</td><td>[ч'] (всегда мягкий)</td><td>[t͡ɕ]</td><td><strong>ч</strong>ай [t͡ɕaj]</td></tr>
+              <tr><td>Ш ш</td><td>ша</td><td>[ш] (всегда твёрдый)</td><td>[ʂ]</td><td><strong>ш</strong>кола [ˈʂkolə]</td></tr>
+              <tr><td>Щ щ</td><td>ща</td><td>[щ'] (всегда мягкий, долгий)</td><td>[ː]</td><td><strong>щ</strong>ётка [ˈɕːotkə]</td></tr>
+              <tr><td>Ъ ъ</td><td>твёрдый знак</td><td>не обозначает звука</td><td>[◌]</td><td>под<strong>ъ</strong>езд [pɐdˈjest]</td></tr>
+              <tr><td>Ы ы</td><td>ы</td><td>[ы]</td><td>[ɨ]</td><td>м<strong>ы</strong> [mɨ]</td></tr>
+              <tr><td>Ь ь</td><td>мягкий знак</td><td>смягчает предыдущий</td><td>[◌ʲ]</td><td>ден<strong>ь</strong> [dʲenʲ]</td></tr>
+              <tr><td>Э э</td><td>э</td><td>[э]</td><td>[ɛ]</td><td><strong>э</strong>тот [ˈɛtət]</td></tr>
+              <tr><td>Ю ю</td><td>ю</td><td>[йу], [у]</td><td>[ju]/[ʲu]</td><td><strong>ю</strong>г [juk], л<strong>ю</strong>к [lʲuk]</td></tr>
+              <tr><td>Я я</td><td>я</td><td>[йа], [а]</td><td>[ja]/[ʲa]</td><td><strong>я</strong>ма [ˈjamə], м<strong>я</strong>ч [mʲat͡ɕ]</td></tr>
+            </tbody>
           </table>
 
-          <h4>🔊 Фонетические явления</h4>
-          <div class="phonetics-grid">
-            <div class="phonetic-card">
-              <strong>✅ Редукция гласных</strong>
-              <p>Безударные гласные меняют звучание:</p>
-              <ul>
-                <li><code>О → [ɐ]/[ə]</code>: молоко [mɐlɐˈko]</li>
-                <li><code>А → [ə]</code>: голова [gəlɐˈva]</li>
-                <li><code>Е → [ɪ]</code>: человек [t͡ɕɪlɐˈvʲek]</li>
-              </ul>
-            </div>
-            <div class="phonetic-card">
-              <strong>✅ Оглушение согласных</strong>
-              <p>Звонкие становятся глухими:</p>
-              <ul>
-                <li>В конце слова: друг [druk]</li>
-                <li>Перед глухими: ложка [ˈloʂkə]</li>
-                <li>б→п, в→ф, г→к, д→т, з→с, ж→ш</li>
-              </ul>
-            </div>
-            <div class="phonetic-card">
-              <strong>✅ Ассимиляция</strong>
-              <p>Согласные уподобляются соседним:</p>
-              <ul>
-                <li>По звонкости: сделать [ˈzdelətʲ]</li>
-                <li>По мягкости: нет [nʲet]</li>
-                <li>сш→[ʂː]: сшить [ʂːtʲ]</li>
-              </ul>
-            </div>
+          <h4>🔊 2. Гласные: 10 букв → 6 звуков + Редукция</h4>
+          <p>В русской речи гласные <strong>не читаются так, как пишутся</strong>. Безударные гласные редуцируются (ослабляются).</p>
+          <div class="reduction-chart">
+            <h5>📉 Редукция I степени (в предударном слоге)</h5>
+            <ul>
+              <li><code>О, А → []</code>: в<strong>о</strong>да [vɐˈda], тр<strong>а</strong>ва [trˈva]</li>
+              <li><code>Е, И → [ɪ]</code>: л<strong>е</strong>то [lʲɪtə], р<strong>и</strong>сунок [rʲɪsʊnək]</li>
+              <li><code>Я, Ю → [ɪ]/[ʊ]</code>: <strong>я</strong>зык [jɪˈzɨk], <strong>ю</strong>ла [jʊˈla]</li>
+            </ul>
+            <h5>📉 Редукция II степени (в остальных безударных)</h5>
+            <ul>
+              <li><code>О, А → [ə]</code>: м<strong>о</strong>локо [mɐlɐˈkə], г<strong>о</strong>лова [gəlɐˈva]</li>
+              <li><code>Е, И → [ъ]</code> (очень краткий): ч<strong>е</strong>ловек [t͡ɕəlɐˈvʲek], д<strong>и</strong>ван [dʲˈvan]</li>
+            </ul>
+            <div class="tip-box"> <strong>Правило:</strong> Ударный гласный произносится чётко и полно. Безударный "съедается". Тренируйте редукцию с первого дня — это главный маркер "естественного" звучания.</div>
           </div>
 
-          <h4>🎯 Ударение: правила</h4>
+          <h4>🔤 3. Согласные: пары и исключения</h4>
+          <table class="consonant-pairs">
+            <tr><th>Пары по звонкости/глухости</th><th>Пары по твёрдости/мягкости</th><th>Всегда твёрдые</th><th>Всегда мягкие</th></tr>
+            <tr><td>Б-П, В-Ф, Г-К, Д-Т, З-С, Ж-Ш</td><td>Б-Б', В-В', Г-Г', Д-Д', З-З'...</td><td>Ж, Ш, Ц</td><td>Й, Ч, Щ</td></tr>
+          </table>
+          <p><strong>Важно:</strong> Перед гласными <code>Е, Ё, И, Ю, Я</code> и <code>Ь</code> согласные смягчаются: <code>м</code> → <code>м'</code> (мать [matʲ]), <code>н</code> → <code>н'</code> (нет [nʲet]).</p>
+
+          <h4>⚡ 4. Фонетические процессы в потоке речи</h4>
           <ul>
-            <li><strong>Свободное:</strong> на любом слоге: зАмок/замОк</li>
-            <li><strong>Подвижное:</strong> меняется: гОрод → городА</li>
-            <li><strong>Ё всегда ударная:</strong> ёж, лёд, ёлка</li>
-            <li><strong>Глаголы на -ить:</strong> говорЮ, говорИшь</li>
+            <li><strong>Оглушение звонких:</strong> в конце слова и перед глухими согласными: дру<strong>г</strong> [druk], ло<strong>ж</strong>ка [ˈloʂkə], во<strong>з</strong>дух [vosdux]</li>
+            <li><strong>Озвончение глухих:</strong> перед звонкими: <strong>с</strong>делать [ˈzdelətʲ], <strong>к</strong>огда [ɡɐˈda]</li>
+            <li><strong>Ассимиляция по мягкости:</strong> согласный перед мягким тоже смягчается: <strong>н</strong>ет [nʲet], <strong>с</strong>емь [sʲem]</li>
+            <li><strong>Выпадение звуков:</strong> <strong>вств</strong> → [ст]: здра<strong>вств</strong>уйте [ˈzdrastujtʲə]; <strong>здн</strong> → [зн]: по<strong>здн</strong>о [ˈpozno]; <strong>стл</strong> → [сл]: сча<strong>стл</strong>ивый [ˈsʲːasʲlʲɪvɨj]</li>
           </ul>
+
+          <h4>🎯 5. Ударение: свободное и подвижное</h4>
+          <p>В русском языке ударение <strong>не фиксировано</strong>. Оно может падать на любой слог и двигаться при изменении слова.</p>
+          <ul>
+            <li><strong>Омографы:</strong> з<strong>А</strong>мок (castle) ≠ зам<strong>О</strong>к (lock); м<strong>У</strong>ка (flour) ≠ мук<strong>А</strong> (torment)</li>
+            <li><strong>Орфоэпические нормы (2024):</strong> звон<strong>И</strong>т, т<strong>О</strong>рты, балов<strong>А</strong>ть, катал<strong>О</strong>г, жалюз<strong>И</strong>, щав<strong>Е</strong>ль</li>
+            <li><strong>Подвижное при склонении:</strong> г<strong>О</strong>род → город<strong>А</strong> → г<strong>О</strong>рода → город<strong>О</strong>в</li>
+          </ul>
+
+          <h4>🎵 6. Интонация: 3 базовых контура (ИК)</h4>
+          <table class="intonation-table">
+            <tr><th>Тип</th><th>Функция</th><th>Мелодика</th><th>Пример</th></tr>
+            <tr><td><strong>ИК-1</strong></td><td>Утверждение, завершённость</td><td>Понижение тона в конце</td><td>Я иду домой. ↘</td></tr>
+            <tr><td><strong>ИК-2</strong></td><td>Вопрос (без вопросительного слова)</td><td>Резкий подъём на вопросительном слове, затем спад</td><td>Ты идёшь домой? ↗↘</td></tr>
+            <tr><td><strong>ИК-3</strong></td><td>Перечисление, незавершённость</td><td>Подъём на каждом элементе, последний элемент ↓</td><td>Я купил хлеб ↗, молоко  и сыр. ↘</td></tr>
+          </table>
+          <div class="tip-box warning">⚠️ <strong>Ошибка иностранцев:</strong> Использовать английскую интонацию (постоянный подъём вверх в конце вопроса). В русском вопросительная интонация <strong>локализована</strong> на ключевом слове.</div>
         </div>
       `,
       
       examples: `
         <div class="lesson-section">
-          <h3>🔊 Примеры произношения</h3>
+          <h3> Примеры: от звуков к живой речи</h3>
           
-          <h4>📚 Минимальные пары</h4>
-          <div class="minimal-pairs">
-            <div class="pair">
-              <div class="word">мат [mat] <small>(curse)</small></div>
-              <div class="word">мать [matʲ] <small>(mother)</small></div>
-              <button class="audio-btn">🔊</button>
+          <h4>📚 Минимальные пары (один звук → разный смысл)</h4>
+          <div class="minimal-pairs-grid">
+            <div class="pair-card">
+              <strong>Твёрдый / Мягкий</strong>
+              <div class="pair">
+                <div class="word hard">мат [mat] <small>(бранное слово)</small></div>
+                <div class="word soft">мать [mat] <small>(mother)</small></div>
+                <button class="audio-btn"></button>
+              </div>
+              <div class="pair">
+                <div class="word hard">угол [ˈugəl] <small>(corner)</small></div>
+                <div class="word soft">уголь [ˈugolʲ] <small>(coal)</small></div>
+                <button class="audio-btn"></button>
+              </div>
             </div>
-            <div class="pair">
-              <div class="word">угол [ˈugəl] <small>(corner)</small></div>
-              <div class="word">уголь [ˈugolʲ] <small>(coal)</small></div>
-              <button class="audio-btn">🔊</button>
-            </div>
-            <div class="pair">
-              <div class="word">зАмок [ˈzamək] <small>(castle)</small></div>
-              <div class="word">замОк [zɐˈmok] <small>(lock)</small></div>
-              <button class="audio-btn">🔊</button>
+            <div class="pair-card">
+              <strong>Ударение меняет смысл</strong>
+              <div class="pair">
+                <div class="word">з<strong>А</strong>мок [ˈzamək]</div>
+                <div class="word">зам<strong>О</strong>к [zɐˈmok]</div>
+                <button class="audio-btn">🔊</button>
+              </div>
+              <div class="pair">
+                <div class="word">стр<strong>Е</strong>лка [ˈstrʲelkə]</div>
+                <div class="word">стрелк<strong>А</strong> [strʲɪlˈka]</div>
+                <button class="audio-btn">🔊</button>
+              </div>
             </div>
           </div>
 
-          <h4>💬 Диалоги для отработки</h4>
-          <div class="dialogue-box">
-            <div class="speaker-a">👤 — Привет! Как дела?</div>
-            <div class="speaker-b">🗣️ — Хорошо, спасибо! [xɐrɐˈo]</div>
-            <div class="speaker-a">👤 — Пойдём гулять?</div>
-            <div class="speaker-b">🗣️ — Давай! [dɐˈvaj]</div>
-            <div class="phonetic-note">🔍 Обратите внимание на редукцию О→[ɐ]</div>
+          <h4>💬 Редукция в реальных фразах</h4>
+          <div class="reduction-examples">
+            <div class="example-box">
+              <div class="ru">М<strong>о</strong>лок<strong>о</strong> ст<strong>о</strong>ит с<strong>о</strong>р<strong>о</strong>к рубл<strong>е</strong>й.</div>
+              <div class="transcription">[mlɐˈko ˈstoɪt ˈsorək rʊˈblʲej]</div>
+              <div class="note">🔍 Все О без ударения → [ɐ] или [ə]. Е в "рублей" → [ɪ]</div>
+            </div>
+            <div class="example-box">
+              <div class="ru">Ч<strong>е</strong>лов<strong>е</strong>к <strong>и</strong>д<strong>ё</strong>т по <strong>у</strong>л<strong>и</strong>ц<strong>е</strong>.</div>
+              <div class="transcription">[t͡ɕəlɐˈvʲek ɪdʲot pɐ ulʲɪt͡sə]</div>
+              <div class="note"> Е, И → [ъ]/[ɪ]. О в "по" → [ɐ]</div>
+            </div>
           </div>
 
-          <h4>🎵 Скороговорки</h4>
+          <h4>🔄 Оглушение и озвончение в потоке</h4>
+          <div class="assimilation-examples">
+            <div class="example-box">
+              <div class="ru">Дру<strong>г</strong> дру<strong>г</strong>а понял<strong>и</strong>.</div>
+              <div class="transcription">[druk druˈga pɐnʲˈla]</div>
+              <div class="note">Г → [к] в конце, Г → [г] перед А, ЛИ → [лʲ]</div>
+            </div>
+            <div class="example-box">
+              <div class="ru"><strong>С</strong>делать <strong>з</strong>автра.</div>
+              <div class="transcription">[ˈzdelət ˈzaftrə]</div>
+              <div class="note">С → [з] перед Д, В → [ф] перед Т</div>
+            </div>
+          </div>
+
+          <h4> Интонация в диалогах</h4>
+          <div class="intonation-dialogues">
+            <div class="dialogue-box">
+              <div class="speaker-a">👤 — Ты уже обедал? <span class="intonation-mark">↗↘ (ИК-2)</span></div>
+              <div class="speaker-b">🗣️ — Да, только что. <span class="intonation-mark">↘ (ИК-1)</span></div>
+              <div class="speaker-a">👤 — Что ты ел: суп ↗, салат ↗ или второе? ↘ <span class="intonation-mark">(ИК-3)</span></div>
+            </div>
+          </div>
+
+          <h4> Скороговорки по уровням</h4>
           <div class="tongue-twisters">
-            <div class="twister">
-              <div class="ru">Шла Саша по шоссе и сосала сушку.</div>
-              <div class="tr">[ʂla ˈsaʂə pɐ ʂɐsʲe i sɐsalə ˈsukʊ]</div>
-              <div class="hint">🎯 Тренирует: [ʂ], [s]</div>
+            <div class="twister easy">
+              <strong>🟢 Уровень 1:</strong> Шла Саша по шоссе. <span class="tr">[ʂla ˈsaʂə pɐ ʂɐˈsʲe]</span>
             </div>
-            <div class="twister">
-              <div class="ru">Карл у Клары украл кораллы.</div>
-              <div class="tr">[karl u ˈklarɨ ʊˈkral kɐˈralɨ]</div>
-              <div class="hint">🎯 Тренирует: [r], [l]</div>
+            <div class="twister medium">
+              <strong>🟡 Уровень 2:</strong> Карл у Клары украл кораллы. <span class="tr">[karl u ˈklarɨ ʊˈkral kˈralɨ]</span>
+            </div>
+            <div class="twister hard">
+              <strong>🔴 Уровень 3:</strong> На дворе трава, на траве дрова, не руби дрова на траве двора. <span class="tr">[nɐ dvɐˈrʲe trɐˈva, nɐ trɐˈvʲe drɐva...]</span>
             </div>
           </div>
         </div>
@@ -787,37 +842,93 @@ const russianData = [
       
       practice: `
         <div class="lesson-section">
-          <h3>🎯 Практика</h3>
+          <h3> Практика: фонетический тренинг</h3>
           
-          <h4>✏️ Задание 1: Определите звук</h4>
-          <p>Какой звук обозначает буква <strong>Ё</strong> в слове <code>лёд</code>?</p>
-          <div class="answers">
-            <div class="answer-option" data-correct="false">[le]</div>
-            <div class="answer-option" data-correct="true">[jo]</div>
-            <div class="answer-option" data-correct="false">[ʲo]</div>
+          <h4>✏️ Задание 1: Аудио-распознавание</h4>
+          <p>Прослушайте и выберите правильное слово:</p>
+          <div class="audio-quiz">
+            <button class="play-audio">🔊 [matʲ]</button>
+            <div class="options">
+              <label><input type="radio" name="q1" value="wrong"> мат</label>
+              <label><input type="radio" name="q1" value="correct"> мать</label>
+              <label><input type="radio" name="q1" value="wrong"> мыть</label>
+            </div>
           </div>
 
-          <h4>✏️ Задание 2: Редукция</h4>
-          <p>Как произносится <strong>О</strong> в слове <code>молоко</code>?</p>
-          <div class="answers">
-            <div class="answer-option" data-correct="false">[o] во всех слогах</div>
-            <div class="answer-option" data-correct="true">[ɐ] или [ə] — редуцируется</div>
-            <div class="answer-option" data-correct="false">[a]</div>
+          <h4>️ Задание 2: Транскрипция</h4>
+          <p>Запишите МФА-транскрипцию слова <strong>"хорошо"</strong>:</p>
+          <input type="text" class="ipa-input" placeholder="[x...]" data-answer="[xɐrɐˈʂo]">
+          <div class="hint">💡 Подсказка: обе О без ударения редуцируются</div>
+
+          <h4>🎤 Задание 3: Запись и сравнение</h4>
+          <p>Произнесите: <strong>"Меня зовут [имя]. Я изучаю русский язык."</strong></p>
+          <div class="recording-task">
+            <button class="record-btn">🎤 Начать запись</button>
+            <button class="play-sample">🔊 Эталон: [mʲɪˈnʲa zɐˈvut ...]</button>
+            <div class="self-check">
+              <label><input type="checkbox"> Редукция безударных О/А</label>
+              <label><input type="checkbox"> Мягкость [nʲ] в "Меня"</label>
+              <label><input type="checkbox"> Ударение в "изучАю"</label>
+            </div>
           </div>
 
-          <h4>🎤 Задание 3: Запишите себя</h4>
-          <p>Произнесите: <strong>"Меня зовут [имя]. Я изучаю русский."</strong></p>
-          <button class="record-btn">🎤 Записать</button>
-          <button class="play-sample">🔊 Эталон</button>
+          <h4>️ Задание 4: Расстановка ударения</h4>
+          <p>Кликните на ударный слог:</p>
+          <div class="stress-practice">
+            <div class="word-stress" data-answer="1">
+              <span class="syllable clickable">за</span><span class="syllable clickable">мок</span>
+              <small class="hint">Загадка: "Открывается ключом"</small>
+            </div>
+            <div class="word-stress" data-answer="0">
+              <span class="syllable clickable">му</span><span class="syllable clickable">ка</span>
+              <small class="hint">Загадка: "Из этого пекут хлеб"</small>
+            </div>
+            <div class="word-stress" data-answer="1">
+              <span class="syllable clickable">зво</span><span class="syllable clickable">нит</span>
+              <small class="hint">Глагол: "Телефон..."</small>
+            </div>
+          </div>
 
-          <h4>✍️ Задание 4: Транскрипция</h4>
-          <p>Запишите транскрипцию <strong>"хорошо"</strong>:</p>
-          <input type="text" placeholder="[x...]" data-answer="[xɐrɐˈʂo]">
+          <h4> Задание 5: Фонетический разбор</h4>
+          <p>Разберите слово <strong>"подъезд"</strong>:</p>
+          <div class="analysis-form">
+            <label>1. Букв: <input type="number" data-answer="7"></label>
+            <label>2. Звуков: <input type="number" data-answer="7"></label>
+            <label>3. Транскрипция: <input type="text" placeholder="[...]" data-answer="[pɐdˈjest]"></label>
+            <label>4. Роль Ъ: <textarea placeholder="Объясните...">Разделяет согласный и гласный, показывает, что следующий гласный читается с [j] и не смягчает предыдущий согласный</textarea></label>
+          </div>
+
+          <h4>🎵 Задание 6: Интонационный диктант</h4>
+          <p>Прослушайте фразу и отметьте тип интонации:</p>
+          <button class="play-audio">🔊 "Ты уже обедал?"</button>
+          <div class="options">
+            <label><input type="radio" name="int1" value="wrong"> ИК-1 (утверждение)</label>
+            <label><input type="radio" name="int1" value="correct"> ИК-2 (вопрос)</label>
+            <label><input type="radio" name="int1" value="wrong"> ИК-3 (перечисление)</label>
+          </div>
+
+          <h4>🔄 Задание 7: Исправление ошибок</h4>
+          <p>Найдите и исправьте фонетическую ошибку:</p>
+          <div class="error-fix">
+            <p>❌ "Я говорю [moloko]"</p>
+            <input type="text" placeholder="Правильное произношение..." data-answer="[mɐlɐˈko]">
+            <small class="hint">💡 Безударные О редуцируются</small>
+          </div>
+
+          <h4> Задание 8: Самопроверка</h4>
+          <p>Отметьте освоенные навыки:</p>
+          <div class="checklist">
+            <label><input type="checkbox"> Могу читать незнакомые слова по правилам</label>
+            <label><input type="checkbox"> Автоматически редуцирую безударные гласные</label>
+            <label><input type="checkbox"> Различаю на слух [mat] и [matʲ]</label>
+            <label><input type="checkbox"> Ставлю правильное ударение в 20+ словах</label>
+            <label><input type="checkbox"> Использую правильную интонацию в вопросах</label>
+            <button class="save-progress">💾 Сохранить прогресс</button>
+          </div>
         </div>
       `
     }
-  },
-
+  }
   { 
     id:'survival-phrases', 
     category:'grammar',
