@@ -3043,92 +3043,162 @@ detail.scrollIntoView({ behavior: 'smooth' });
 }
 
 class Tests {
-constructor(app) { this.app = app; this.currentTest = null; this.answers = []; this.certs = []; }
-async render() { await this.loadCertificates(); this.showCertificates(); }
-async loadCertificates() {
-if (!this.app.currentUser) { this.certs = []; return; }
-try {
-this.certs = await api.getCertificates();
-} catch { this.certs = []; }
-}
-start(type) {
-if (!this.app.currentUser) { this.app.showAuthModal(); return; }
-this.currentTest = type;
-const questions = testsData[type];
-this.answers = new Array(questions.length).fill(null);
-document.getElementById('testsList').style.display = 'none';
-document.getElementById('testContainer').style.display = 'block';
-document.getElementById('testContent').innerHTML = questions.map((q, i) => `
-<div class="question">
-<div class="question-text">${i+1}. ${q.q}</div>
-<div class="answers">${q.a.map((a, ai) => `
-<div class="answer-option" onclick="app.tests.select(${i},${ai})">
-<span>${ai+1}.</span><span>${a}</span>
-</div>`).join('')}
-</div>
-</div>`).join('');
-}
-select(qi, ai) {
-this.answers[qi] = ai;
-document.querySelectorAll('.question')[qi].querySelectorAll('.answer-option').forEach((o, i) => {
-o.classList.toggle('selected', i === ai);
-});
-}
-submit() {
-const unanswered = this.answers.findIndex(a => a === null);
-if (unanswered !== -1) {
-this.app.showNotification(`Ответьте на вопрос ${unanswered+1}`);
-document.querySelectorAll(".question")[unanswered].scrollIntoView({ behavior: "smooth" });
-return;
-}
-let correct = 0;
-testsData[this.currentTest].forEach((q, i) => { if (this.answers[i] === q.c) correct++; });
-const pct = Math.round((correct / testsData[this.currentTest].length) * 100);
-document.querySelectorAll(".question").forEach((qEl, i) => {
-const opts = qEl.querySelectorAll(".answer-option");
-opts.forEach((o, ai) => {
-const c = testsData[this.currentTest][i].c;
-if (ai === c) o.classList.add("correct");
-else if (ai === this.answers[i]) o.classList.add('wrong');
-});
-});
-setTimeout(async () => {
-if (pct >= 60) await this.createCertificate(this.currentTest, pct);
-alert(`Результат: ${correct}/${testsData[this.currentTest].length} (${pct}%)
-${pct>=60?'🎉 Сертификат получен!':'❌ Для получения сертификата необходимо набрать минимум 60 %'}`);
-document.getElementById('testContainer').style.display = 'none';
-document.getElementById('testsList').style.display = 'grid';
-this.currentTest = null;
-this.render();
-}, 1500);
-}
-cancel() {
-document.getElementById('testContainer').style.display = 'none';
-document.getElementById('testsList').style.display = 'grid';
-this.currentTest = null;
-}
-async createCertificate(type, score) {
-const cert = { id: Date.now(), type, score, date: new Date().toLocaleDateString('ru-RU'), number: 'RF-' + Date.now().toString(36).toUpperCase() };
-try {
-await api.addCertificate(cert);
-this.certs.unshift(cert);
-} catch(e) { console.error('Failed to save cert:', e); }
-}
-showCertificates() {
-const grid = document.getElementById('certificatesGrid');
-const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯' };
-const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест' };
-if (!this.certs.length) {
-grid.innerHTML = '<p style="color:var(--text-secondary);">Сертификатов пока нет. Пройдите тест на 60%+</p>';
-return;
-}
-grid.innerHTML = this.certs.map(c => `
-<div class="category-card">
-<div class="category-icon">${icons[c.type] || '🎓'}</div>
-<div class="category-title">${names[c.type] || c.type}</div>
-<div class="category-desc">Результат: ${c.score}%<br>${c.date}<br><small>${c.number}</small></div>
-</div>`).join('');
-}
+  constructor(app) {
+    this.app = app;
+    this.currentTest = null;
+    this.answers = [];
+    this.certs = [];
+    this.testResults = {}; // Хранит прогресс: { russian: {score, passed}, history: {...}, ... }
+    this.REQUIRED_TESTS = ['russian', 'history', 'laws', 'cities']; // 4 обязательных теста
+  }
+
+  async render() {
+    await this.loadCertificates();
+    this.showCertificates();
+  }
+
+  async loadCertificates() {
+    if (!this.app.currentUser) { this.certs = []; return; }
+    try {
+      this.certs = await api.getCertificates();
+      // Восстанавливаем локальный прогресс из сохранённых сертификатов
+      this.certs.forEach(c => {
+        if (this.REQUIRED_TESTS.includes(c.type) && c.score >= 60) {
+          this.testResults[c.type] = { score: c.score, passed: true };
+        }
+      });
+    } catch { this.certs = []; }
+  }
+
+  start(type) {
+    if (!this.app.currentUser) { this.app.showAuthModal(); return; }
+    if (!testsData[type]) return alert('Данные теста временно недоступны');
+    
+    this.currentTest = type;
+    const questions = testsData[type];
+    this.answers = new Array(questions.length).fill(null);
+    
+    document.getElementById('testsList').style.display = 'none';
+    document.getElementById('testContainer').style.display = 'block';
+    document.getElementById('testContent').innerHTML = questions.map((q, i) => `
+      <div class="question">
+        <div class="question-text">${i+1}. ${q.q}</div>
+        <div class="answers">${q.a.map((a, ai) => `
+          <div class="answer-option" onclick="app.tests.select(${i},${ai})">
+            <span>${ai+1}.</span><span>${a}</span>
+          </div>
+        `).join('')}</div>
+      </div>
+    `).join('');
+  }
+
+  select(qIdx, aIdx) {
+    this.answers[qIdx] = aIdx;
+    const qEl = document.querySelectorAll('.question')[qIdx];
+    if (!qEl) return;
+    qEl.querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected'));
+    qEl.querySelectorAll('.answer-option')[aIdx].classList.add('selected');
+  }
+
+  async submit() {
+    if (!this.currentTest) return;
+    if (this.answers.some(a => a === null)) {
+      return alert('⚠️ Пожалуйста, ответьте на все вопросы перед завершением теста!');
+    }
+
+    let correct = 0;
+    const questions = testsData[this.currentTest];
+    questions.forEach((q, i) => {
+      if (this.answers[i] === q.c) correct++;
+    });
+    const pct = Math.round((correct / questions.length) * 100);
+
+    // Подсветка правильных/неправильных ответов
+    document.querySelectorAll(".question").forEach((qEl, i) => {
+      const opts = qEl.querySelectorAll(".answer-option");
+      opts.forEach((o, ai) => {
+        const c = questions[i].c;
+        if (ai === c) o.classList.add("correct");
+        else if (ai === this.answers[i]) o.classList.add('wrong');
+      });
+    });
+
+    // Сохраняем результат текущего теста
+    this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
+
+    setTimeout(async () => {
+      const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
+
+      if (allPassed) {
+        // ✅ ВСЕ ТЕСТЫ ПРОЙДЕНЫ
+        const totalScore = this.REQUIRED_TESTS.reduce((sum, t) => sum + this.testResults[t].score, 0);
+        const avgScore = Math.round(totalScore / this.REQUIRED_TESTS.length);
+        await this.createFinalCertificate(avgScore);
+        alert(`🎉 Поздравляем! Вы успешно прошли ВСЕ тесты!\nСредний результат: ${avgScore}%\nВаш именной сертификат готов!`);
+      } else {
+        // ⏳ ЕЩЁ НЕ ВСЕ ТЕСТЫ ПРОЙДЕНЫ
+        const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
+        const needed = this.REQUIRED_TESTS.length - passedCount;
+        alert(`✅ Результат текущего теста: ${pct}%\n📌 Для получения сертификата необходимо набрать ≥60% во всех 4 основных тестах.\nОсталось пройти успешно: ${needed} тест(ов)`);
+      }
+
+      document.getElementById('testContainer').style.display = 'none';
+      document.getElementById('testsList').style.display = 'grid';
+      this.currentTest = null;
+      this.render();
+    }, 1500);
+  }
+
+  cancel() {
+    document.getElementById('testContainer').style.display = 'none';
+    document.getElementById('testsList').style.display = 'grid';
+    this.currentTest = null;
+  }
+
+  async createFinalCertificate(score) {
+    // Извлекаем имя пользователя
+    const user = this.app.currentUser;
+    const userName = user?.name || user?.email?.split('@')[0] || 'Участник';
+
+    const cert = {
+      id: Date.now(),
+      type: 'full_course',
+      score,
+      date: new Date().toLocaleDateString('ru-RU'),
+      number: 'RF-' + Date.now().toString(36).toUpperCase(),
+      studentName: userName
+    };
+
+    try {
+      await api.addCertificate(cert);
+      this.certs.unshift(cert);
+      this.showCertificates();
+    } catch(e) { console.error('Failed to save cert:', e); }
+  }
+
+  showCertificates() {
+    const grid = document.getElementById('certificatesGrid');
+    const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯', full_course:'🏆' };
+    const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест', full_course:'🌟 Именной сертификат' };
+
+    if (!this.certs.length) {
+      grid.innerHTML = '<p style="color:var(--text-secondary);">Сертификатов пока нет. Пройдите все 4 теста на 60%+</p>';
+      return;
+    }
+
+    grid.innerHTML = this.certs.map(c => `
+      <div class="category-card ${c.type === 'full_course' ? 'cert-final' : ''}">
+        <div class="category-icon">${icons[c.type] || '🎓'}</div>
+        <div class="category-title">${names[c.type] || c.type}</div>
+        <div class="category-desc">
+          ${c.studentName ? `<div style="font-size:1.1rem;font-weight:bold;color:var(--primary);margin-bottom:0.5rem;">👤 ${c.studentName}</div>` : ''}
+          <div>Результат: <strong>${c.score}%</strong></div>
+          <div style="margin-top:0.5rem;">${c.date}</div>
+          <small style="color:var(--text-secondary);">${c.number}</small>
+        </div>
+      </div>
+    `).join('');
+  }
 }
 
 // Инициализация
