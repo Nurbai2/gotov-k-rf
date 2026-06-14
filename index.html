@@ -2888,18 +2888,14 @@ else if (i === selected) o.classList.add('wrong');
 });
 }
 async completeLesson(catId) {
-if (!this.app.currentUser) return;
-if (!this.progress.includes(catId)) { this.progress.push(catId); await this.saveProgress(); }
-document.getElementById('lessonModal').remove();
-this.renderCategories();
-this.app.showNotification('✅ Урок пройден!');
-}
-async completeLesson(catId) {
-if (!this.app.currentUser) return;
-if (!this.progress.includes(catId)) { this.progress.push(catId); await this.saveProgress(); }
-document.getElementById('lessonModal').remove();
-this.renderCategories();
-this.app.showNotification('✅ Урок пройден!');
+    if (!this.app.currentUser) return;
+    if (!this.progress.includes(catId)) { 
+        this.progress.push(catId); 
+        await this.saveProgress(); 
+    }
+    document.getElementById('lessonModal').remove();
+    this.renderCategories();
+    this.app.showNotification('✅ Урок пройден!');
 }
 
 // ✅ ДОБАВЬТЕ СЮДА ЭТУ ФУНКЦИЮ:
