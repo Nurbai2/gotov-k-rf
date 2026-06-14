@@ -3116,44 +3116,76 @@ class Tests {
   }
 
   async submit() {
-    if (!this.currentTest) return;
-    if (this.answers.some(a => a === null)) {
-        return alert('⚠️ Пожалуйста, ответьте на все вопросы перед завершением теста!');
+    console.log("🔘 Кнопка 'Завершить тест' нажата. Текущий тест:", this.currentTest);
+    
+    if (!this.currentTest) {
+        return alert('Ошибка: тест не выбран.');
     }
     
-    let correct = 0;
-    const questions = testsData[this.currentTest];
-    questions.forEach((q, i) => {
-        if (this.answers[i] === q.c) correct++;
-    });
-    const pct = Math.round((correct / questions.length) * 100);
-    
-    // 1. Подсветка правильных/неправильных ответов
-    document.querySelectorAll(".question").forEach((qEl, i) => {
-        const opts = qEl.querySelectorAll(".answer-option");
-        opts.forEach((o, ai) => {
-            const c = questions[i].c;
-            if (ai === c) o.classList.add("correct");
-            else if (ai === this.answers[i]) o.classList.add('wrong');
-        });
-    });
-    
-    // 2. Сохраняем результат текущего теста в памяти
-    this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
-    
-    // 3. Ждем 1 секунду, чтобы пользователь увидел подсветку, затем показываем экран результатов
-    setTimeout(async () => {
-        const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
+    // 1. Умная проверка: ищем первый неотвеченный вопрос
+    const unansweredIndex = this.answers.findIndex(a => a === null);
+    if (unansweredIndex !== -1) {
+        const qNum = unansweredIndex + 1;
+        console.warn(`⚠️ Вопрос №${qNum} не отвечен!`);
         
-        if (allPassed) {
-            await this.createFinalCertificate();
-            this.showResultScreen(pct, true); // Показываем экран с финальным сертификатом
-        } else {
-            const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
-            const needed = this.REQUIRED_TESTS.length - passedCount;
-            this.showResultScreen(pct, false, needed); // Показываем экран с результатом текущего теста
+        // Находим этот вопрос на странице, прокручиваем к нему и подсвечиваем красным
+        const qEl = document.querySelectorAll('.question')[unansweredIndex];
+        if (qEl) {
+            qEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            qEl.style.border = '3px solid #ef4444';
+            qEl.style.borderRadius = '12px';
+            setTimeout(() => { qEl.style.border = ''; }, 4000);
         }
-    }, 1000);
+        return alert(`⚠️ Пожалуйста, ответьте на ВСЕ вопросы!\n\nВы пропустили вопрос №${qNum}.`);
+    }
+
+    try {
+        let correct = 0;
+        const questions = testsData[this.currentTest];
+        questions.forEach((q, i) => {
+            if (this.answers[i] === q.c) correct++;
+        });
+        const pct = Math.round((correct / questions.length) * 100);
+        
+        // 2. Подсветка правильных/неправильных ответов
+        document.querySelectorAll(".question").forEach((qEl, i) => {
+            const opts = qEl.querySelectorAll(".answer-option");
+            opts.forEach((o, ai) => {
+                const c = questions[i].c;
+                if (ai === c) o.classList.add("correct");
+                else if (ai === this.answers[i]) o.classList.add('wrong');
+            });
+        });
+        
+        // 3. Сохраняем результат текущего теста в памяти
+        this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
+        console.log("✅ Результат сохранен:", this.currentTest, this.testResults[this.currentTest]);
+        
+        // 4. Ждем 1.5 секунды, чтобы пользователь увидел подсветку
+        setTimeout(async () => {
+            try {
+                const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
+                console.log("🏆 Все тесты пройдены?", allPassed);
+                
+                if (allPassed) {
+                    console.log("📜 Генерация итогового сертификата...");
+                    await this.createFinalCertificate();
+                    this.showResultScreen(pct, true);
+                } else {
+                    const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
+                    const needed = this.REQUIRED_TESTS.length - passedCount;
+                    this.showResultScreen(pct, false, needed);
+                }
+            } catch (innerErr) {
+                console.error("❌ Ошибка при показе результатов:", innerErr);
+                alert("Произошла ошибка при формировании результатов: " + innerErr.message);
+            }
+        }, 1500);
+        
+    } catch (err) {
+        console.error("❌ Критическая ошибка в submit:", err);
+        alert("Произошла непредвиденная ошибка: " + err.message);
+    }
 }
 
   cancel() {
@@ -3163,40 +3195,48 @@ class Tests {
   }
 
   async createFinalCertificate() {
-    const user = this.app.currentUser;
-    const userName = user?.name || user?.email?.split('@')[0] || 'Участник';
-    
-    // Собираем результаты всех 5 тестов
-    const testScores = {};
-    this.REQUIRED_TESTS.forEach(t => {
-        testScores[t] = this.testResults[t]?.score || 0;
-    });
-
-    // Вычисляем средний балл
-    const avgScore = Math.round(Object.values(testScores).reduce((a, b) => a + b, 0) / this.REQUIRED_TESTS.length);
-
-    // Генерируем уникальный номер сертификата
-    const uniqueNumber = 'RF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
-
-    const cert = {
-        id: Date.now(),
-        type: 'full_course',
-        date: new Date().toLocaleDateString('ru-RU'),
-        number: uniqueNumber,
-        studentName: userName,
-        testScores: testScores, // Сохраняем детальные результаты всех 5 тестов
-        averageScore: avgScore
-    };
-    
     try {
-        await api.addCertificate(cert);
+        const user = this.app.currentUser;
+        const userName = user?.name || user?.email?.split('@')[0] || 'Участник';
+        
+        const testScores = {};
+        this.REQUIRED_TESTS.forEach(t => {
+            testScores[t] = this.testResults[t]?.score || 0;
+        });
+        
+        const scoresValues = Object.values(testScores);
+        const sum = scoresValues.reduce((a, b) => a + b, 0);
+        const avgScore = Math.round(sum / this.REQUIRED_TESTS.length);
+        
+        const uniqueNumber = 'RF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+        
+        const cert = {
+            id: Date.now(),
+            type: 'full_course',
+            date: new Date().toLocaleDateString('ru-RU'),
+            number: uniqueNumber,
+            studentName: userName,
+            testScores: testScores,
+            averageScore: avgScore
+        };
+        
+        console.log("📤 Отправка сертификата на сервер...", cert);
+        
+        try {
+            await api.addCertificate(cert);
+            console.log("✅ Сертификат успешно сохранен на сервере.");
+        } catch (apiErr) {
+            console.warn("⚠️ Не удалось сохранить сертификат на сервере (возможно, нет интернета или ошибка API). Сохраняем локально.", apiErr);
+        }
+        
+        // Гарантированно добавляем сертификат в память и отображаем его
         this.certs.unshift(cert);
         this.showCertificates();
-    } catch(e) { 
-        console.error('Failed to save cert:', e); 
-        // Fallback для локального отображения, если API временно недоступен
-        this.certs.unshift(cert);
-        this.showCertificates();
+        console.log("✅ Сертификат отображен на странице.");
+        
+    } catch (e) {
+        console.error("❌ Критическая ошибка в createFinalCertificate:", e);
+        throw e; // Пробрасываем ошибку, чтобы поймать её в submit и показать пользователю
     }
 }
 showResultScreen(score, isFinal, neededTests = 0) {
