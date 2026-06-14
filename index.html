@@ -2810,9 +2810,9 @@ renderVocab(cat) {
             <div class="vocab-word">${w.w}</div>
             <div class="vocab-transliteration">[${w.tr}]</div>
             <div class="vocab-translation" id="trans-${w.w.replace(/\s/g, '')}" style="display:none;">${translation}</div>
-            <button class="translate-btn" onclick="app.russian.toggleTranslation('${w.w.replace(/\s/g, '')}', '${translation}')">
-                👁️ Показать перевод
-            </button>
+            <button class="translate-btn" onclick="app.russian.toggleTranslation(event, '${w.w.replace(/\s/g, '')}', '${translation}')">
+    👁️ Показать перевод
+</button>
         </div>`;
     }).join('');
 }
@@ -2913,6 +2913,7 @@ toggleTranslation(event, wordId, translation) {
         btn.textContent = '👁️ Показать перевод';
         btn.classList.remove('loading');
     }
+}
 }
 
 class HistoryModule {
