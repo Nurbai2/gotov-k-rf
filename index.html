@@ -3066,11 +3066,15 @@ class Tests {
   async loadCertificates() {
     if (!this.app.currentUser) { this.certs = []; return; }
     try {
-        this.certs = await api.getCertificates();
+        const apiCerts = await api.getCertificates();
+        // Обновляем массив только если API вернул данные, чтобы не стереть локально созданный сертификат
+        if (apiCerts && apiCerts.length > 0) {
+            this.certs = apiCerts;
+        }
+        
         // Восстанавливаем локальный прогресс из сохранённых сертификатов
         this.certs.forEach(c => {
             if (c.type === 'full_course' && c.testScores) {
-                // Если есть итоговый сертификат, восстанавливаем результаты всех 5 тестов
                 this.REQUIRED_TESTS.forEach(t => {
                     this.testResults[t] = { score: c.testScores[t], passed: c.testScores[t] >= 60 };
                 });
@@ -3078,7 +3082,10 @@ class Tests {
                 this.testResults[c.type] = { score: c.score, passed: true };
             }
         });
-    } catch { this.certs = []; }
+    } catch (e) {
+        // Если API недоступен или вернул ошибку, просто оставляем локальные сертификаты как есть
+        console.warn('Не удалось загрузить сертификаты с сервера, используем локальные данные');
+    }
 }
 
   start(type) {
@@ -3149,7 +3156,7 @@ class Tests {
         document.getElementById('testContainer').style.display = 'none';
         document.getElementById('testsList').style.display = 'grid';
         this.currentTest = null;
-        this.render();
+        this.showCertificates();
     }, 1500);
 }
 
