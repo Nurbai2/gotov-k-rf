@@ -2586,12 +2586,12 @@ if (dark) { this.dark = true; document.documentElement.setAttribute('data-theme'
 translator.init();
 }
 renderNav() {
-localStorage.setItem('rf_user', JSON.stringify(this.currentUser));
-document.getElementById('navControls').innerHTML = `
-<button class="icon-btn" onclick="app.toggleTheme()" title="Тема">☀️</button>
-<span style="color:var(--text-secondary);font-size:0.9rem;">👤 ${this.currentUser.email.split('@')[0]}</span>
-<button class="btn btn-secondary" onclick="app.logout()">Выход</button>`;
-this.router.navigate('dashboard');
+    localStorage.setItem('rf_user', JSON.stringify(this.currentUser));
+    document.getElementById('navControls').innerHTML = `
+    <button class="icon-btn" onclick="app.toggleTheme()" title="Тема">☀️</button>
+    <span style="color:var(--text-secondary);font-size:0.9rem;">👤 ${this.currentUser.email.split('@')[0]}</span>
+    <button class="btn btn-secondary" onclick="app.logout()">Выход</button>`;
+    // Убрали this.router.navigate('dashboard'), чтобы не вызывать ошибку
 }
 renderNavGuest() {
 localStorage.removeItem('rf_user');
@@ -2632,24 +2632,36 @@ else if (this.currentSection === 'tests') this.tests.render();
 class Router {
 constructor(app) { this.app = app; }
 navigate(section) {
-document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-document.querySelectorAll(".category-card").forEach(c => c.classList.remove("active"));
-this.app.currentSection = section;
-if (!section || section === '') {
-const s = this.app.currentUser ? 'dashboardSection' : 'welcomeSection';
-document.getElementById(s).classList.add('active');
-return;
-}
-const map = { russian:'russianSection', history:'historySection', laws:'lawsSection', cities:'citiesSection', tests:'testsSection', dashboard:'dashboardSection' };
-const catMap = { russian:'cat-russian', history:'cat-history', laws:'cat-laws', cities:'cat-cities', tests:'cat-tests' };
-if (map[section]) document.getElementById(map[section]).classList.add('active');
-if (catMap[section]) document.getElementById(catMap[section]).classList.add('active');
-if (section === 'russian') this.app.russian.render();
-if (section === 'history') this.app.history.render();
-if (section === 'laws') this.app.laws.render();
-if (section === 'cities') this.app.cities.render();
-if (section === 'tests') this.app.tests.render();
-window.scrollTo(0, 0);
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".category-card").forEach(c => c.classList.remove("active"));
+    this.app.currentSection = section;
+    
+    if (!section || section === '') {
+        // Исправлено: всегда показываем welcomeSection, так как dashboardSection нет в HTML
+        const el = document.getElementById('welcomeSection');
+        if (el) el.classList.add('active');
+        return;
+    }
+    
+    const map = { russian:'russianSection', history:'historySection', laws:'lawsSection', cities:'citiesSection', tests:'testsSection' };
+    const catMap = { russian:'cat-russian', history:'cat-history', laws:'cat-laws', cities:'cat-cities', tests:'cat-tests' };
+    
+    if (map[section]) {
+        const el = document.getElementById(map[section]);
+        if (el) el.classList.add('active');
+    }
+    if (catMap[section]) {
+        const el = document.getElementById(catMap[section]);
+        if (el) el.classList.add('active');
+    }
+    
+    if (section === 'russian') this.app.russian.render();
+    if (section === 'history') this.app.history.render();
+    if (section === 'laws') this.app.laws.render();
+    if (section === 'cities') this.app.cities.render();
+    if (section === 'tests') this.app.tests.render();
+    
+    window.scrollTo(0, 0);
 }
 }
 
@@ -3188,7 +3200,7 @@ class Tests {
         // Fallback для локального отображения, если API временно недоступен
         this.certs.unshift(cert);
         this.showCertificates();
-.    }
+    }
 }
 
   showCertificates() {
