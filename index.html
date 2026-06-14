@@ -3310,7 +3310,37 @@ renderSingleCertificate(c) {
         </div>
     </div>`;
 }
+
+// ⚠️ ВОТ ЭТОТ МЕТОД БЫЛ ПРОПУЩЕН, ДОБАВЛЯЕМ ЕГО ОБРАТНО:
+showCertificates() {
+    const grid = document.getElementById('certificatesGrid');
+    const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯', full_course:'🏆' };
+    const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест', full_course:'🌟 ИТОГОВЫЙ СЕРТИФИКАТ' };
+    
+    if (!this.certs.length) {
+        grid.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding: 2rem;">Сертификатов пока нет. Пройдите все 5 тестов на 60%+</p>';
+        return;
+    }
+    
+    grid.innerHTML = this.certs.map(c => {
+        if (c.type === 'full_course') {
+            return this.renderSingleCertificate(c);
+        } else {
+            return `
+            <div class="category-card">
+                <div class="category-icon">${icons[c.type] || '🎓'}</div>
+                <div class="category-title">${names[c.type] || c.type}</div>
+                <div class="category-desc">
+                    ${c.studentName ? `<div style="font-size:1.1rem;font-weight:bold;color:var(--primary);margin-bottom:0.5rem;">👤 ${c.studentName}</div>` : ''}
+                    <div>Результат: <strong>${c.score}%</strong></div>
+                    <div style="margin-top:0.5rem;">${c.date}</div>
+                    <small style="color:var(--text-secondary);">${c.number}</small>
+                </div>
+            </div>`;
+        }
+    }).join('');
 }
+} // <-- Закрывающая скобка класса Tests
 
 // Инициализация
 const app = new App();
