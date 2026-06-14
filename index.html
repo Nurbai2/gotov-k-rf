@@ -3058,33 +3058,46 @@ class Tests {
     this.REQUIRED_TESTS = ['russian', 'history', 'laws', 'cities','mixed']; // 4 обязательных теста
   }
 
-  async render() {
-    await this.loadCertificates();
-    this.showCertificates();
-  }
-
-  async loadCertificates() {
-    if (!this.app.currentUser) { this.certs = []; return; }
-    try {
-        const apiCerts = await api.getCertificates();
-        // ⚠️ ВАЖНО: Обновляем массив ТОЛЬКО если API вернул данные.
-        if (apiCerts && apiCerts.length > 0) {
-            this.certs = apiCerts;
-        }
-        // Восстанавливаем локальный прогресс из сохранённых сертификатов
-        this.certs.forEach(c => {
-            if (c.type === 'full_course' && c.testScores) {
-                this.REQUIRED_TESTS.forEach(t => {
-                    this.testResults[t] = { score: c.testScores[t], passed: c.testScores[t] >= 60 };
-                });
-            } else if (this.REQUIRED_TESTS.includes(c.type) && c.score >= 60) {
-                this.testResults[c.type] = { score: c.score, passed: true };
-            }
-        });
-    } catch (e) {
-        console.warn('API недоступен, используем локальные сертификаты', e);
+      async render() {
+        await this.loadTestProgress(); // 🚨 НОВОЕ: Загружаем сохраненные результаты тестов из базы
+        await this.loadCertificates();
+        this.showCertificates();
     }
-}
+
+    // 🚨 НОВЫЙ МЕТОД: Загрузка прогресса тестов с сервера
+    async loadTestProgress() {
+        if (!this.app.currentUser) return;
+        try {
+            const res = await api.getProgress('tests');
+            if (res && res.progress) {
+                this.testResults = res.progress;
+            }
+        } catch (e) {
+            console.warn('Не удалось загрузить прогресс тестов', e);
+        }
+    }
+
+    // 🚨 НОВЫЙ МЕТОД: Сохранение прогресса тестов на сервер
+    async saveTestProgress() {
+        if (!this.app.currentUser) return;
+        try {
+            await api.saveProgress('tests', this.testResults);
+        } catch (e) {
+            console.error('Не удалось сохранить прогресс тестов', e);
+        }
+    }
+
+    async loadCertificates() {
+        if (!this.app.currentUser) { this.certs = []; return; }
+        try {
+            const apiCerts = await api.getCertificates();
+            if (apiCerts && apiCerts.length > 0) {
+                this.certs = apiCerts;
+            }
+        } catch (e) {
+            console.warn('API недоступен', e);
+        }
+    }
   start(type) {
     if (!this.app.currentUser) { this.app.showAuthModal(); return; }
     if (!testsData[type]) return alert('Данные теста временно недоступны');
@@ -3115,31 +3128,12 @@ class Tests {
     qEl.querySelectorAll('.answer-option')[aIdx].classList.add('selected');
   }
 
-  async submit() {
-    console.log("🔘 Кнопка 'Завершить тест' нажата. Текущий тест:", this.currentTest);
-    
-    if (!this.currentTest) {
-        return alert('Ошибка: тест не выбран.');
-    }
-    
-    // 1. Умная проверка: ищем первый неотвеченный вопрос
-    const unansweredIndex = this.answers.findIndex(a => a === null);
-    if (unansweredIndex !== -1) {
-        const qNum = unansweredIndex + 1;
-        console.warn(`⚠️ Вопрос №${qNum} не отвечен!`);
-        
-        // Находим этот вопрос на странице, прокручиваем к нему и подсвечиваем красным
-        const qEl = document.querySelectorAll('.question')[unansweredIndex];
-        if (qEl) {
-            qEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            qEl.style.border = '3px solid #ef4444';
-            qEl.style.borderRadius = '12px';
-            setTimeout(() => { qEl.style.border = ''; }, 4000);
+      async submit() {
+        if (!this.currentTest) return;
+        if (this.answers.some(a => a === null)) {
+            return alert('⚠️ Пожалуйста, ответьте на все вопросы перед завершением теста!');
         }
-        return alert(`⚠️ Пожалуйста, ответьте на ВСЕ вопросы!\n\nВы пропустили вопрос №${qNum}.`);
-    }
-
-    try {
+        
         let correct = 0;
         const questions = testsData[this.currentTest];
         questions.forEach((q, i) => {
@@ -3147,7 +3141,7 @@ class Tests {
         });
         const pct = Math.round((correct / questions.length) * 100);
         
-        // 2. Подсветка правильных/неправильных ответов
+        // 1. Подсветка правильных/неправильных ответов
         document.querySelectorAll(".question").forEach((qEl, i) => {
             const opts = qEl.querySelectorAll(".answer-option");
             opts.forEach((o, ai) => {
@@ -3157,36 +3151,25 @@ class Tests {
             });
         });
         
-        // 3. Сохраняем результат текущего теста в памяти
+        // 2. Сохраняем результат текущего теста в памяти
         this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
-        console.log("✅ Результат сохранен:", this.currentTest, this.testResults[this.currentTest]);
         
-        // 4. Ждем 1.5 секунды, чтобы пользователь увидел подсветку
+        // 🚨 3. КРИТИЧЕСКИ ВАЖНО: Сохраняем прогресс на сервере, чтобы не пропал при обновлении!
+        await this.saveTestProgress();
+
+        // 4. Ждем 1.5 секунды, чтобы пользователь увидел подсветку, затем показываем экран результатов
         setTimeout(async () => {
-            try {
-                const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
-                console.log("🏆 Все тесты пройдены?", allPassed);
-                
-                if (allPassed) {
-                    console.log("📜 Генерация итогового сертификата...");
-                    await this.createFinalCertificate();
-                    this.showResultScreen(pct, true);
-                } else {
-                    const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
-                    const needed = this.REQUIRED_TESTS.length - passedCount;
-                    this.showResultScreen(pct, false, needed);
-                }
-            } catch (innerErr) {
-                console.error("❌ Ошибка при показе результатов:", innerErr);
-                alert("Произошла ошибка при формировании результатов: " + innerErr.message);
+            const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
+            if (allPassed) {
+                await this.createFinalCertificate();
+                this.showResultScreen(pct, true); 
+            } else {
+                const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
+                const needed = this.REQUIRED_TESTS.length - passedCount;
+                this.showResultScreen(pct, false, needed); 
             }
         }, 1500);
-        
-    } catch (err) {
-        console.error("❌ Критическая ошибка в submit:", err);
-        alert("Произошла непредвиденная ошибка: " + err.message);
     }
-}
 
   cancel() {
     document.getElementById('testContainer').style.display = 'none';
