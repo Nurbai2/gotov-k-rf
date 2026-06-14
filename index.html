@@ -2899,10 +2899,11 @@ async completeLesson(catId) {
 }
 
 // ✅ ДОБАВЬТЕ СЮДА ЭТУ ФУНКЦИЮ:
-toggleTranslation(wordId, translation) {
+// Было: toggleTranslation(wordId, translation) { const btn = event.target; ... }
+// Стало:
+toggleTranslation(event, wordId, translation) {
     const transEl = document.getElementById(`trans-${wordId}`);
-    const btn = event.target;
-    
+    const btn = event.target; // Теперь event передается явно и работает надежно
     if (transEl.style.display === 'none' || !transEl.style.display) {
         transEl.style.display = 'block';
         btn.textContent = '🙈 Скрыть перевод';
@@ -2912,7 +2913,6 @@ toggleTranslation(wordId, translation) {
         btn.textContent = '👁️ Показать перевод';
         btn.classList.remove('loading');
     }
-}
 }
 
 class HistoryModule {
