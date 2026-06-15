@@ -3054,41 +3054,80 @@ class Tests {
         this.currentTest = null;
         this.answers = [];
         this.certs = [];
-        this.testResults = {}; // Хранит прогресс: { russian: {score, passed}, ... }
+        this.testResults = {}; 
         this.REQUIRED_TESTS = ['russian', 'history', 'laws', 'cities', 'mixed'];
     }
 
     async render() {
-        await this.loadCertificates();
+        await this.loadData();
         this.showCertificates();
     }
 
-    async loadCertificates() {
-        if (!this.app.currentUser) { this.certs = []; return; }
+    // 🚨 НАДЕЖНАЯ ЗАГРУЗКА: Сначала localStorage, потом попытка API
+    async loadData() {
+        // 1. Мгновенно загружаем из памяти браузера (гарантия сохранения)
         try {
-            const apiCerts = await api.getCertificates();
-            if (apiCerts && apiCerts.length > 0) {
-                this.certs = apiCerts;
-                // БЕЗОПАСНОЕ восстановление: ставим passed: true ТОЛЬКО если реальный балл >= 60
+            const savedResults = localStorage.getItem('rf_test_results');
+            if (savedResults) this.testResults = JSON.parse(savedResults);
+            
+            const savedCerts = localStorage.getItem('rf_certs');
+            if (savedCerts) this.certs = JSON.parse(savedCerts);
+        } catch (e) {
+            console.warn('Ошибка чтения localStorage:', e);
+        }
+
+        // 2. Пытаемся синхронизировать с сервером (если пользователь вошел)
+        if (this.app.currentUser) {
+            try {
+                const apiCerts = await api.getCertificates();
+                if (apiCerts && apiCerts.length > 0) {
+                    this.certs = apiCerts;
+                    localStorage.setItem('rf_certs', JSON.stringify(this.certs));
+                }
+                
+                // Восстанавливаем прогресс из сертификатов
                 this.certs.forEach(c => {
                     if (c.type === 'full_course' && c.testScores) {
                         this.REQUIRED_TESTS.forEach(t => {
-                            const score = c.testScores[t] || 0;
-                            this.testResults[t] = { 
-                                score: score, 
-                                passed: score >= 60 // Строгая проверка!
-                            };
+                            this.testResults[t] = { score: c.testScores[t], passed: c.testScores[t] >= 60 };
                         });
-                    } else if (this.REQUIRED_TESTS.includes(c.type)) {
-                        this.testResults[c.type] = { 
-                            score: c.score, 
-                            passed: c.score >= 60 
-                        };
+                    } else if (this.REQUIRED_TESTS.includes(c.type) && c.score >= 60) {
+                        this.testResults[c.type] = { score: c.score, passed: true };
                     }
                 });
+                localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
+            } catch (e) {
+                console.warn('API недоступен, используем данные из localStorage', e);
             }
+        }
+    }
+
+    // 🚨 НАДЕЖНОЕ СОХРАНЕНИЕ: Мгновенно в localStorage + фон в API
+    async saveData() {
+        try {
+            localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
+            localStorage.setItem('rf_certs', JSON.stringify(this.certs));
         } catch (e) {
-            console.warn('API недоступен, используем локальные данные', e);
+            console.error('Ошибка сохранения в localStorage:', e);
+        }
+
+        if (this.app.currentUser) {
+            try {
+                const progressArray = Object.keys(this.testResults).map(testType => ({
+                    testType: testType,
+                    score: this.testResults[testType].score,
+                    passed: this.testResults[testType].passed,
+                    timestamp: Date.now()
+                }));
+                await api.saveProgress('tests', progressArray).catch(() => {});
+                
+                const lastCert = this.certs[0];
+                if (lastCert && lastCert.type === 'full_course') {
+                     await api.addCertificate(lastCert).catch(() => {});
+                }
+            } catch (e) {
+                console.warn('Не удалось синхронизировать с сервером, но данные сохранены локально', e);
+            }
         }
     }
 
@@ -3125,7 +3164,6 @@ class Tests {
         if (this.answers.some(a => a === null)) {
             return alert('⚠️ Пожалуйста, ответьте на все вопросы перед завершением теста!');
         }
-        
         let correct = 0;
         const questions = testsData[this.currentTest];
         questions.forEach((q, i) => {
@@ -3133,7 +3171,6 @@ class Tests {
         });
         const pct = Math.round((correct / questions.length) * 100);
         
-        // 1. Подсветка правильных/неправильных ответов
         document.querySelectorAll(".question").forEach((qEl, i) => {
             const opts = qEl.querySelectorAll(".answer-option");
             opts.forEach((o, ai) => {
@@ -3143,28 +3180,18 @@ class Tests {
             });
         });
         
-        // 2. Сохраняем результат текущего теста
         this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
-        console.log("📊 Текущие результаты после теста:", JSON.parse(JSON.stringify(this.testResults)));
+        
+        // МГНОВЕННО сохраняем в localStorage и на сервер
+        await this.saveData();
 
-        // 3. Ждем 1 секунду, затем проверяем
         setTimeout(async () => {
-            // СТРОГАЯ ПРОВЕРКА: каждый тест должен существовать, быть passed === true И иметь score >= 60
-            const allPassed = this.REQUIRED_TESTS.every(t => {
-                const res = this.testResults[t];
-                return res && res.passed === true && res.score >= 60;
-            });
-            
-            console.log("✅ Все 5 тестов реально сданы >= 60%?", allPassed);
-
+            const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
             if (allPassed) {
                 await this.createFinalCertificate();
                 this.showResultScreen(pct, true);
             } else {
-                const passedCount = this.REQUIRED_TESTS.filter(t => {
-                    const res = this.testResults[t];
-                    return res && res.passed === true && res.score >= 60;
-                }).length;
+                const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
                 const needed = this.REQUIRED_TESTS.length - passedCount;
                 this.showResultScreen(pct, false, needed);
             }
@@ -3198,123 +3225,12 @@ class Tests {
             testScores: testScores,
             averageScore: avgScore
         };
-        
-        try {
-            await api.addCertificate(cert);
-            this.certs.unshift(cert);
-            this.showCertificates();
-        } catch(e) {
-            console.error('Failed to save cert:', e);
-            this.certs.unshift(cert);
-            this.showCertificates();
-        }
-    }
 
-    showResultScreen(score, isFinal, neededTests = 0) {
-        const container = document.getElementById('testContent');
-        const testName = { russian: 'Русский язык', history: 'История', laws: 'Законы', cities: 'Города', mixed: 'Общий тест' }[this.currentTest];
-        
-        let html = `
-        <div style="text-align: center; padding: 2rem; animation: fadeIn 0.5s;">
-            <h2 style="color: var(--primary); margin-bottom: 1rem;">
-                ${isFinal ? '🎉 Поздравляем! Все тесты пройдены!' : `✅ Тест "${testName}" завершен`}
-            </h2>
-            <div style="font-size: 4rem; font-weight: bold; color: ${score >= 60 ? '#10b981' : '#ef4444'}; margin: 1.5rem 0;">
-                ${score}%
-            </div>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">
-                ${isFinal 
-                    ? 'Вы успешно сдали все 5 тестов. Ваш итоговый сертификат сформирован и отображается ниже.' 
-                    : `Для получения итогового сертификата необходимо набрать ≥60% во всех 5 тестах.<br>Осталось успешно сдать: <strong style="color:var(--primary)">${neededTests}</strong> тест(ов).`}
-            </p>
-            <button class="btn btn-primary" onclick="app.tests.returnToList()" style="font-size: 1.1rem; padding: 0.75rem 2rem;">
-                ← Вернуться к списку тестов
-            </button>
-        </div>`;
-        
-        if (isFinal) {
-            const finalCert = this.certs.find(c => c.type === 'full_course');
-            if (finalCert) {
-                html += `<div style="margin-top: 2rem;">${this.renderSingleCertificate(finalCert)}</div>`;
-            }
-        }
-        
-        container.innerHTML = html;
-        const btns = document.querySelectorAll('#testContainer .mt-4');
-        btns.forEach(btn => btn.style.display = 'none');
-    }
-
-    returnToList() {
-        document.getElementById('testContainer').style.display = 'none';
-        document.getElementById('testsList').style.display = 'grid';
-        const btns = document.querySelectorAll('#testContainer .mt-4');
-        btns.forEach(btn => btn.style.display = 'inline-flex');
-        this.currentTest = null;
+        this.certs.unshift(cert);
+        await this.saveData(); // Мгновенное сохранение
         this.showCertificates();
     }
 
-    renderSingleCertificate(c) {
-        const testNames = { russian: '📚 Русский язык', history: '🏛️ История', laws: '⚖️ Законы', cities: '🏙️ Города', mixed: '🎯 Общий тест' };
-        const scoresList = this.REQUIRED_TESTS.map(t => {
-            const score = c.testScores[t] || 0;
-            return `<div style="display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.2);">
-                <span>${testNames[t]}</span>
-                <span style="font-weight:bold; color:${score >= 60 ? '#4ade80' : '#f87171'}">${score}%</span>
-            </div>`;
-        }).join('');
-        
-        return `
-        <div class="category-card cert-final" style="grid-column: 1 / -1; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: 3px solid #fbbf24; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4), 0 0 20px rgba(251, 191, 36, 0.2); padding: 2.5rem; margin-top: 1rem;">
-            <div style="position: absolute; top: -30px; right: -30px; font-size: 12rem; opacity: 0.1;">🏆</div>
-            <div style="text-align:center; margin-bottom: 1.5rem; position: relative; z-index: 1;">
-                <div style="font-size: 5rem; margin-bottom: 0.5rem;">🏆</div>
-                <div style="color: #fbbf24; font-size: 2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">🌟 ИТОГОВЫЙ СЕРТИФИКАТ 🌟</div>
-            </div>
-            <div style="color: rgba(255,255,255,0.95); text-align: left; margin-top: 1rem; position: relative; z-index: 1; max-width: 800px; margin-left: auto; margin-right: auto;">
-                <div style="font-size:1.8rem; font-weight:bold; margin-bottom:1.5rem; text-align:center; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 1rem;">👤 ${c.studentName}</div>
-                <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
-                    <strong style="color: #fbbf24; font-size: 1.3rem; display: block; margin-bottom: 1rem; text-align: center;">📊 Результаты тестов:</strong>
-                    <div style="font-size: 1.1rem;">${scoresList}</div>
-                </div>
-                <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(255,255,255,0.3);">
-                    <div style="font-size: 1.8rem; font-weight: bold; color: #fbbf24; margin-bottom: 0.5rem;">🏅 Средний балл: ${c.averageScore}%</div>
-                    <div style="margin-top: 1rem; font-size: 1.1rem; opacity: 0.9;">📅 Дата выдачи: ${c.date}</div>
-                    <div style="margin-top: 0.75rem; font-size: 1rem; font-family: monospace; background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: 6px; display: inline-block; letter-spacing: 1px;">№ ${c.number}</div>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    showCertificates() {
-        const grid = document.getElementById('certificatesGrid');
-        const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯', full_course:'🏆' };
-        const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест', full_course:'🌟 ИТОГОВЫЙ СЕРТИФИКАТ' };
-        
-        if (!this.certs.length) {
-            grid.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding: 2rem;">Сертификатов пока нет. Пройдите все 5 тестов на 60%+</p>';
-            return;
-        }
-        
-        const regularCerts = this.certs.filter(c => c.type !== 'full_course');
-        let html = regularCerts.map(c => `
-            <div class="category-card">
-                <div class="category-icon">${icons[c.type] || '🎓'}</div>
-                <div class="category-title">${names[c.type] || c.type}</div>
-                <div class="category-desc">
-                    ${c.studentName ? `<div style="font-size:1.1rem;font-weight:bold;color:var(--primary);margin-bottom:0.5rem;">👤 ${c.studentName}</div>` : ''}
-                    <div>Результат: <strong>${c.score}%</strong></div>
-                    <div style="margin-top:0.5rem;">${c.date}</div>
-                    <small style="color:var(--text-secondary);">${c.number}</small>
-                </div>
-            </div>`).join('');
-            
-        const finalCert = this.certs.find(c => c.type === 'full_course');
-        if (finalCert) {
-            html += this.renderSingleCertificate(finalCert);
-        }
-        
-        grid.innerHTML = html;
-    }
     showResultScreen(score, isFinal, neededTests = 0) {
         const container = document.getElementById('testContent');
         const testName = { russian: 'Русский язык', history: 'История', laws: 'Законы', cities: 'Города', mixed: 'Общий тест' }[this.currentTest];
@@ -3353,7 +3269,7 @@ class Tests {
         const btns = document.querySelectorAll('#testContainer .mt-4');
         btns.forEach(btn => btn.style.display = 'inline-flex');
         this.currentTest = null;
-        this.showCertificates(); // Обновляем из памяти, без запроса к API
+        this.showCertificates();
     }
 
     renderSingleCertificate(c) {
@@ -3387,6 +3303,37 @@ class Tests {
                 </div>
             </div>
         </div>`;
+    }
+
+    showCertificates() {
+        const grid = document.getElementById('certificatesGrid');
+        const icons = { russian:'📚', history:'🏛️', laws:'⚖️', cities:'🏙️', mixed:'🎯', full_course:'🏆' };
+        const names = { russian:'Русский язык', history:'История', laws:'Законы', cities:'Города', mixed:'Общий тест', full_course:'🌟 ИТОГОВЫЙ СЕРТИФИКАТ' };
+        
+        if (!this.certs.length) {
+            grid.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding: 2rem;">Сертификатов пока нет. Пройдите все 5 тестов на 60%+</p>';
+            return;
+        }
+        
+        const regularCerts = this.certs.filter(c => c.type !== 'full_course');
+        let html = regularCerts.map(c => `
+            <div class="category-card">
+                <div class="category-icon">${icons[c.type] || '🎓'}</div>
+                <div class="category-title">${names[c.type] || c.type}</div>
+                <div class="category-desc">
+                    ${c.studentName ? `<div style="font-size:1.1rem;font-weight:bold;color:var(--primary);margin-bottom:0.5rem;">👤 ${c.studentName}</div>` : ''}
+                    <div>Результат: <strong>${c.score}%</strong></div>
+                    <div style="margin-top:0.5rem;">${c.date}</div>
+                    <small style="color:var(--text-secondary);">${c.number}</small>
+                </div>
+            </div>`).join('');
+            
+        const finalCert = this.certs.find(c => c.type === 'full_course');
+        if (finalCert) {
+            html += this.renderSingleCertificate(finalCert); // Финальный сертификат ВСЕГДА внизу и большой
+        }
+        
+        grid.innerHTML = html;
     }
 }
 
