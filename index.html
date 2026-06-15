@@ -547,58 +547,142 @@ const translator = {
         try { localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); } catch(e) {}
     },
     cacheKey(text, lang) { return `${lang}::${text.trim().substring(0,80)}`; },
-    async translate(text, targetLang) {
-        if (!text || !text.trim()) return text;
-        if (targetLang === 'ru') return text;
-        const key = this.cacheKey(text, targetLang);
-        if (this.cache[key]) return this.cache[key];
-        try {
-            const encoded = encodeURIComponent(text.trim().substring(0, 500));
-            const url = `https://api.mymemory.translated.net/get?q=${encoded}&langpair=ru|${targetLang}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.responseStatus === 200) {
-                const translated = data.responseData.translatedText;
+    //  Исправленный translate() с таймаутом
+async translate(text, targetLang) {
+    if (!text || !text.trim()) return text;
+    if (targetLang === 'ru') return text;
+    
+    const key = this.cacheKey(text, targetLang);
+    if (this.cache[key]) return this.cache[key];
+    
+    try {
+        const encoded = encodeURIComponent(text.trim().substring(0, 450));
+        const url = `https://api.mymemory.translated.net/get?q=${encoded}&langpair=ru|${targetLang}`;
+        
+        // ✅ ТАЙМАУТ 5 секунд
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+            console.warn(`API error: ${res.status} for "${text.substring(0, 30)}"`);
+            return text;
+        }
+        
+        const data = await res.json();
+        if (data.responseStatus === 200 && data.responseData?.translatedText) {
+            const translated = data.responseData.translatedText;
+            if (translated && translated !== text) {
                 this.cache[key] = translated;
                 this.saveCache();
                 return translated;
             }
-        } catch(e) {}
-        return text;
-    },
-    setLang(lang) {
-        this.currentLang = lang;
-        localStorage.setItem('rf_ui_lang', lang);
-        if (lang === 'ru') {
-            this.restorePage();
-        } else {
-            this.translatePage();
         }
-        this.showIndicator(lang);
-        if (app && app.currentSection) {
-            setTimeout(() => app.rerenderSection(), 500);
-        }
-    },
-    showIndicator(lang) {
-        const el = document.getElementById('langIndicator');
-        const names = {en:'EN',ky:'КЫР',kk:'ҚАЗ',uz:'UZ',tg:'ТЖК',hy:'ՀԱՅ',az:'AZ',tr:'TR',ar:'AR',zh:'中',fa:'FA',uk:'УКР',de:'DE',fr:'FR',es:'ES'};
-        el.textContent = '🌐 ' + (names[lang] || lang.toUpperCase());
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 2000);
-    },
-    originals: {},
-    storeOriginal(el) {
-        if (!el.dataset.origintext && el.innerText.trim()) {
-            el.dataset.origintext = el.innerText.trim();
-        }
-    },
-    async translatePage() {
-        const status = document.getElementById('translatorStatus');
+    } catch(e) {
+        // ✅ Тихо игнорируем ошибки (таймаут, сеть, лимит API)
+        console.warn(`Translation failed: "${text.substring(0, 30)}"`, e.message);
+    }
+    return text;
+},
+
+//  Исправленный translatePage() с защитой от зависания
+async translatePage() {
+    // ✅ ЗАЩИТА: если уже переводим — выходим
+    if (this.isTranslating) {
+        console.log('Translation already in progress, skipping...');
+        return;
+    }
+    if (this.currentLang === 'ru') return;
+    
+    this.isTranslating = true;
+    const status = document.getElementById('translatorStatus');
+    if (status) {
         status.textContent = '⏳ Перевожу...';
         status.className = 'translator-status translating';
-        const selectors = ['h1','h2','h3','h4','p','button','label','.category-title','.category-desc','.tab','.law-title','.law-content','.city-name','.city-meta','.vocab-word','.vocab-translation','th','td','span:not(.search-icon)','.timeline-title','.timeline-desc','.city-section-content'];
     }
-}
+    
+    const selectors = ['h1','h2','h3','h4','p','button','label',
+        '.category-title','.category-desc','.tab',
+        '.law-title','.law-content','.city-name','.city-meta',
+        '.vocab-word','.vocab-translation','th','td',
+        'span:not(.search-icon)','.timeline-title','.timeline-desc',
+        '.city-section-content'];
+    
+    const elements = [];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            if (el.children.length === 0 
+                && el.innerText.trim().length > 1 
+                && !el.closest('.modal') 
+                && !el.closest('#vocabGrid') 
+                && !el.closest('#phrasesGrid')) {
+                elements.push(el);
+            }
+        });
+    });
+    
+    // ✅ Если элементов нет — сразу завершаем
+    if (elements.length === 0) {
+        if (status) {
+            status.textContent = '✓ Нет элементов для перевода';
+            status.className = 'translator-status cached';
+            setTimeout(() => { 
+                if (status) { status.textContent = 'Готово'; status.className = 'translator-status'; }
+            }, 2000);
+        }
+        this.isTranslating = false;
+        return;
+    }
+    
+    let translated = 0;
+    let failed = 0;
+    
+    for (let i = 0; i < elements.length; i += 5) {
+        const batch = elements.slice(i, i + 5);
+        
+        try {
+            await Promise.all(batch.map(async el => {
+                const orig = el.dataset.origintext || el.innerText.trim();
+                el.dataset.origintext = orig;
+                const t = await this.translate(orig, this.currentLang);
+                if (t && t !== orig) {
+                    el.innerText = t;
+                    translated++;
+                } else {
+                    failed++;
+                }
+            }));
+        } catch(e) {
+            console.error('Batch translation error:', e);
+            failed += batch.length;
+        }
+        
+        // ✅ Обновляем прогресс каждые 10 элементов
+        if (i % 10 === 0 && status) {
+            const pct = Math.round(((i + batch.length) / elements.length) * 100);
+            status.textContent = ` ${pct}% (${translated} переведено)`;
+            // ✅ Небольшая задержка, чтобы не перегружать API
+            await new Promise(r => setTimeout(r, 100));
+        }
+    }
+    
+    // ✅ ВСЕГДА завершаем статус, даже если были ошибки
+    if (status) {
+        status.textContent = `✓ Переведено: ${translated} (кэш: ${Object.keys(this.cache).length})`;
+        status.className = 'translator-status cached';
+        setTimeout(() => { 
+            if (status) { 
+                status.textContent = 'Готово'; 
+                status.className = 'translator-status'; 
+            }
+        }, 3000);
+    }
+    
+    this.isTranslating = false;
+},
+    }
 
 // ============================================================
 // 🗂️ ДАННЫЕ (Полные, детальные данные из 1-го файла)
