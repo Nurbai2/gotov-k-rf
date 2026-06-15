@@ -3090,10 +3090,6 @@ modal.innerHTML = `
 </div>
 </div>`;
 document.body.appendChild(modal);
-// После document.body.appendChild(modal);
-if (translator.currentLang !== 'ru') {
-    setTimeout(() => translator.translatePage(), 100);
-}
 modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 showLessonTab(tab) {
@@ -3185,9 +3181,6 @@ ${ruler ? `
 <p style="margin-top:1rem;">${e.desc}</p>
 </div>`;
 detail.scrollIntoView({ behavior: 'smooth' });
-if (translator.currentLang !== 'ru') {
-setTimeout(() => translator.translatePage(), 100);
-}
 }
 }
 
@@ -3272,10 +3265,6 @@ detail.innerHTML = `
 </div>
 </div>`;
 detail.scrollIntoView({ behavior: 'smooth' });
-    // После detail.scrollIntoView(...)
-if (translator.currentLang !== 'ru') {
-    setTimeout(() => translator.translatePage(), 100);
-}
 }
 }
 
@@ -3400,11 +3389,6 @@ class Tests {
                 `).join('')}</div>
             </div>
         `).join('');
-        // После document.getElementById('testContent').innerHTML = ...
-if (translator.currentLang !== 'ru') {
-    setTimeout(() => translator.translatePage(), 100);
-}
-    
     }
 
     select(qIdx, aIdx) {
