@@ -3054,84 +3054,41 @@ class Tests {
         this.currentTest = null;
         this.answers = [];
         this.certs = [];
-        this.testResults = {}; 
+        this.testResults = {}; // Хранит прогресс: { russian: {score, passed}, ... }
         this.REQUIRED_TESTS = ['russian', 'history', 'laws', 'cities', 'mixed'];
     }
 
     async render() {
-        await this.loadProgress();
         await this.loadCertificates();
         this.showCertificates();
     }
 
-    // 🚨 НОВЫЙ МЕТОД: Загрузка прогресса тестов с гарантией из localStorage
-    async loadProgress() {
-        try {
-            const localProgress = localStorage.getItem('rf_test_results');
-            if (localProgress) {
-                this.testResults = JSON.parse(localProgress);
-            }
-            if (this.app.currentUser) {
-                const res = await api.getProgress('tests');
-                if (res && res.progress) {
-                    this.testResults = { ...this.testResults, ...res.progress };
-                    localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
-                }
-            }
-        } catch (e) {
-            console.warn('Не удалось загрузить прогресс:', e);
-        }
-    }
-
-    // 🚨 НОВЫЙ МЕТОД: Мгновенное сохранение прогресса в браузер и на сервер
-    async saveProgress() {
-        try {
-            localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
-            if (this.app.currentUser) {
-                await api.saveProgress('tests', this.testResults).catch(e => console.warn('API save failed', e));
-            }
-        } catch (e) {
-            console.error('Ошибка сохранения прогресса:', e);
-        }
-    }
-
-    // 🚨 ОБНОВЛЕННЫЙ МЕТОД: Загрузка сертификатов с fallback на localStorage
     async loadCertificates() {
         if (!this.app.currentUser) { this.certs = []; return; }
         try {
             const apiCerts = await api.getCertificates();
             if (apiCerts && apiCerts.length > 0) {
                 this.certs = apiCerts;
-                localStorage.setItem('rf_certs', JSON.stringify(this.certs)); // Синхронизируем
-            } else {
-                const localCerts = JSON.parse(localStorage.getItem('rf_certs') || '[]');
-                if (localCerts.length > 0) this.certs = localCerts;
+                // БЕЗОПАСНОЕ восстановление: ставим passed: true ТОЛЬКО если реальный балл >= 60
+                this.certs.forEach(c => {
+                    if (c.type === 'full_course' && c.testScores) {
+                        this.REQUIRED_TESTS.forEach(t => {
+                            const score = c.testScores[t] || 0;
+                            this.testResults[t] = { 
+                                score: score, 
+                                passed: score >= 60 // Строгая проверка!
+                            };
+                        });
+                    } else if (this.REQUIRED_TESTS.includes(c.type)) {
+                        this.testResults[c.type] = { 
+                            score: c.score, 
+                            passed: c.score >= 60 
+                        };
+                    }
+                });
             }
-            
-            this.certs.forEach(c => {
-                if (c.type === 'full_course' && c.testScores) {
-                    this.REQUIRED_TESTS.forEach(t => {
-                        this.testResults[t] = { score: c.testScores[t], passed: c.testScores[t] >= 60 };
-                    });
-                } else if (this.REQUIRED_TESTS.includes(c.type) && c.score >= 60) {
-                    this.testResults[c.type] = { score: c.score, passed: true };
-                }
-            });
-            localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
-            
         } catch (e) {
-            console.warn('API недоступен, загружаем из localStorage', e);
-            this.certs = JSON.parse(localStorage.getItem('rf_certs') || '[]');
-            this.certs.forEach(c => {
-                if (c.type === 'full_course' && c.testScores) {
-                    this.REQUIRED_TESTS.forEach(t => {
-                        this.testResults[t] = { score: c.testScores[t], passed: c.testScores[t] >= 60 };
-                    });
-                } else if (this.REQUIRED_TESTS.includes(c.type) && c.score >= 60) {
-                    this.testResults[c.type] = { score: c.score, passed: true };
-                }
-            });
-            localStorage.setItem('rf_test_results', JSON.stringify(this.testResults));
+            console.warn('API недоступен, используем локальные данные', e);
         }
     }
 
@@ -3168,6 +3125,7 @@ class Tests {
         if (this.answers.some(a => a === null)) {
             return alert('⚠️ Пожалуйста, ответьте на все вопросы перед завершением теста!');
         }
+        
         let correct = 0;
         const questions = testsData[this.currentTest];
         questions.forEach((q, i) => {
@@ -3175,6 +3133,7 @@ class Tests {
         });
         const pct = Math.round((correct / questions.length) * 100);
         
+        // 1. Подсветка правильных/неправильных ответов
         document.querySelectorAll(".question").forEach((qEl, i) => {
             const opts = qEl.querySelectorAll(".answer-option");
             opts.forEach((o, ai) => {
@@ -3184,18 +3143,28 @@ class Tests {
             });
         });
         
+        // 2. Сохраняем результат текущего теста
         this.testResults[this.currentTest] = { score: pct, passed: pct >= 60 };
-        
-        // 🚨 ГАРАНТИРОВАННО сохраняем прогресс сразу после завершения теста
-        await this.saveProgress();
+        console.log("📊 Текущие результаты после теста:", JSON.parse(JSON.stringify(this.testResults)));
 
+        // 3. Ждем 1 секунду, затем проверяем
         setTimeout(async () => {
-            const allPassed = this.REQUIRED_TESTS.every(t => this.testResults[t]?.passed);
+            // СТРОГАЯ ПРОВЕРКА: каждый тест должен существовать, быть passed === true И иметь score >= 60
+            const allPassed = this.REQUIRED_TESTS.every(t => {
+                const res = this.testResults[t];
+                return res && res.passed === true && res.score >= 60;
+            });
+            
+            console.log("✅ Все 5 тестов реально сданы >= 60%?", allPassed);
+
             if (allPassed) {
                 await this.createFinalCertificate();
                 this.showResultScreen(pct, true);
             } else {
-                const passedCount = this.REQUIRED_TESTS.filter(t => this.testResults[t]?.passed).length;
+                const passedCount = this.REQUIRED_TESTS.filter(t => {
+                    const res = this.testResults[t];
+                    return res && res.passed === true && res.score >= 60;
+                }).length;
                 const needed = this.REQUIRED_TESTS.length - passedCount;
                 this.showResultScreen(pct, false, needed);
             }
@@ -3208,14 +3177,15 @@ class Tests {
         this.currentTest = null;
     }
 
-    // 🚨 ОБНОВЛЕННЫЙ МЕТОД: Создание сертификата с двойным сохранением
     async createFinalCertificate() {
         const user = this.app.currentUser;
         const userName = user?.name || user?.email?.split('@')[0] || 'Участник';
+        
         const testScores = {};
         this.REQUIRED_TESTS.forEach(t => {
             testScores[t] = this.testResults[t]?.score || 0;
         });
+        
         const avgScore = Math.round(Object.values(testScores).reduce((a, b) => a + b, 0) / this.REQUIRED_TESTS.length);
         const uniqueNumber = 'RF-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
         
@@ -3228,24 +3198,13 @@ class Tests {
             testScores: testScores,
             averageScore: avgScore
         };
-
-        // 1. ГАРАНТИРОВАННО сохраняем в localStorage браузера ПЕРЕД запросом к API
-        try {
-            const savedCerts = JSON.parse(localStorage.getItem('rf_certs') || '[]');
-            const filtered = savedCerts.filter(c => c.type !== 'full_course'); // убираем дубликаты
-            filtered.unshift(cert);
-            localStorage.setItem('rf_certs', JSON.stringify(filtered));
-        } catch(e) {
-            console.error('Ошибка сохранения в localStorage:', e);
-        }
-
-        // 2. Пытаемся отправить на сервер
+        
         try {
             await api.addCertificate(cert);
             this.certs.unshift(cert);
             this.showCertificates();
         } catch(e) {
-            console.error('Failed to save cert to API:', e);
+            console.error('Failed to save cert:', e);
             this.certs.unshift(cert);
             this.showCertificates();
         }
@@ -3254,6 +3213,7 @@ class Tests {
     showResultScreen(score, isFinal, neededTests = 0) {
         const container = document.getElementById('testContent');
         const testName = { russian: 'Русский язык', history: 'История', laws: 'Законы', cities: 'Города', mixed: 'Общий тест' }[this.currentTest];
+        
         let html = `
         <div style="text-align: center; padding: 2rem; animation: fadeIn 0.5s;">
             <h2 style="color: var(--primary); margin-bottom: 1rem;">
@@ -3278,6 +3238,7 @@ class Tests {
                 html += `<div style="margin-top: 2rem;">${this.renderSingleCertificate(finalCert)}</div>`;
             }
         }
+        
         container.innerHTML = html;
         const btns = document.querySelectorAll('#testContainer .mt-4');
         btns.forEach(btn => btn.style.display = 'none');
@@ -3301,6 +3262,7 @@ class Tests {
                 <span style="font-weight:bold; color:${score >= 60 ? '#4ade80' : '#f87171'}">${score}%</span>
             </div>`;
         }).join('');
+        
         return `
         <div class="category-card cert-final" style="grid-column: 1 / -1; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: 3px solid #fbbf24; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4), 0 0 20px rgba(251, 191, 36, 0.2); padding: 2.5rem; margin-top: 1rem;">
             <div style="position: absolute; top: -30px; right: -30px; font-size: 12rem; opacity: 0.1;">🏆</div>
@@ -3348,8 +3310,9 @@ class Tests {
             
         const finalCert = this.certs.find(c => c.type === 'full_course');
         if (finalCert) {
-            html += this.renderSingleCertificate(finalCert); // Финальный сертификат всегда внизу и большой
+            html += this.renderSingleCertificate(finalCert);
         }
+        
         grid.innerHTML = html;
     }
 }
