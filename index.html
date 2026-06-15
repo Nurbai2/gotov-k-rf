@@ -527,111 +527,284 @@ const api = {
 // ============================================================
 // 🌐 ПЕРЕВОДЧИК (Полный из 1-го файла)
 // ============================================================
+// ============================================================
+// 🌐 ПЕРЕВОДЧИК v3.0 — ПЕРЕВОДИТ ВСЁ
+// ============================================================
 const translator = {
-currentLang: 'ru',
-cache: {},
-CACHE_KEY: 'rf_translate_cache_v2',
-pendingQueue: [],
-isTranslating: false,
-init() {
-try {
-const saved = localStorage.getItem(this.CACHE_KEY);
-if (saved) this.cache = JSON.parse(saved);
-} catch(e) { this.cache = {}; }
-const savedLang = localStorage.getItem('rf_ui_lang') || 'ru';
-document.getElementById('uiLangSelect').value = savedLang;
-this.currentLang = savedLang;
-if (savedLang !== 'ru') this.translatePage();
-},
-saveCache() {
-try { localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); } catch(e) {}
-},
-cacheKey(text, lang) { return `${lang}::${text.trim().substring(0,80)}`; },
-async translate(text, targetLang) {
-if (!text || !text.trim()) return text;
-if (targetLang === 'ru') return text;
-const key = this.cacheKey(text, targetLang);
-if (this.cache[key]) return this.cache[key];
-try {
-const encoded = encodeURIComponent(text.trim().substring(0, 500));
-const url = `https://api.mymemory.translated.net/get?q=${encoded}&langpair=ru|${targetLang}`;
-const res = await fetch(url);
-const data = await res.json();
-if (data.responseStatus === 200) {
-const translated = data.responseData.translatedText;
-this.cache[key] = translated;
-this.saveCache();
-return translated;
-}
-} catch(e) {}
-return text;
-},
-setLang(lang) {
-this.currentLang = lang;
-localStorage.setItem('rf_ui_lang', lang);
-if (lang === 'ru') {
-this.restorePage();
-} else {
-this.translatePage();
-}
-this.showIndicator(lang);
-if (app && app.currentSection) {
-setTimeout(() => app.rerenderSection(), 500);
-}
-},
-showIndicator(lang) {
-const el = document.getElementById('langIndicator');
-const names = {en:'EN',ky:'КЫР',kk:'ҚАЗ',uz:'UZ',tg:'ТЖК',hy:'ՀԱՅ',az:'AZ',tr:'TR',ar:'AR',zh:'中',fa:'FA',uk:'УКР',de:'DE',fr:'FR',es:'ES'};
-el.textContent = '🌐 ' + (names[lang] || lang.toUpperCase());
-el.classList.add('show');
-setTimeout(() => el.classList.remove('show'), 2000);
-},
-originals: {},
-storeOriginal(el) {
-if (!el.dataset.origintext && el.innerText.trim()) {
-el.dataset.origintext = el.innerText.trim();
-}
-},
-async translatePage() {
-const status = document.getElementById('translatorStatus');
-status.textContent = '⏳ Перевожу...';
-status.className = 'translator-status translating';
-const selectors = ['h1','h2','h3','h4','p','button','label','.category-title','.category-desc','.tab','.law-title','.law-content','.city-name','.city-meta','.vocab-word','.vocab-translation','th','td','span:not(.search-icon)','.timeline-title','.timeline-desc','.city-section-content'];
-const elements = [];
-selectors.forEach(sel => {
-document.querySelectorAll(sel).forEach(el => {
-if (el.children.length === 0 && el.innerText.trim().length > 1 && !el.closest('.modal') && !el.closest('#vocabGrid') && !el.closest('#phrasesGrid')) {
-elements.push(el);
-}
-});
-});
-let translated = 0;
-for (let i = 0; i < elements.length; i += 5) {
-const batch = elements.slice(i, i + 5);
-await Promise.all(batch.map(async el => {
-const orig = el.dataset.origintext || el.innerText.trim();
-el.dataset.origintext = orig;
-const t = await this.translate(orig, this.currentLang);
-if (t && t !== orig) el.innerText = t;
-translated++;
-}));
-if (i % 30 === 0 && i > 0) {
-status.textContent = `⏳ ${Math.round(translated/elements.length*100)}%...`;
-await new Promise(r => setTimeout(r, 200));
-}
-}
-status.textContent = `✓ Переведено (кэш: ${Object.keys(this.cache).length})`;
-status.className = 'translator-status cached';
-setTimeout(() => { status.textContent = 'Готово'; status.className = 'translator-status'; }, 3000);
-},
-restorePage() {
-document.querySelectorAll('[data-origintext]').forEach(el => {
-el.innerText = el.dataset.origintext;
-});
-const status = document.getElementById('translatorStatus');
-status.textContent = 'Готово';
-status.className = 'translator-status';
-}
+    currentLang: 'ru',
+    cache: {},
+    CACHE_KEY: 'rf_translate_cache_v3',
+    isTranslating: false,
+    observer: null, // MutationObserver для автоперевода нового контента
+
+    init() {
+        try {
+            const saved = localStorage.getItem(this.CACHE_KEY);
+            if (saved) this.cache = JSON.parse(saved);
+        } catch(e) { this.cache = {}; }
+        
+        const savedLang = localStorage.getItem('rf_ui_lang') || 'ru';
+        document.getElementById('uiLangSelect').value = savedLang;
+        this.currentLang = savedLang;
+        
+        // Запускаем MutationObserver — будет ловить ВСЕ изменения DOM
+        this.setupObserver();
+        
+        if (savedLang !== 'ru') {
+            setTimeout(() => this.translatePage(), 300);
+        }
+    },
+
+    setupObserver() {
+        // Наблюдаем за ВСЕМИ изменениями в body
+        this.observer = new MutationObserver((mutations) => {
+            if (this.currentLang === 'ru' || this.isTranslating) return;
+            
+            let hasNewContent = false;
+            mutations.forEach(m => {
+                if (m.addedNodes.length > 0) hasNewContent = true;
+            });
+            
+            if (hasNewContent) {
+                // Небольшая задержка, чтобы DOM успел стабилизироваться
+                clearTimeout(this._debounce);
+                this._debounce = setTimeout(() => this.translatePage(), 200);
+            }
+        });
+        
+        this.observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: false
+        });
+    },
+
+    saveCache() {
+        try { localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); } catch(e) {}
+    },
+
+    cacheKey(text, lang) {
+        return `${lang}::${text.trim().substring(0, 100)}`;
+    },
+
+    async translate(text, targetLang) {
+        if (!text || !text.trim()) return text;
+        if (targetLang === 'ru') return text;
+        
+        const key = this.cacheKey(text, targetLang);
+        if (this.cache[key]) return this.cache[key];
+        
+        try {
+            const encoded = encodeURIComponent(text.trim().substring(0, 450));
+            const url = `https://api.mymemory.translated.net/get?q=${encoded}&langpair=ru|${targetLang}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if (data.responseStatus === 200 && data.responseData?.translatedText) {
+                const translated = data.responseData.translatedText;
+                // Не сохраняем, если перевод равен оригиналу или слишком короткий
+                if (translated && translated !== text && translated.length > 1) {
+                    this.cache[key] = translated;
+                    this.saveCache();
+                    return translated;
+                }
+            }
+        } catch(e) {
+            console.warn('Translation failed:', text.substring(0, 50));
+        }
+        return text;
+    },
+
+    setLang(lang) {
+        this.currentLang = lang;
+        localStorage.setItem('rf_ui_lang', lang);
+        
+        // Очищаем старые оригиналы при смене языка
+        if (lang === 'ru') {
+            this.restorePage();
+        } else {
+            this.translatePage();
+        }
+        this.showIndicator(lang);
+    },
+
+    showIndicator(lang) {
+        const el = document.getElementById('langIndicator');
+        const names = {
+            en:'EN', ky:'КЫР', kk:'ҚАЗ', uz:'UZ', tg:'ТЖК', hy:'ՀԱՅ',
+            az:'AZ', tr:'TR', ar:'AR', zh:'中', fa:'FA', uk:'УКР',
+            de:'DE', fr:'FR', es:'ES'
+        };
+        el.textContent = '🌐 ' + (names[lang] || lang.toUpperCase());
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+    },
+
+    // 🔥 ГЛАВНАЯ ФУНКЦИЯ — переводит ВСЁ
+    async translatePage() {
+        if (this.currentLang === 'ru' || this.isTranslating) return;
+        this.isTranslating = true;
+        
+        const status = document.getElementById('translatorStatus');
+        if (status) {
+            status.textContent = '⏳ Перевожу...';
+            status.className = 'translator-status translating';
+        }
+        
+        // 🔥 СОБИРАЕМ ВСЕ ТЕКСТОВЫЕ УЗЛЫ (а не только элементы!)
+        const textNodes = this.getAllTextNodes(document.body);
+        let translated = 0;
+        let total = textNodes.length;
+        
+        // 🔥 Также переводим placeholder
+        const placeholders = document.querySelectorAll('[placeholder]');
+        placeholders.forEach(el => {
+            const ph = el.getAttribute('placeholder');
+            if (ph && ph.trim().length > 2 && !el.dataset.origPlaceholder) {
+                el.dataset.origPlaceholder = ph;
+                this.translate(ph, this.currentLang).then(t => {
+                    if (t && t !== ph) el.setAttribute('placeholder', t);
+                });
+            }
+        });
+        
+        // 🔥 Также переводим title атрибуты
+        const titles = document.querySelectorAll('[title]');
+        titles.forEach(el => {
+            const t = el.getAttribute('title');
+            if (t && t.trim().length > 2 && !el.dataset.origTitle) {
+                el.dataset.origTitle = t;
+                this.translate(t, this.currentLang).then(tr => {
+                    if (tr && tr !== t) el.setAttribute('title', tr);
+                });
+            }
+        });
+        
+        // Обрабатываем батчами по 5, чтобы не перегружать API
+        for (let i = 0; i < textNodes.length; i += 5) {
+            const batch = textNodes.slice(i, i + 5);
+            await Promise.all(batch.map(async node => {
+                const text = node.textContent.trim();
+                if (text.length < 2) return; // Пропускаем короткие
+                
+                // Пропускаем числа, коды, email
+                if (/^[\d\s\.\,\+\-\_\@\/\\]+$/.test(text)) return;
+                if (text.includes('@') && text.includes('.')) return; // email
+                if (text.startsWith('http')) return; // URL
+                if (text.startsWith('{') || text.startsWith('[')) return; // JSON/код
+                if (text.length > 500) return; // Слишком длинные
+                
+                // Проверяем, не является ли родитель уже переведённым
+                const parent = node.parentElement;
+                if (!parent) return;
+                if (parent.closest('.no-translate')) return; // Исключение по классу
+                if (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE') return;
+                if (parent.tagName === 'CODE' || parent.tagName === 'PRE') return;
+                
+                // Сохраняем оригинал
+                if (!parent.dataset.origText) {
+                    parent.dataset.origText = parent.textContent;
+                }
+                
+                const translatedText = await this.translate(text, this.currentLang);
+                if (translatedText && translatedText !== text) {
+                    node.textContent = translatedText;
+                    translated++;
+                }
+            }));
+            
+            // Обновляем прогресс
+            if (status && i % 20 === 0 && i > 0) {
+                const pct = Math.round((i / total) * 100);
+                status.textContent = `⏳ ${pct}%...`;
+                await new Promise(r => setTimeout(r, 50));
+            }
+        }
+        
+        if (status) {
+            status.textContent = `✓ Переведено (${Object.keys(this.cache).length})`;
+            status.className = 'translator-status cached';
+            setTimeout(() => {
+                if (status) {
+                    status.textContent = 'Готово';
+                    status.className = 'translator-status';
+                }
+            }, 3000);
+        }
+        
+        this.isTranslating = false;
+    },
+
+    // 🔥 Собираем ВСЕ текстовые узлы в DOM
+    getAllTextNodes(root) {
+        const nodes = [];
+        const walker = document.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function(node) {
+                    // Пропускаем пустые узлы
+                    if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                    
+                    const parent = node.parentElement;
+                    if (!parent) return NodeFilter.FILTER_REJECT;
+                    
+                    // Пропускаем скрипты, стили, код
+                    const tag = parent.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') 
+                        return NodeFilter.FILTER_REJECT;
+                    if (tag === 'CODE' || tag === 'PRE' || tag === 'TEXTAREA') 
+                        return NodeFilter.FILTER_REJECT;
+                    if (tag === 'INPUT' || tag === 'SELECT') 
+                        return NodeFilter.FILTER_REJECT;
+                    
+                    // Пропускаем элементы с классом no-translate
+                    if (parent.closest('.no-translate')) 
+                        return NodeFilter.FILTER_REJECT;
+                    
+                    // Пропускаем уже переведённые vocab-переводы (чтобы не портить)
+                    if (parent.classList.contains('vocab-translation') && 
+                        parent.style.display === 'block') {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+            nodes.push(node);
+        }
+        return nodes;
+    },
+
+    restorePage() {
+        // Восстанавливаем все элементы с data-orig-text
+        document.querySelectorAll('[data-orig-text]').forEach(el => {
+            el.textContent = el.dataset.origText;
+            delete el.dataset.origText;
+        });
+        
+        // Восстанавливаем placeholder
+        document.querySelectorAll('[data-orig-placeholder]').forEach(el => {
+            el.setAttribute('placeholder', el.dataset.origPlaceholder);
+            delete el.dataset.origPlaceholder;
+        });
+        
+        // Восстанавливаем title
+        document.querySelectorAll('[data-orig-title]').forEach(el => {
+            el.setAttribute('title', el.dataset.origTitle);
+            delete el.dataset.origTitle;
+        });
+        
+        const status = document.getElementById('translatorStatus');
+        if (status) {
+            status.textContent = 'Готово';
+            status.className = 'translator-status';
+        }
+    }
 };
 
 // ============================================================
@@ -2917,6 +3090,10 @@ modal.innerHTML = `
 </div>
 </div>`;
 document.body.appendChild(modal);
+// После document.body.appendChild(modal);
+if (translator.currentLang !== 'ru') {
+    setTimeout(() => translator.translatePage(), 100);
+}
 modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 showLessonTab(tab) {
@@ -3008,6 +3185,9 @@ ${ruler ? `
 <p style="margin-top:1rem;">${e.desc}</p>
 </div>`;
 detail.scrollIntoView({ behavior: 'smooth' });
+if (translator.currentLang !== 'ru') {
+setTimeout(() => translator.translatePage(), 100);
+}
 }
 }
 
@@ -3092,6 +3272,10 @@ detail.innerHTML = `
 </div>
 </div>`;
 detail.scrollIntoView({ behavior: 'smooth' });
+    // После detail.scrollIntoView(...)
+if (translator.currentLang !== 'ru') {
+    setTimeout(() => translator.translatePage(), 100);
+}
 }
 }
 
@@ -3206,6 +3390,7 @@ class Tests {
         document.getElementById('testsList').style.display = 'none';
         document.getElementById('testContainer').style.display = 'block';
         document.getElementById('testContent').innerHTML = questions.map((q, i) => `
+        
             <div class="question">
                 <div class="question-text">${i+1}. ${q.q}</div>
                 <div class="answers">${q.a.map((a, ai) => `
@@ -3215,6 +3400,11 @@ class Tests {
                 `).join('')}</div>
             </div>
         `).join('');
+        // После document.getElementById('testContent').innerHTML = ...
+if (translator.currentLang !== 'ru') {
+    setTimeout(() => translator.translatePage(), 100);
+}
+    
     }
 
     select(qIdx, aIdx) {
