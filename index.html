@@ -527,161 +527,355 @@ const api = {
 // ============================================================
 // 🌐 ПЕРЕВОДЧИК (Полный из 1-го файла)
 // ============================================================
+// ============================================================
+// 🌐 ПЕРЕВОДЧИК v3.0 — Google Translate + полный охват
+// ============================================================
 const translator = {
     currentLang: 'ru',
     cache: {},
-    CACHE_KEY: 'rf_translate_cache_v2',
-    pendingQueue: [],
+    CACHE_KEY: 'rf_translate_cache_v3',
     isTranslating: false,
+    originals: new Map(),
+
     init() {
         try {
             const saved = localStorage.getItem(this.CACHE_KEY);
             if (saved) this.cache = JSON.parse(saved);
-        } catch(e) { this.cache = {}; }
+        } catch(e) { 
+            console.warn('Не удалось загрузить кэш переводов');
+            this.cache = {}; 
+        }
+        
         const savedLang = localStorage.getItem('rf_ui_lang') || 'ru';
-        document.getElementById('uiLangSelect').value = savedLang;
+        const select = document.getElementById('uiLangSelect');
+        if (select) select.value = savedLang;
         this.currentLang = savedLang;
-        if (savedLang !== 'ru') this.translatePage();
-    },
-    saveCache() {
-        try { localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); } catch(e) {}
-    },
-    cacheKey(text, lang) { return `${lang}::${text.trim().substring(0,80)}`; },
-    //  Исправленный translate() с таймаутом
-async translate(text, targetLang) {
-    if (!text || !text.trim()) return text;
-    if (targetLang === 'ru') return text;
-    
-    const key = this.cacheKey(text, targetLang);
-    if (this.cache[key]) return this.cache[key];
-    
-    try {
-        const encoded = encodeURIComponent(text.trim().substring(0, 450));
-        const url = `https://api.mymemory.translated.net/get?q=${encoded}&langpair=ru|${targetLang}`;
         
-        // ✅ ТАЙМАУТ 5 секунд
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (!res.ok) {
-            console.warn(`API error: ${res.status} for "${text.substring(0, 30)}"`);
-            return text;
+        if (savedLang !== 'ru') {
+            setTimeout(() => this.translatePage(), 500);
         }
-        
-        const data = await res.json();
-        if (data.responseStatus === 200 && data.responseData?.translatedText) {
-            const translated = data.responseData.translatedText;
-            if (translated && translated !== text) {
-                this.cache[key] = translated;
-                this.saveCache();
-                return translated;
-            }
-        }
-    } catch(e) {
-        // ✅ Тихо игнорируем ошибки (таймаут, сеть, лимит API)
-        console.warn(`Translation failed: "${text.substring(0, 30)}"`, e.message);
-    }
-    return text;
-},
+    },
 
-//  Исправленный translatePage() с защитой от зависания
-async translatePage() {
-    // ✅ ЗАЩИТА: если уже переводим — выходим
-    if (this.isTranslating) {
-        console.log('Translation already in progress, skipping...');
-        return;
-    }
-    if (this.currentLang === 'ru') return;
-    
-    this.isTranslating = true;
-    const status = document.getElementById('translatorStatus');
-    if (status) {
-        status.textContent = '⏳ Перевожу...';
-        status.className = 'translator-status translating';
-    }
-    
-    const selectors = ['h1','h2','h3','h4','p','button','label',
-        '.category-title','.category-desc','.tab',
-        '.law-title','.law-content','.city-name','.city-meta',
-        '.vocab-word','.vocab-translation','th','td',
-        'span:not(.search-icon)','.timeline-title','.timeline-desc',
-        '.city-section-content'];
-    
-    const elements = [];
-    selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(el => {
-            if (el.children.length === 0 
-                && el.innerText.trim().length > 1 
-                && !el.closest('.modal') 
-                && !el.closest('#vocabGrid') 
-                && !el.closest('#phrasesGrid')) {
-                elements.push(el);
+    saveCache() {
+        try { 
+            localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); 
+        } catch(e) {
+            console.warn('Кэш переполнен, очищаю старые записи');
+            const keys = Object.keys(this.cache);
+            const toDelete = keys.slice(0, Math.floor(keys.length / 2));
+            toDelete.forEach(k => delete this.cache[k]);
+            try {
+                localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache));
+            } catch(e2) {
+                console.error('Не удалось сохранить кэш');
+                this.cache = {};
             }
-        });
-    });
-    
-    // ✅ Если элементов нет — сразу завершаем
-    if (elements.length === 0) {
-        if (status) {
-            status.textContent = '✓ Нет элементов для перевода';
-            status.className = 'translator-status cached';
-            setTimeout(() => { 
-                if (status) { status.textContent = 'Готово'; status.className = 'translator-status'; }
-            }, 2000);
         }
-        this.isTranslating = false;
-        return;
-    }
-    
-    let translated = 0;
-    let failed = 0;
-    
-    for (let i = 0; i < elements.length; i += 5) {
-        const batch = elements.slice(i, i + 5);
+    },
+
+    clearCache() {
+        this.cache = {};
+        try { localStorage.removeItem(this.CACHE_KEY); } catch(e) {}
+        console.log('Кэш переводов очищен');
+    },
+
+    cacheKey(text, lang) { 
+        return `${lang}::${text.trim().substring(0, 100)}`; 
+    },
+
+    // 🔥 Google Translate (бесплатный endpoint)
+    async translate(text, targetLang) {
+        if (!text || !text.trim()) return text;
+        if (targetLang === 'ru') return text;
+        
+        const key = this.cacheKey(text, targetLang);
+        if (this.cache[key]) return this.cache[key];
         
         try {
+            const encoded = encodeURIComponent(text.trim().substring(0, 5000));
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=${targetLang}&dt=t&q=${encoded}`;
+            
+            // Таймаут 5 секунд
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (!res.ok) {
+                console.warn(`Google Translate error: ${res.status}`);
+                return text;
+            }
+            
+            const data = await res.json();
+            
+            // Google возвращает массив массивов: [[["перевод","оригинал",...],...],...]
+            if (data && data[0] && Array.isArray(data[0])) {
+                const translated = data[0]
+                    .filter(part => Array.isArray(part) && part[0])
+                    .map(part => part[0])
+                    .join('');
+                
+                if (translated && translated.trim() && translated !== text) {
+                    this.cache[key] = translated;
+                    this.saveCache();
+                    return translated;
+                }
+            }
+        } catch(e) {
+            console.warn(`Translation failed: "${text.substring(0, 30)}"`, e.message);
+        }
+        return text;
+    },
+
+    setLang(lang) {
+        this.currentLang = lang;
+        localStorage.setItem('rf_ui_lang', lang);
+        
+        if (lang === 'ru') {
+            this.restorePage();
+        } else {
+            this.translatePage();
+        }
+        this.showIndicator(lang);
+        
+        if (app && app.currentSection) {
+            setTimeout(() => app.rerenderSection(), 500);
+        }
+    },
+
+    showIndicator(lang) {
+        const el = document.getElementById('langIndicator');
+        if (!el) return;
+        const names = {
+            en:'EN', ky:'КЫР', kk:'ҚАЗ', uz:'UZ', tg:'ТЖК', hy:'ՀԱՅ',
+            az:'AZ', tr:'TR', ar:'AR', zh:'中', fa:'FA', uk:'УКР',
+            de:'DE', fr:'FR', es:'ES'
+        };
+        el.textContent = '🌐 ' + (names[lang] || lang.toUpperCase());
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+    },
+
+    //  Полный массив селекторов — переводит ВСЁ
+    async translatePage() {
+        if (this.currentLang === 'ru' || this.isTranslating) return;
+        this.isTranslating = true;
+        
+        const status = document.getElementById('translatorStatus');
+        if (status) {
+            status.textContent = '⏳ Перевожу...';
+            status.className = 'translator-status translating';
+        }
+        
+        const selectors = [
+            // Базовые теги
+            'h1', 'h2', 'h3', 'h4', 'h5', 'p', 'button', 'label', 'li', 'th', 'td',
+            'span:not(.search-icon):not(.city-sight-icon):not(.category-icon):not(.russian-cat-icon):not(.ruler-portrait):not(.city-stat-icon)',
+            
+            // Категории и навигация
+            '.category-title', '.category-desc', '.tab', '.tab-content',
+            
+            // История
+            '.timeline-title', '.timeline-desc', '.timeline-year', '.timeline-event',
+            '.history-tab', '.event-detail h2', '.event-detail p', '.event-detail strong',
+            '.ruler-info h4', '.ruler-info p', '.ruler-achievements li', '.ruler-card',
+            
+            // Законы
+            '.law-title', '.law-content', '.law-number', '.law-card',
+            
+            // Города
+            '.city-name', '.city-meta', '.city-image-overlay', '.city-info',
+            '.city-detail-title', '.city-detail-subtitle', '.city-detail-header-overlay',
+            '.city-section-title', '.city-section-content', '.city-section',
+            '.city-stat-label', '.city-stat-value', '.city-stat-card',
+            '.city-sight-item', '.city-sights-list',
+            
+            // Русский язык
+            '.russian-cat-title', '.russian-cat-desc', '.russian-category-card',
+            '.vocab-word', '.vocab-translation', '.vocab-transliteration', '.vocab-card',
+            '.translate-btn', '.vocab-tab',
+            
+            // Разговорник
+            '.phrases-title', '.phrases-desc',
+            
+            // Тесты
+            '.question-text', '.answer-option', '.test-container',
+            '.cert-title', '.cert-subtitle', '.cert-name', '.cert-item', '.cert-final',
+            
+            // Уроки
+            '.lesson-section h3', '.lesson-section h4', '.lesson-section p', '.lesson-section li',
+            '.lesson-section strong',
+            '.example-box .ru', '.example-box .tr', '.example-box .note', '.example-box .analysis',
+            '.dialogue-box .speaker-a', '.dialogue-box .speaker-b', '.dialogue-box .dialogue-header',
+            '.dialogue-box .cultural-note',
+            '.audio-example .text', '.audio-example .task', '.audio-example .answer',
+            '.pattern-card', '.pattern-card strong', '.pattern-card li',
+            '.usage-card', '.usage-card strong', '.usage-card li',
+            '.tense-card', '.tense-card strong', '.tense-card p',
+            '.reduction-card', '.reduction-card strong', '.reduction-card li',
+            '.topic-card', '.topic-card strong', '.topic-card li',
+            '.nonverbal-table td', '.nonverbal-table th',
+            '.pos-table td', '.pos-table th',
+            '.cases-overview td', '.cases-overview th',
+            '.conjugation-table td', '.conjugation-table th',
+            '.aspects-table td', '.aspects-table th',
+            '.question-types td', '.question-types th',
+            '.phrase-table td', '.phrase-table th',
+            '.vocab-table td', '.vocab-table th',
+            '.listening-levels td', '.listening-levels th',
+            '.listening-problems td', '.listening-problems th',
+            '.alphabet-table td', '.alphabet-table th',
+            '.intonation-table td', '.intonation-table th',
+            '.verb-government td', '.verb-government th',
+            '.topics-grid .topic-card',
+            
+            // Авторизация
+            '.modal-content h2', '.modal-content p', '.form-group label', '.error',
+            
+            // Уведомления и индикаторы
+            '.notification', '.translator-bar label', '.translator-status', '.lang-indicator',
+            
+            // Прогресс
+            '.progress-container span',
+            
+            // Разное
+            '.back-btn', '.search-input', '.search-container',
+            '.main-container h2', '.main-container p',
+            '.dashboard-grid .category-title', '.dashboard-grid .category-desc',
+            '.persistent-categories h2',
+            '.welcomeTitle', '.welcomeDesc',
+            '#appNameText', '#mainMenuTitle', '#startBtn',
+            '#backText', '#grammarTab', '#vocabTab', '#phrasesTab',
+            '#russianCourseTitle', '#russianCourseDesc',
+            '#vocabTitle', '#vocabDesc', '#phrasesTitle',
+            '#historyTitle',
+            '#catRussianTitle', '#catRussianDesc',
+            '#catHistoryTitle', '#catHistoryDesc',
+            '#catLawsTitle', '#catLawsDesc',
+            '#catCitiesTitle', '#catCitiesDesc',
+            '#catTestsTitle', '#catTestsDesc'
+        ];
+        
+        const elements = [];
+        selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                // Пропускаем элементы с детьми (чтобы не переводить дважды)
+                if (el.children.length > 0) return;
+                
+                const text = el.innerText.trim();
+                if (text.length < 2) return;
+                
+                // Пропускаем уже переведённые элементы
+                if (el.dataset.translated === this.currentLang) return;
+                
+                // Пропускаем модальные окна и словарь (они переводятся отдельно)
+                if (el.closest('.modal') && !el.closest('#lessonModal')) return;
+                
+                elements.push(el);
+            });
+        });
+        
+        // 🔥 Также переводим placeholder
+        document.querySelectorAll('[placeholder]').forEach(el => {
+            const ph = el.getAttribute('placeholder');
+            if (ph && ph.trim().length > 2 && !el.dataset.origPlaceholder) {
+                el.dataset.origPlaceholder = ph;
+                this.translate(ph, this.currentLang).then(t => {
+                    if (t && t !== ph) el.setAttribute('placeholder', t);
+                });
+            }
+        });
+        
+        if (elements.length === 0) {
+            if (status) {
+                status.textContent = '✓ Нечего переводить';
+                status.className = 'translator-status cached';
+                setTimeout(() => { 
+                    if (status) { status.textContent = 'Готово'; status.className = 'translator-status'; }
+                }, 2000);
+            }
+            this.isTranslating = false;
+            return;
+        }
+        
+        let translated = 0;
+        let failed = 0;
+        
+        for (let i = 0; i < elements.length; i += 5) {
+            const batch = elements.slice(i, i + 5);
+            
             await Promise.all(batch.map(async el => {
-                const orig = el.dataset.origintext || el.innerText.trim();
-                el.dataset.origintext = orig;
+                const text = el.innerText.trim();
+                
+                // Сохраняем оригинал (только один раз!)
+                if (!this.originals.has(el)) {
+                    this.originals.set(el, text);
+                    el.dataset.origintext = text;
+                }
+                
+                const orig = this.originals.get(el);
                 const t = await this.translate(orig, this.currentLang);
+                
                 if (t && t !== orig) {
                     el.innerText = t;
+                    el.dataset.translated = this.currentLang;
                     translated++;
                 } else {
                     failed++;
                 }
             }));
-        } catch(e) {
-            console.error('Batch translation error:', e);
-            failed += batch.length;
+            
+            // Обновляем прогресс
+            if (i % 20 === 0 && status) {
+                const pct = Math.round(((i + batch.length) / elements.length) * 100);
+                status.textContent = `⏳ ${pct}%...`;
+                await new Promise(r => setTimeout(r, 100));
+            }
         }
         
-        // ✅ Обновляем прогресс каждые 10 элементов
-        if (i % 10 === 0 && status) {
-            const pct = Math.round(((i + batch.length) / elements.length) * 100);
-            status.textContent = ` ${pct}% (${translated} переведено)`;
-            // ✅ Небольшая задержка, чтобы не перегружать API
-            await new Promise(r => setTimeout(r, 100));
+        if (status) {
+            status.textContent = `✓ Переведено: ${translated} (кэш: ${Object.keys(this.cache).length})`;
+            status.className = 'translator-status cached';
+            setTimeout(() => { 
+                if (status) { 
+                    status.textContent = 'Готово'; 
+                    status.className = 'translator-status'; 
+                }
+            }, 3000);
+        }
+        
+        this.isTranslating = false;
+    },
+
+    restorePage() {
+        // Восстанавливаем все элементы из Map
+        this.originals.forEach((origText, el) => {
+            if (el && el.parentNode) {
+                el.innerText = origText;
+                delete el.dataset.translated;
+            }
+        });
+        
+        // Также восстанавливаем по data-origintext (для элементов после перезагрузки)
+        document.querySelectorAll('[data-origintext]').forEach(el => {
+            el.innerText = el.dataset.origintext;
+            delete el.dataset.translated;
+        });
+        
+        // Восстанавливаем placeholder
+        document.querySelectorAll('[data-orig-placeholder]').forEach(el => {
+            el.setAttribute('placeholder', el.dataset.origPlaceholder);
+            delete el.dataset.origPlaceholder;
+        });
+        
+        const status = document.getElementById('translatorStatus');
+        if (status) {
+            status.textContent = 'Готово';
+            status.className = 'translator-status';
         }
     }
-    
-    // ✅ ВСЕГДА завершаем статус, даже если были ошибки
-    if (status) {
-        status.textContent = `✓ Переведено: ${translated} (кэш: ${Object.keys(this.cache).length})`;
-        status.className = 'translator-status cached';
-        setTimeout(() => { 
-            if (status) { 
-                status.textContent = 'Готово'; 
-                status.className = 'translator-status'; 
-            }
-        }, 3000);
-    }
-    
-    this.isTranslating = false;
-},
+};
     }
 
 // ============================================================
