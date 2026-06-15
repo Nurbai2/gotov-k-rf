@@ -3315,6 +3315,79 @@ class Tests {
         
         grid.innerHTML = html;
     }
+    showResultScreen(score, isFinal, neededTests = 0) {
+        const container = document.getElementById('testContent');
+        const testName = { russian: 'Русский язык', history: 'История', laws: 'Законы', cities: 'Города', mixed: 'Общий тест' }[this.currentTest];
+        let html = `
+        <div style="text-align: center; padding: 2rem; animation: fadeIn 0.5s;">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;">
+                ${isFinal ? '🎉 Поздравляем! Все тесты пройдены!' : `✅ Тест "${testName}" завершен`}
+            </h2>
+            <div style="font-size: 4rem; font-weight: bold; color: ${score >= 60 ? '#10b981' : '#ef4444'}; margin: 1.5rem 0;">
+                ${score}%
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">
+                ${isFinal 
+                    ? 'Вы успешно сдали все 5 тестов. Ваш итоговый сертификат сформирован и отображается ниже.' 
+                    : `Для получения итогового сертификата необходимо набрать ≥60% во всех 5 тестах.<br>Осталось успешно сдать: <strong style="color:var(--primary)">${neededTests}</strong> тест(ов).`}
+            </p>
+            <button class="btn btn-primary" onclick="app.tests.returnToList()" style="font-size: 1.1rem; padding: 0.75rem 2rem;">
+                ← Вернуться к списку тестов
+            </button>
+        </div>
+        `;
+        if (isFinal) {
+            const finalCert = this.certs.find(c => c.type === 'full_course');
+            if (finalCert) {
+                html += `<div style="margin-top: 2rem;">${this.renderSingleCertificate(finalCert)}</div>`;
+            }
+        }
+        container.innerHTML = html;
+        const btns = document.querySelectorAll('#testContainer .mt-4');
+        btns.forEach(btn => btn.style.display = 'none');
+    }
+
+    returnToList() {
+        document.getElementById('testContainer').style.display = 'none';
+        document.getElementById('testsList').style.display = 'grid';
+        const btns = document.querySelectorAll('#testContainer .mt-4');
+        btns.forEach(btn => btn.style.display = 'inline-flex');
+        this.currentTest = null;
+        this.showCertificates(); // Обновляем из памяти, без запроса к API
+    }
+
+    renderSingleCertificate(c) {
+        const testNames = { russian: '📚 Русский язык', history: '🏛️ История', laws: '⚖️ Законы', cities: '🏙️ Города', mixed: '🎯 Общий тест' };
+        const scoresList = this.REQUIRED_TESTS.map(t => {
+            const score = c.testScores[t] || 0;
+            return `<div style="display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.2);">
+                <span>${testNames[t]}</span>
+                <span style="font-weight:bold; color:${score >= 60 ? '#4ade80' : '#f87171'}">${score}%</span>
+            </div>`;
+        }).join('');
+        return `
+        <div class="category-card cert-final" style="grid-column: 1 / -1; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: 3px solid #fbbf24; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4), 0 0 20px rgba(251, 191, 36, 0.2); padding: 2.5rem; margin-top: 1rem;">
+            <div style="position: absolute; top: -30px; right: -30px; font-size: 12rem; opacity: 0.1;">🏆</div>
+            <div style="text-align:center; margin-bottom: 1.5rem; position: relative; z-index: 1;">
+                <div style="font-size: 5rem; margin-bottom: 0.5rem;">🏆</div>
+                <div style="color: #fbbf24; font-size: 2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">🌟 ИТОГОВЫЙ СЕРТИФИКАТ 🌟</div>
+            </div>
+            <div style="color: rgba(255,255,255,0.95); text-align: left; margin-top: 1rem; position: relative; z-index: 1; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <div style="font-size:1.8rem; font-weight:bold; margin-bottom:1.5rem; text-align:center; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 1rem;">
+                    👤 ${c.studentName}
+                </div>
+                <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
+                    <strong style="color: #fbbf24; font-size: 1.3rem; display: block; margin-bottom: 1rem; text-align: center;">📊 Результаты тестов:</strong>
+                    <div style="font-size: 1.1rem;">${scoresList}</div>
+                </div>
+                <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(255,255,255,0.3);">
+                    <div style="font-size: 1.8rem; font-weight: bold; color: #fbbf24; margin-bottom: 0.5rem;">🏅 Средний балл: ${c.averageScore}%</div>
+                    <div style="margin-top: 1rem; font-size: 1.1rem; opacity: 0.9;">📅 Дата выдачи: ${c.date}</div>
+                    <div style="margin-top: 0.75rem; font-size: 1rem; font-family: monospace; background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: 6px; display: inline-block; letter-spacing: 1px;">№ ${c.number}</div>
+                </div>
+            </div>
+        </div>`;
+    }
 }
 
 // Инициализация
